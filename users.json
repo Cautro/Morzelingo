@@ -1,0 +1,9 @@
+[
+  {
+    "username": "admin",
+    "email": "test@test.com",
+    "password": "$2a$10$vZvd3aTRIvNA6V6sxbQ7CObF6GLik0tCFnF1UOGzTCnDPsBDSEaHS",
+    "xp": 0,
+    "lesson_done": 0
+  }
+]
