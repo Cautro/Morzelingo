@@ -1,0 +1,16 @@
+[
+    { 
+        "ID": 1, 
+        "Title": "Буквы A и B", 
+        "Theory": "A = .- , B = -...", 
+        "Symbols": ["A", "B"], 
+        "XPReward": 50
+    }, 
+    { 
+        "ID": 2, 
+        "Title": "Добавляем C", 
+        "Theory": "C = -.-.", 
+        "Symbols": ["A", "B", "C"], 
+        "XPReward": 50
+    }
+]
