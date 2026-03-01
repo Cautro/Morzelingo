@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,11 +15,54 @@ import (
 var supersecretkey = "IVERYLOVEMORZELINGO"
 
 type User struct {
-	Username   string `json:"username"`
-	Email      string `json:"email"`
-	Password   string `json:"password"`
+	Username   string `json:"username" binding:"required,min=3"`
+	Email      string `json:"email" binding:"required,email"`
+	Password   string `json:"password" binding:"required,min=6"`
 	XP         int    `json:"xp"`
 	LessonDone int    `json:"lesson_done"`
+}
+
+func authMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(401, gin.H{"error": "Authorization header missing"})
+			c.Abort()
+			return
+		}
+
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			c.JSON(401, gin.H{"error": "Invalid authorization format"})
+			c.Abort()
+			return
+		}
+
+		tokenString := parts[1]
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			return []byte(supersecretkey), nil
+		})
+
+		if err != nil || !token.Valid {
+			c.JSON(401, gin.H{"error": "Invalid or expired token"})
+			c.Abort()
+			return
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			c.JSON(401, gin.H{"error": "Invalid token claims"})
+			c.Abort()
+			return
+		}
+
+		username := claims["username"].(string)
+
+		c.Set("username", username)
+
+		c.Next()
+	}
 }
 
 func readUsers() ([]User, error) {
@@ -67,7 +111,9 @@ func main() {
 		var user User
 
 		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(400, gin.H{"error": "Invalid input"})
+			c.JSON(400, gin.H{
+				"error": err.Error(),
+			})
 			return
 		}
 
@@ -77,6 +123,13 @@ func main() {
 		for _, u := range users {
 			if u.Username == user.Username {
 				c.JSON(400, gin.H{"error": "User exists"})
+				return
+			}
+		}
+
+		for _, u := range users {
+			if u.Email == user.Email {
+				c.JSON(400, gin.H{"error": "Email already exists"})
 				return
 			}
 		}
@@ -128,6 +181,33 @@ func main() {
 			"message": "Login successful",
 		})
 	})
+
+
+	res.GET("/api/profile", authMiddleware(), func(c *gin.Context) {
+
+		username, exists := c.Get("username")
+		if !exists {
+			c.JSON(500, gin.H{"error": "username not found in context"})
+			return
+		}
+
+		users, _ := readUsers()
+
+		for _, u := range users {
+			if u.Username == username {
+				c.JSON(200, gin.H{
+					"username":    u.Username,
+					"email":       u.Email,
+					"xp":          u.XP,
+					"lesson_done": u.LessonDone,
+				})
+				return
+			}
+		}
+
+		c.JSON(404, gin.H{"error": "user not found"})
+	})
+
 
 	res.Run(":8080")
 }
