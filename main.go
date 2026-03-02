@@ -375,6 +375,7 @@ func main() {
 					"xp":          u.XP,
 					"lesson_done": u.LessonDone,
 					"level":       u.Level,
+					"coins":       u.Coins,
 				})
 				return
 			}
