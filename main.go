@@ -47,6 +47,12 @@ var morseDictionary = map[string]string{
 	"Z": "--..",
 }
 
+type PracticeResponse struct {
+	Type     string `json:"type"`     
+	Question string `json:"question"` 
+	Answer   string `json:"answer"` 
+}
+
 var defaultLessons = []Lesson{
 	{ID: 1, Title: "Буквы A и B", Theory: "A = .- , B = -...", Symbols: []string{"A","B"}, XPReward: 50},
 	{ID: 2, Title: "Добавляем C", Theory: "C = -.-.", Symbols: []string{"A","B","C"}, XPReward: 50},
@@ -61,6 +67,7 @@ type User struct {
 	Level      int    `json:"level"`
 	Coins      int    `json:"coins"`
 	Items      []int  `json:"items"`
+	needXp     int    `json:"need_xp"`
 }
 
 type LoginInput struct {
@@ -86,6 +93,28 @@ type ShopItem struct {
 	ID    int
 	Name  string
 	Price int
+}
+
+func generateRandomWord(symbols []string, length int) string {
+	var result string
+	for i := 0; i < length; i++ {
+		randomIndex := rand.Intn(len(symbols))
+		result += symbols[randomIndex]
+	}
+	return result
+}
+
+func textToMorse(text string) string {
+	var result []string
+
+	for _, char := range text {
+		upper := strings.ToUpper(string(char))
+		if morse, ok := morseDictionary[upper]; ok {
+			result = append(result, morse)
+		}
+	}
+
+	return strings.Join(result, " ")
 }
 
 func generateToken(username string) (string, error) {
@@ -166,7 +195,6 @@ func readShop() ([]ShopItem, error) {
 	return shop, err
 }
 
-
 func readLessons() ([]Lesson, error) {
 	if _, err := os.Stat("lessons.json"); err != nil {
 		return defaultLessons, nil
@@ -229,6 +257,7 @@ func generatePractice(symbols []string, length int) string {
 }
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	godotenv.Load()
 	supersecretkey = os.Getenv("JWT_SECRET")
 	if supersecretkey == "" {
@@ -281,8 +310,6 @@ func main() {
 	})
 
 	res.POST("/api/login", func(c *gin.Context) {
-
-		// 🔐 Rate limit по IP
 		ip := c.ClientIP()
 		limiter := getLimiter(ip)
 
@@ -339,7 +366,6 @@ func main() {
 			return
 		}
 
-		// 🎫 Генерируем JWT
 		token, err := generateToken(foundUser.Username)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -349,7 +375,6 @@ func main() {
 			return
 		}
 
-		// ✅ Успешный ответ
 		c.JSON(200, gin.H{
 			"message": "Успешный вход.",
 			"token":   token,
@@ -376,6 +401,8 @@ func main() {
 					"lesson_done": u.LessonDone,
 					"level":       u.Level,
 					"coins":       u.Coins,
+					"items":       u.Items,
+					"message":     "Профиль успешно загружен.",
 				})
 				return
 			}
@@ -403,6 +430,12 @@ func main() {
 			return
 		}
 
+		Lessons, err := readLessons()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read lessons", "details": err.Error(), "message": "Проблема открытия файла lessons.json. Убедитесь, что файл существует и имеет правильный формат."})
+			return
+		}
+
 		for i, u := range users {
 			if u.Username == username {
 				if input.LessonID != u.LessonDone+1 {
@@ -411,14 +444,24 @@ func main() {
 				}
 
 				users[i].LessonDone++
-				users[i].XP += 50 
+				users[i].XP += Lessons[input.LessonID-1].XPReward 
 				
-				multyplayer := 1 + float64(users[i].Level)*1.5
+				needXpForNewLevel := 1 + float64(users[i].Level)*1.5
+				users[i].needXp = int(needXpForNewLevel * 100)
 
-				if users[i].XP >= 100*int(multyplayer) {
+				if users[i].XP >= 100*int(needXpForNewLevel) {
 					users[i].Level++
-					users[i].XP = users[i].XP - 100
+					users[i].XP = users[i].XP - 100*int(needXpForNewLevel)
 				}
+
+				var myltiplier = 1 + int(users[i].Level)*2
+
+				if myltiplier > 100 {
+					myltiplier = 100
+				}
+
+				users[i].Coins += 10 * myltiplier
+
 
 				saveUsers(users)
 
@@ -426,6 +469,8 @@ func main() {
 					"message": "Lesson completed",
 					"xp":      users[i].XP,
 					"level":   users[i].Level,
+					"coins":   users[i].Coins,
+					"need_xp": users[i].needXp,
 				})
 				return
 			}
@@ -467,24 +512,63 @@ func main() {
 	})
 
 	res.GET("/api/practice/:id", authMiddleware(), func(c *gin.Context) {
+
 		lessons, err := readLessons()
 		if err != nil {
-			c.JSON(500, gin.H{
-				"message": "Проблема открытия файла с уроками. Убедитесь, что файл существует и имеет правильный формат.",
-				"error": "Failed to read lessons",
-			})
+			c.JSON(500, gin.H{"error": "Failed to read lessons"})
 			return
 		}
-		
+
 		id := c.Param("id")
-		for _, lesson := range lessons {
-			if fmt.Sprintf("%d", lesson.ID) == id {
-				lesson.Practice = generatePractice(lesson.Symbols, 5)
-				c.JSON(200, lesson.Practice)
-				return
+
+		var selectedLesson *Lesson
+
+		for i := range lessons {
+			if fmt.Sprintf("%d", lessons[i].ID) == id {
+				selectedLesson = &lessons[i]
+				break
 			}
 		}
-		c.JSON(404, gin.H{"error": "Lesson not found", "message": "Урок не найден. Пожалуйста, проверьте ID урока."})
+
+		if selectedLesson == nil {
+			c.JSON(404, gin.H{"error": "Lesson not found"})
+			return
+		}
+
+		types := []string{"text", "audio", "morse"}
+		randomType := types[rand.Intn(len(types))]
+
+		word := generateRandomWord(selectedLesson.Symbols, 5)
+
+		var response PracticeResponse
+
+		switch randomType {
+
+		case "text":
+			response = PracticeResponse{
+				Type:     "text",
+				Question: word,
+				Answer:   word,
+			}
+
+		case "audio":
+			response = PracticeResponse{
+				Type:     "audio",
+				Question: word,
+				Answer:   word,
+			}
+
+		case "morse":
+			morse := textToMorse(word)
+
+			response = PracticeResponse{
+				Type:     "morse",
+				Question: morse,
+				Answer:   word,
+			}
+		}
+
+		c.JSON(200, response)
 	})
 
 	res.GET("/api/freemode", authMiddleware(), func(c *gin.Context) {
@@ -536,6 +620,47 @@ func main() {
 			"level":   userLevel,
 			"question": question,
 		})
+	})
+
+	res.POST("/api/freemode/complete", authMiddleware(), func(c *gin.Context) {
+		username := c.GetString("username")
+
+		users, err := readUsers()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read users", "details": err.Error(), "message": "Проблема открытия файла users.json. Убедитесь, что файл существует и имеет правильный формат."})
+			return
+		}
+		
+		for i, u := range users {
+			if u.Username == username {
+
+				users[i].Coins += 5
+
+				if err := saveUsers(users); err != nil {
+					c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error(), "message": "Проблема сохранения файла users.json. Убедитесь, что файл доступен для записи."})
+					return
+				}
+
+				users[i].XP += 10
+
+				needXpForNewLevel := 1 + float64(users[i].Level)*1.5
+				users[i].needXp = int(needXpForNewLevel * 100)
+
+				if users[i].XP >= 100*int(needXpForNewLevel) {
+					users[i].Level++
+					users[i].XP = users[i].XP - 100*int(needXpForNewLevel)
+				}
+
+				c.JSON(200, gin.H{
+					"message": "Correct answer! You've earned 5 coins and 10 XP.",
+					"coins":   users[i].Coins,
+					"xp":      users[i].XP,
+					"level":   users[i].Level,
+					"need_xp": users[i].needXp,
+				})
+				return
+			}}
+		c.JSON(404, gin.H{"error": "User not found", "message": "Пользователь не найден. Убедитесь, что вы используете правильный токен и что пользователь существует."})
 	})
 
 	res.GET("/api/shop", authMiddleware(), func(c *gin.Context) {
@@ -619,13 +744,8 @@ func main() {
 			"item":    selectedItem,
 			"coins":   users[userIndex].Coins,
 		})
-	})
 
-	res.POST("/api/complete-practice", authMiddleware(), func(c *gin.Context) {
-		username := c.GetString("username")
-		c.JSON(200, gin.H{
-			"message": "complete practice"
-		})
+
 	})
 
 	res.Run(":8080")
