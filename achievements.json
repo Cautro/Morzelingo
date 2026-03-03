@@ -1,0 +1,5 @@
+[{"ID": 1, "Name": "First Steps", "Description": "Complete your first lesson", "Reward": 100},
+ {"ID": 2, "Name": "Getting the Hang of It", "Description": "Complete 5 lessons", "Reward": 200},
+ {"ID": 3, "Name": "Morse Master", "Description": "Complete all lessons", "Reward": 500},
+ {"ID": 4, "Name": "Daily Streak", "Description": "Complete a lesson every day for a week", "Reward": 150},
+ {"ID": 5, "Name": "Coin Collector", "Description": "Earn 100 coins", "Reward": 300}]
