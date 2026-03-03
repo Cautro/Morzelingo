@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:morzelingo/pages/freemode_page.dart';
 import 'package:morzelingo/pages/login_page.dart';
-import 'package:morzelingo/pages/question_page.dart';
+import 'package:morzelingo/pages/profile_page.dart';
 
 class HomeTabsPage extends StatefulWidget {
   const HomeTabsPage({super.key});
@@ -14,8 +15,8 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
 
   // Список экранов для вкладок
   final List<Widget> _screens = [
-    QuestionPage(), // Вкладка 0
-    Center(child: Text("Профиль")), // Вкладка 1
+    FreemodePage(), // Вкладка 0
+    ProfilePage(), // Вкладка 1
     Center(child: Text("Настройки")), // Вкладка 2
   ];
 
