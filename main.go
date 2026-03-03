@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -68,6 +69,9 @@ type User struct {
 	Coins      int    `json:"coins"`
 	Items      []int  `json:"items"`
 	needXp     int    `json:"need_xp"`
+	Streak     int `json:"streak"`
+	LastLogin  string `json:"last_login"`
+	UnlockedAchievements []string `json:"UnlockedAchievements"`
 }
 
 type LoginInput struct {
@@ -93,6 +97,22 @@ type ShopItem struct {
 	ID    int
 	Name  string
 	Price int
+}
+
+type Achievement struct {
+    ID int
+    Name string
+    Description string
+    Reward int
+}
+
+func contains(slice []string, item string) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
 }
 
 func generateRandomWord(symbols []string, length int) string {
@@ -182,6 +202,17 @@ func readUsers() ([]User, error) {
 	var users []User
 	err = json.Unmarshal(file, &users)
 	return users, err
+}
+
+func readAchi() ([]Achievement, error) {
+	file, err := os.ReadFile("achievements.json")
+	if err != nil {
+		return nil, err
+	}
+
+	var achievements []Achievement
+	err = json.Unmarshal(file, &achievements)
+	return achievements, err
 }
 
 func readShop() ([]ShopItem, error) {
@@ -462,6 +493,8 @@ func main() {
 
 				users[i].Coins += 10 * myltiplier
 
+				users[i].Streak++
+				users[i].LastLogin = time.Now().Format("2006-01-02")
 
 				saveUsers(users)
 
@@ -659,11 +692,6 @@ func main() {
 
 				users[i].Coins += 5
 
-				if err := saveUsers(users); err != nil {
-					c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error(), "message": "Проблема сохранения файла users.json. Убедитесь, что файл доступен для записи."})
-					return
-				}
-
 				users[i].XP += 10
 
 				needXpForNewLevel := 1 + float64(users[i].Level)*1.5
@@ -672,6 +700,14 @@ func main() {
 				if users[i].XP >= 100*int(needXpForNewLevel) {
 					users[i].Level++
 					users[i].XP = users[i].XP - 100*int(needXpForNewLevel)
+				}
+
+				users[i].Streak++
+				users[i].LastLogin = time.Now().Format("2006-01-02")
+
+				if err := saveUsers(users); err != nil {
+					c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error(), "message": "Проблема сохранения файла users.json. Убедитесь, что файл доступен для записи."})
+					return
 				}
 
 				c.JSON(200, gin.H{
@@ -769,6 +805,105 @@ func main() {
 		})
 
 
+	})
+
+	res.GET("/api/achievements", authMiddleware(), func(c *gin.Context) {
+		achievements, err := readAchi()
+		if err != nil {
+			c.JSON(500, gin.H{
+				"message": "Проблема открытия файла достижений. Убедитесь, что файл существует и имеет правильный формат.",
+				"error": "Failed to read achievements",
+			})
+			return
+		}
+		c.JSON(200, achievements)
+	})
+
+	res.GET("/api/achievements/unlocked", authMiddleware(), func(c *gin.Context) {
+
+		// Получаем id из query
+		idStr := c.Query("id")
+		if idStr == "" {
+			c.JSON(400, gin.H{"error": "id is required"})
+			return
+		}
+
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Invalid id"})
+			return
+		}
+
+		username := c.GetString("username")
+
+		users, err := readUsers()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read users"})
+			return
+		}
+
+		achievements, err := readAchi()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read achievements"})
+			return
+		}
+
+		// Ищем пользователя
+		userIndex := -1
+		for i, u := range users {
+			if u.Username == username {
+				userIndex = i
+				break
+			}
+		}
+
+		if userIndex == -1 {
+			c.JSON(404, gin.H{"error": "User not found"})
+			return
+		}
+
+		// Ищем достижение
+		var selectedAchi *Achievement
+		for i := range achievements {
+			if achievements[i].ID == id {
+				selectedAchi = &achievements[i]
+				break
+			}
+		}
+
+		if selectedAchi == nil {
+			c.JSON(404, gin.H{"error": "Achievement not found"})
+			return
+		}
+
+		// Проверяем, не получал ли уже
+		if !contains(users[userIndex].UnlockedAchievements, selectedAchi.Name) {
+
+			users[userIndex].UnlockedAchievements = append(
+				users[userIndex].UnlockedAchievements,
+				selectedAchi.Name,
+			)
+
+			users[userIndex].Coins += selectedAchi.Reward
+
+			if err := saveUsers(users); err != nil {
+				c.JSON(500, gin.H{"error": "Failed to save users"})
+				return
+			}
+
+			c.JSON(200, gin.H{
+				"message":     "Achievement unlocked",
+				"achievement": selectedAchi,
+				"coins":       users[userIndex].Coins,
+			})
+			return
+		}
+
+		// Если уже разблокировано
+		c.JSON(200, gin.H{
+			"message": "Achievement already unlocked",
+			"coins":   users[userIndex].Coins,
+		})
 	})
 
 	res.Run(":8080")
