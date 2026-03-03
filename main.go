@@ -621,5 +621,12 @@ func main() {
 		})
 	})
 
+	res.POST("/api/complete-practice", authMiddleware(), func(c *gin.Context) {
+		username := c.GetString("username")
+		c.JSON(200, gin.H{
+			"message": "complete practice"
+		})
+	})
+
 	res.Run(":8080")
 }
