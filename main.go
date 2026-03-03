@@ -616,10 +616,33 @@ func main() {
 			question = generatePractice(symbols, 5)
 		}
 
-		c.JSON(200, gin.H{
-			"level":   userLevel,
-			"question": question,
-		})
+		mode := c.DefaultQuery("mode", "text")
+
+		switch mode {
+
+		case "text":
+			c.JSON(200, gin.H{
+				"level": userLevel,
+				"type": "text",
+				"question": question,
+				"answer": question,
+			})
+
+		case "morse":
+			morse := textToMorse(question)
+			c.JSON(200, gin.H{
+				"level": userLevel,
+				"type": "morse",
+				"question": morse,
+				"answer": question,
+			})
+
+		default:
+			c.JSON(400, gin.H{
+				"error": "Invalid mode",
+				"message": "Неверный режим. Пожалуйста, выберите 'text' или 'morse'.",
+			})
+		}
 	})
 
 	res.POST("/api/freemode/complete", authMiddleware(), func(c *gin.Context) {
