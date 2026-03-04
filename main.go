@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 	"time"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -48,15 +47,20 @@ var morseDictionary = map[string]string{
 	"Z": "--..",
 }
 
-type PracticeResponse struct {
-	Type     string `json:"type"`     
-	Question string `json:"question"` 
-	Answer   string `json:"answer"` 
-}
 
 var defaultLessons = []Lesson{
 	{ID: 1, Title: "Буквы A и B", Theory: "A = .- , B = -...", Symbols: []string{"A","B"}, XPReward: 50},
 	{ID: 2, Title: "Добавляем C", Theory: "C = -.-.", Symbols: []string{"A","B","C"}, XPReward: 50},
+}
+
+type PracticeQuestion struct {
+	Type     string   `json:"type"`
+	Question string `json:"question"`
+	Answer   string   `json:"answer"`
+}
+
+type PracticeResponse struct {
+	Questions []PracticeQuestion `json:"questions"`
 }
 
 type User struct {
@@ -104,6 +108,60 @@ type Achievement struct {
     Name string
     Description string
     Reward int
+}
+
+func checkAchievements(user *User) ([]Achievement, error) {
+
+	achievements, err := readAchi()
+	if err != nil {
+		return nil, err
+	}
+
+	var unlockedNow []Achievement
+
+	for _, ach := range achievements {
+		if contains(user.UnlockedAchievements, ach.Name) {
+			continue
+		}
+
+		unlock := false
+
+		switch ach.ID {
+
+		case 1:
+			if user.LessonDone >= 1 {
+				unlock = true
+			}
+
+		case 2:
+			if user.LessonDone >= 5 {
+				unlock = true
+			}
+
+		case 3:
+			if user.XP >= 100 {
+				unlock = true
+			}
+
+		case 4:
+			if user.Level >= 5 {
+				unlock = true
+			}
+
+		case 5:
+			if user.Streak >= 7 {
+				unlock = true
+			}
+		}
+
+		if unlock {
+			user.UnlockedAchievements = append(user.UnlockedAchievements, ach.Name)
+			user.Coins += ach.Reward
+			unlockedNow = append(unlockedNow, ach)
+		}
+	}
+
+	return unlockedNow, nil
 }
 
 func contains(slice []string, item string) bool {
@@ -474,6 +532,12 @@ func main() {
 					return
 				}
 
+				newAchievements, err := checkAchievements(&users[i])
+				if err != nil {
+					c.JSON(500, gin.H{"error": "Failed to check achievements"})
+					return
+				}
+
 				users[i].LessonDone++
 				users[i].XP += Lessons[input.LessonID-1].XPReward 
 				
@@ -496,7 +560,10 @@ func main() {
 				users[i].Streak++
 				users[i].LastLogin = time.Now().Format("2006-01-02")
 
-				saveUsers(users)
+				if err := saveUsers(users); err != nil {
+					c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error(), "message": "Проблема сохранения файла users.json. Убедитесь, что файл доступен для записи."})
+					return
+				}
 
 				c.JSON(200, gin.H{
 					"message": "Lesson completed",
@@ -504,6 +571,7 @@ func main() {
 					"level":   users[i].Level,
 					"coins":   users[i].Coins,
 					"need_xp": users[i].needXp,
+					"new_achievements": newAchievements,
 				})
 				return
 			}
@@ -568,37 +636,44 @@ func main() {
 			return
 		}
 
-		types := []string{"text", "audio", "morse"}
-		randomType := types[rand.Intn(len(types))]
+		types := []string{"text", "morse", "audio"}
 
-		word := generateRandomWord(selectedLesson.Symbols, 5)
+		var questions []PracticeQuestion
+		for i := 0; i < 20; i++ {
 
-		var response PracticeResponse
+			randomType := types[rand.Intn(len(types))]
 
-		switch randomType {
+			correctWord := generateRandomWord(selectedLesson.Symbols, 1)
 
-		case "text":
-			response = PracticeResponse{
-				Type:     "text",
-				Question: word,
-				Answer:   word,
+			switch randomType {
+
+			case "text":
+				questions = append(questions, PracticeQuestion{
+					Type:     "text",
+					Question: correctWord,
+					Answer:   correctWord,
+				})
+
+			case "morse":
+				correctWordMorse := textToMorse(correctWord)
+
+				questions = append(questions, PracticeQuestion{
+					Type:     "morse",
+					Question: correctWordMorse,
+					Answer:   correctWord,
+				})
+
+			case "audio":
+				questions = append(questions, PracticeQuestion{
+					Type:     "audio",
+					Question: correctWord,
+					Answer:   correctWord,
+				})
 			}
+		}
 
-		case "audio":
-			response = PracticeResponse{
-				Type:     "audio",
-				Question: word,
-				Answer:   word,
-			}
-
-		case "morse":
-			morse := textToMorse(word)
-
-			response = PracticeResponse{
-				Type:     "morse",
-				Question: morse,
-				Answer:   word,
-			}
+		response := PracticeResponse{
+			Questions: questions,
 		}
 
 		c.JSON(200, response)
@@ -817,93 +892,6 @@ func main() {
 			return
 		}
 		c.JSON(200, achievements)
-	})
-
-	res.GET("/api/achievements/unlocked", authMiddleware(), func(c *gin.Context) {
-
-		// Получаем id из query
-		idStr := c.Query("id")
-		if idStr == "" {
-			c.JSON(400, gin.H{"error": "id is required"})
-			return
-		}
-
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid id"})
-			return
-		}
-
-		username := c.GetString("username")
-
-		users, err := readUsers()
-		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to read users"})
-			return
-		}
-
-		achievements, err := readAchi()
-		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to read achievements"})
-			return
-		}
-
-		// Ищем пользователя
-		userIndex := -1
-		for i, u := range users {
-			if u.Username == username {
-				userIndex = i
-				break
-			}
-		}
-
-		if userIndex == -1 {
-			c.JSON(404, gin.H{"error": "User not found"})
-			return
-		}
-
-		// Ищем достижение
-		var selectedAchi *Achievement
-		for i := range achievements {
-			if achievements[i].ID == id {
-				selectedAchi = &achievements[i]
-				break
-			}
-		}
-
-		if selectedAchi == nil {
-			c.JSON(404, gin.H{"error": "Achievement not found"})
-			return
-		}
-
-		// Проверяем, не получал ли уже
-		if !contains(users[userIndex].UnlockedAchievements, selectedAchi.Name) {
-
-			users[userIndex].UnlockedAchievements = append(
-				users[userIndex].UnlockedAchievements,
-				selectedAchi.Name,
-			)
-
-			users[userIndex].Coins += selectedAchi.Reward
-
-			if err := saveUsers(users); err != nil {
-				c.JSON(500, gin.H{"error": "Failed to save users"})
-				return
-			}
-
-			c.JSON(200, gin.H{
-				"message":     "Achievement unlocked",
-				"achievement": selectedAchi,
-				"coins":       users[userIndex].Coins,
-			})
-			return
-		}
-
-		// Если уже разблокировано
-		c.JSON(200, gin.H{
-			"message": "Achievement already unlocked",
-			"coins":   users[userIndex].Coins,
-		})
 	})
 
 	res.Run(":8080")
