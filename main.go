@@ -559,6 +559,7 @@ func main() {
 					"level":       u.Level,
 					"coins":       u.Coins,
 					"items":       u.Items,
+					"streak":      u.Streak,
 					"message":     "Профиль успешно загружен.",
 				})
 				return
