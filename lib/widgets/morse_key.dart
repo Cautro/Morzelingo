@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:async';
+import 'package:morzelingo/app_theme.dart';
 
 typedef MorseCallback = void Function(String decodedText);
 
@@ -57,7 +58,7 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
     pauseTimer?.cancel();
     pauseTimer = Timer(const Duration(milliseconds: 900), _finishLetter);
   }
-
+  
   void _finishLetter() {
     String? letter = morseToText[currentMorse];
     if (letter != null) {
@@ -186,10 +187,33 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
             SizedBox(height: 16),
 
             /// Очистка
-            TextButton(
-              onPressed: _clear,
-              child: const Text("Очистить"),
-            ),
+            Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.textSecondary
+                      ),
+                      onPressed: _clear,
+                      child: Text("Очистить",),
+                    ),
+                  ),
+                  SizedBox(width: 8,),
+                  SizedBox(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+                        onPressed: () {
+                          setState(() {
+                            decodedText = decodedText.substring(0, decodedText.length - 1);
+                          });
+                        },
+                        child: Icon(Icons.backspace),
+                    ),
+                    width: 50,
+                  )
+
+                ],
+              )
           ],
         ),
       ),

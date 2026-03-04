@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:morzelingo/pages/freemode_page.dart';
+import 'package:morzelingo/pages/education_page.dart';
+import 'package:morzelingo/pages/freemode_text_page.dart';
 import 'package:morzelingo/pages/login_page.dart';
 import 'package:morzelingo/pages/profile_page.dart';
+import '../app_theme.dart';
+import 'freemode_page.dart';
 
 class HomeTabsPage extends StatefulWidget {
   const HomeTabsPage({super.key});
@@ -16,33 +19,52 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
   // Список экранов для вкладок
   final List<Widget> _screens = [
     FreemodePage(), // Вкладка 0
+    EducationPage(),
     ProfilePage(), // Вкладка 1
-    Center(child: Text("Настройки")), // Вкладка 2
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_currentIndex], // показываем выбранный экран
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
           setState(() {
-            _currentIndex = index; // переключаем экран
+            _currentIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.keyboard),
-            label: "Вопросы",
+        indicatorColor: AppTheme.primary.withOpacity(0.15),
+        destinations: [
+          NavigationDestination(
+            icon: Icon(
+              Icons.keyboard,
+              size: 30,
+              color: _currentIndex == 0
+                  ? AppTheme.primary
+                  : Colors.grey,
+            ),
+            label: '',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Профиль",
+          NavigationDestination(
+            icon: Icon(
+              Icons.school,
+              size: 30,
+              color: _currentIndex == 1
+                  ? AppTheme.primary
+                  : Colors.grey,
+            ),
+            label: '',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "Настройки",
+          NavigationDestination(
+            icon: Icon(
+              Icons.person,
+              size: 30,
+              color: _currentIndex == 2
+                  ? AppTheme.primary
+                  : Colors.grey,
+            ),
+            label: '',
           ),
         ],
       ),

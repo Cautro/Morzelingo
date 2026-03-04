@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/config.dart';
 import 'package:morzelingo/storage_context.dart';
 
@@ -49,7 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
       await StorageService.setItem("token", data["token"]);
       Fluttertoast.showToast(
           msg: "Регистрация успешна",
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.success,
           textColor: Colors.white
       );
       print(data);
@@ -57,7 +58,7 @@ class _RegisterPageState extends State<RegisterPage> {
     } else {
       Fluttertoast.showToast(
           msg: data["error"],
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.error,
           textColor: Colors.white
       );
       print(res.body);
