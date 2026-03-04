@@ -358,16 +358,14 @@ func generatePractice(symbols []string, length int) string {
 	return result
 }
 
-func getHardSymbols(user User) []string {
-	var hard []string
-
-	for _, s := range user.SymbolStats {
-		if s.Wrong > 5 {
-			hard = append(hard, s.Symbol)
-		}
-	}
-
-	return hard
+func getHardSymbols(stats []SymbolStat) []string {
+    var hard []string
+    for _, s := range stats {
+        if s.Wrong > 5 {
+            hard = append(hard, s.Symbol)
+        }
+    }
+    return hard
 }
 
 func registerWrong(user *User, symbol string) {
@@ -725,6 +723,29 @@ func main() {
 			return
 		}
 
+		hardSymbols := getHardSymbols(user.SymbolStats)
+		symbolSet := make(map[string]bool)
+		for _, s := range selectedLesson.Symbols {
+			symbolSet[s] = true
+		}
+
+		added := 0
+		for _, s := range hardSymbols {
+			if !symbolSet[s] {
+				symbolSet[s] = true
+				added++
+				if added >= 3 {
+					break
+				}
+			}
+		}
+
+		practiceSymbols := make([]string, 0, len(symbolSet))
+		for s := range symbolSet {
+			practiceSymbols = append(practiceSymbols, s)
+		}
+
+
 		types := []string{"text", "morse", "audio"}
 
 		var questions []PracticeQuestion
@@ -732,7 +753,7 @@ func main() {
 
 			randomType := types[rand.Intn(len(types))]
 
-			correctWord := weightedRandom(selectedLesson.Symbols, user.SymbolStats)
+			correctWord := weightedRandom(practiceSymbols, user.SymbolStats)
 			fmt.Println("Selected word:", correctWord)
 			fmt.Println("User stats:", user.SymbolStats)
 
@@ -789,7 +810,6 @@ func main() {
 
 		for i, u := range users {
 			if u.Username == username {
-				// Проходим по всем полученным символам
 				for _, upd := range updates {
 					found := false
 					for j, stat := range users[i].SymbolStats {
@@ -801,7 +821,6 @@ func main() {
 						}
 					}
 					if !found {
-						// Если статистики для символа ещё нет – добавляем
 						users[i].SymbolStats = append(users[i].SymbolStats, SymbolStat{
 							Symbol:  upd.Symbol,
 							Correct: upd.Correct,
@@ -810,7 +829,6 @@ func main() {
 					}
 				}
 
-				// Сохраняем обновлённого пользователя
 				if err := saveUsers(users); err != nil {
 					c.JSON(500, gin.H{"error": "Failed to save users"})
 					return
