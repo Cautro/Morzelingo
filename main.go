@@ -10,8 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/time/rate"
 )
 
@@ -59,15 +59,29 @@ type SymbolUpdate struct {
     Wrong   int    `json:"wrong"`
 }
 
+type AnswerCheck struct {
+	Correct bool `json:"correct"`
+}
+
 type PracticeQuestion struct {
 	Type     string   `json:"type"`
 	Question string `json:"question"`
 	Answer   string   `json:"answer"`
 }
 
+type LettersQuestion struct {
+	Type     string   `json:"type"`
+	Question string `json:"question"`
+}
+
 type PracticeResponse struct {
 	Questions []PracticeQuestion `json:"questions"`
 }
+
+type LettersResponse struct {
+	Questions []LettersQuestion `json:"questions"`
+}
+
 
 type User struct {
 	Username   string `json:"username"`
@@ -80,6 +94,7 @@ type User struct {
 	Items      []int  `json:"items"`
 	needXp     int    `json:"need_xp"`
 	Streak     int `json:"streak"`
+	answerStreak int `json:"answer_streak"`
 	LastLogin  string `json:"last_login"`
 	UnlockedAchievements []string `json:"UnlockedAchievements"`
 	SymbolStats []SymbolStat `json:"symbol_stats"`
@@ -414,6 +429,33 @@ func weightedRandom(symbols []string, stats []SymbolStat) string {
 	return symbols[0]
 }
 
+func updateStreak(user *User) {
+
+	today := time.Now().UTC().Format("2006-01-02")
+
+	// если уже сегодня заходил
+	if user.LastLogin == today {
+		return
+	}
+
+	// lastDate, err := time.Parse("2006-01-02", user.LastLogin)
+	// if err != nil {
+	// 	user.Streak = 1
+	// 	user.LastLogin = today
+	// 	return
+	// }
+
+	yesterday := time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02")
+
+	if user.LastLogin == yesterday {
+		user.Streak++
+	} else {
+		user.Streak = 1
+	}
+
+	user.LastLogin = today
+}
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	godotenv.Load()
@@ -559,7 +601,6 @@ func main() {
 					"level":       u.Level,
 					"coins":       u.Coins,
 					"items":       u.Items,
-					"streak":      u.Streak,
 					"message":     "Профиль успешно загружен.",
 				})
 				return
@@ -612,6 +653,7 @@ func main() {
 				
 				needXpForNewLevel := 1 + float64(users[i].Level)*1.5
 				users[i].needXp = int(needXpForNewLevel * 100)
+				updateStreak(&users[i])
 
 				if users[i].XP >= 100*int(needXpForNewLevel) {
 					users[i].Level++
@@ -641,6 +683,7 @@ func main() {
 					"coins":   users[i].Coins,
 					"need_xp": users[i].needXp,
 					"new_achievements": newAchievements,
+					"streak": users[i].Streak,
 				})
 				return
 			}
@@ -794,6 +837,51 @@ func main() {
 		c.JSON(200, response)
 	})
 
+	res.POST("/api/practice", authMiddleware(), func(c *gin.Context) {
+		letters := c.Query("letters")
+
+		types := []string{"text", "morse", "audio"}
+
+		var questions []LettersQuestion
+		for i := 0; i < 20; i++ {
+
+			randomType := types[rand.Intn(len(types))]
+			randomNumberOfSymbols := rand.Intn(3) + 1
+
+			correctWord := generatePractice([]string{letters}, randomNumberOfSymbols)
+
+			switch randomType {
+
+			case "text":
+				questions = append(questions, LettersQuestion{
+					Type:     "text",
+					Question: correctWord,
+				})
+
+			case "morse":
+				correctWordMorse := textToMorse(correctWord)
+
+				questions = append(questions, LettersQuestion{
+					Type:     "morse",
+					Question: correctWordMorse,
+				})
+
+			case "audio":
+				correctWordMorse := textToMorse(correctWord)
+
+				questions = append(questions, LettersQuestion{
+					Type:     "audio",
+					Question: correctWordMorse,
+				})
+			}
+		}
+
+		response := LettersResponse{
+			Questions: questions,
+		}
+		c.JSON(200, response)
+	})
+
 	res.POST("/api/practice/submit", authMiddleware(), func(c *gin.Context) {
 		username := c.GetString("username")
 		var updates []SymbolUpdate
@@ -932,6 +1020,8 @@ func main() {
 
 				users[i].XP += 10
 
+				
+
 				needXpForNewLevel := 1 + float64(users[i].Level)*1.5
 				users[i].needXp = int(needXpForNewLevel * 100)
 
@@ -940,8 +1030,8 @@ func main() {
 					users[i].XP = users[i].XP - 100*int(needXpForNewLevel)
 				}
 
-				users[i].Streak++
-				users[i].LastLogin = time.Now().Format("2006-01-02")
+				updateStreak(&users[i])
+
 
 				if err := saveUsers(users); err != nil {
 					c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error(), "message": "Проблема сохранения файла users.json. Убедитесь, что файл доступен для записи."})
@@ -954,6 +1044,7 @@ func main() {
 					"xp":      users[i].XP,
 					"level":   users[i].Level,
 					"need_xp": users[i].needXp,
+					"streak":  users[i].Streak,
 				})
 				return
 			}}
@@ -1055,6 +1146,46 @@ func main() {
 			return
 		}
 		c.JSON(200, achievements)
+	})
+
+	res.POST("/api/checker-practice", authMiddleware(), func(c *gin.Context) {
+
+		var input AnswerCheck
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(400, gin.H{"error": "invalid input"})
+			return
+		}
+
+		username := c.MustGet("username").(string)
+
+		users, err := readUsers()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read users"})
+			return
+		}
+
+		for i := range users {
+
+			if users[i].Username == username {
+
+				if input.Correct {
+					users[i].answerStreak++
+				} else {
+					users[i].answerStreak = 0
+				}
+
+				saveUsers(users)
+
+				c.JSON(200, gin.H{
+					"answer_streak": users[i].answerStreak,
+				})
+
+				return
+			}
+		}
+
+		c.JSON(404, gin.H{"error": "user not found"})
 	})
 
 	res.Run(":8080")
