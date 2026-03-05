@@ -615,6 +615,7 @@ func main() {
 					"coins":       u.Coins,
 					"items":       u.Items,
 					"message":     "Профиль успешно загружен.",
+					"streak":      u.Streak,
 				})
 				return
 			}
@@ -801,7 +802,7 @@ func main() {
 
 
 		types := []string{"text", "morse", "audio"}
-
+		
 		var questions []PracticeQuestion
 		for i := 0; i < 20; i++ {
 
