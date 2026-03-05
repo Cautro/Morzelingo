@@ -615,7 +615,7 @@ func main() {
 					"coins":       u.Coins,
 					"items":       u.Items,
 					"message":     "Профиль успешно загружен.",
-					"streak":      u.Streak,
+					"streak":      u.streak,
 				})
 				return
 			}
