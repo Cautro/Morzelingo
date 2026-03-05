@@ -19,32 +19,32 @@ var supersecretkey string
 var loginLimiters = make(map[string]*rate.Limiter)
 
 var morseDictionary = map[string]string{
-	"A": ".-",
-	"B": "-...",
-	"C": "-.-.",
-	"D": "-..",
-	"E": ".",
-	"F": "..-.",
-	"G": "--.",
-	"H": "....",
-	"I": "..",
-	"J": ".---",
-	"K": "-.-",
-	"L": ".-..",
-	"M": "--",
-	"N": "-.",
-	"O": "---",
-	"P": ".--.",
-	"Q": "--.-",
-	"R": ".-.",
-	"S": "...",
-	"T": "-",
-	"U": "..-",
-	"V": "...-",
-	"W": ".--",
-	"X": "-..-",
-	"Y": "-.--",
-	"Z": "--..",
+	"A": "•—",
+	"B": "—•••",
+	"C": "—•—•",
+	"D": "—••",
+	"E": "•",
+	"F": "••—•",
+	"G": "——•",
+	"H": "••••",
+	"I": "••",
+	"J": "•———",
+	"K": "—•—",
+	"L": "•—••",
+	"M": "——",
+	"N": "—•",
+	"O": "———",
+	"P": "•——•",
+	"Q": "——•—",
+	"R": "•—•",
+	"S": "•••",
+	"T": "—",
+	"U": "••—",
+	"V": "•••—",
+	"W": "•——",
+	"X": "—••—",
+	"Y": "—•——",
+	"Z": "——••",
 }
 
 
@@ -92,9 +92,9 @@ type User struct {
 	Level      int    `json:"level"`
 	Coins      int    `json:"coins"`
 	Items      []int  `json:"items"`
-	needXp     int    `json:"need_xp"`
+	NeedXp     int    `json:"need_xp"`
 	Streak     int `json:"streak"`
-	answerStreak int `json:"answer_streak"`
+	AnswerStreak int `json:"answer_streak"`
 	LastLogin  string `json:"last_login"`
 	UnlockedAchievements []string `json:"UnlockedAchievements"`
 	SymbolStats []SymbolStat `json:"symbol_stats"`
@@ -652,7 +652,7 @@ func main() {
 				users[i].XP += Lessons[input.LessonID-1].XPReward 
 				
 				needXpForNewLevel := 1 + float64(users[i].Level)*1.5
-				users[i].needXp = int(needXpForNewLevel * 100)
+				users[i].NeedXp = int(needXpForNewLevel * 100)
 				updateStreak(&users[i])
 
 				if users[i].XP >= 100*int(needXpForNewLevel) {
@@ -681,7 +681,7 @@ func main() {
 					"xp":      users[i].XP,
 					"level":   users[i].Level,
 					"coins":   users[i].Coins,
-					"need_xp": users[i].needXp,
+					"need_xp": users[i].NeedXp,
 					"new_achievements": newAchievements,
 					"streak": users[i].Streak,
 				})
@@ -1023,7 +1023,7 @@ func main() {
 				
 
 				needXpForNewLevel := 1 + float64(users[i].Level)*1.5
-				users[i].needXp = int(needXpForNewLevel * 100)
+				users[i].NeedXp = int(needXpForNewLevel * 100)
 
 				if users[i].XP >= 100*int(needXpForNewLevel) {
 					users[i].Level++
@@ -1043,7 +1043,7 @@ func main() {
 					"coins":   users[i].Coins,
 					"xp":      users[i].XP,
 					"level":   users[i].Level,
-					"need_xp": users[i].needXp,
+					"need_xp": users[i].NeedXp,
 					"streak":  users[i].Streak,
 				})
 				return
@@ -1170,15 +1170,15 @@ func main() {
 			if users[i].Username == username {
 
 				if input.Correct {
-					users[i].answerStreak++
+					users[i].AnswerStreak++
 				} else {
-					users[i].answerStreak = 0
+					users[i].AnswerStreak = 0
 				}
 
 				saveUsers(users)
 
 				c.JSON(200, gin.H{
-					"answer_streak": users[i].answerStreak,
+					"answer_streak": users[i].AnswerStreak,
 				})
 
 				return
