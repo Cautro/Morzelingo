@@ -376,7 +376,7 @@ func generatePractice(symbols []string, length int) string {
 func getHardSymbols(stats []SymbolStat) []string {
     var hard []string
     for _, s := range stats {
-        if s.Wrong > 5 {
+        if s.Wrong >= 2 {
             hard = append(hard, s.Symbol)
         }
     }
@@ -398,20 +398,31 @@ func registerWrong(user *User, symbol string) {
 }
 
 func weightedRandom(symbols []string, stats []SymbolStat) string {
-	weights := make(map[string]int)
 
+	weights := make(map[string]int)
 	totalWeight := 0
 
-	for _, s := range symbols {
-		weight := 1 
+	for _, symbol := range symbols {
 
-		for _, st := range stats {
-			if st.Symbol == s {
-				weight += st.Wrong * 3
+		weight := 10
+
+		for _, stat := range stats {
+			if stat.Symbol == symbol {
+
+				weight = 10 + stat.Wrong*5 - stat.Correct*3
+
 			}
 		}
 
-		weights[s] = weight
+		if weight < 1 {
+			weight = 1
+		}
+
+		if weight > 15 {
+			weight = 15
+		}
+
+		weights[symbol] = weight
 		totalWeight += weight
 	}
 
@@ -420,13 +431,15 @@ func weightedRandom(symbols []string, stats []SymbolStat) string {
 	current := 0
 
 	for symbol, weight := range weights {
+
 		current += weight
+
 		if r < current {
 			return symbol
 		}
 	}
 
-	return symbols[0]
+	return symbols[rand.Intn(len(symbols))]
 }
 
 func updateStreak(user *User) {
@@ -778,9 +791,6 @@ func main() {
 			if !symbolSet[s] {
 				symbolSet[s] = true
 				added++
-				if added >= 3 {
-					break
-				}
 			}
 		}
 
