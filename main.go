@@ -84,20 +84,32 @@ type LettersResponse struct {
 
 
 type User struct {
-	Username   string `json:"username"`
-	Email      string `json:"email"`
-	Password   string `json:"password"`
-	XP         int    `json:"xp"`
-	LessonDone int    `json:"lesson_done"`
-	Level      int    `json:"level"`
-	Coins      int    `json:"coins"`
-	Items      []int  `json:"items"`
-	NeedXp     int    `json:"need_xp"`
-	Streak     int `json:"streak"`
-	AnswerStreak int `json:"answer_streak"`
-	LastLogin  string `json:"last_login"`
+	Username             string `json:"username"`
+	Email                string `json:"email"`
+	Password             string `json:"password"`
+	XP                   int    `json:"xp"`
+	LessonDone           int    `json:"lesson_done"`
+	Level                int    `json:"level"`
+	Coins                int    `json:"coins"`
+	Items                []int  `json:"items"`
+	NeedXp               int    `json:"need_xp"`
+	Streak               int `json:"streak"`
+	LastStreak           int `json:"last_streak"`
+	AnswerStreak         int `json:"answer_streak"`
+	LastLogin            string `json:"last_login"`
 	UnlockedAchievements []string `json:"UnlockedAchievements"`
-	SymbolStats []SymbolStat `json:"symbol_stats"`
+	SymbolStats          []SymbolStat `json:"symbol_stats"`
+	ReferralCode         string `json:"referral_code"`
+	ReferredBy           string `json:"referred_by"`
+	ReferralCount        int `json:"referred_count"`
+	Friends 			 []string `json:"friends"`
+}
+
+type FriendshipStreak struct {
+    User1          string `json:"user1"`
+    User2          string `json:"user2"`
+    Streak         int   `json:"streak"`
+    LastActive     string `json:"last_active"` 
 }
 
 type LoginInput struct {
@@ -443,20 +455,12 @@ func weightedRandom(symbols []string, stats []SymbolStat) string {
 }
 
 func updateStreak(user *User) {
-
+	user.LastStreak = user.Streak
 	today := time.Now().UTC().Format("2006-01-02")
 
-	// если уже сегодня заходил
 	if user.LastLogin == today {
 		return
 	}
-
-	// lastDate, err := time.Parse("2006-01-02", user.LastLogin)
-	// if err != nil {
-	// 	user.Streak = 1
-	// 	user.LastLogin = today
-	// 	return
-	// }
 
 	yesterday := time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02")
 
@@ -467,6 +471,121 @@ func updateStreak(user *User) {
 	}
 
 	user.LastLogin = today
+}
+
+func generateReferralCode() string {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, 8)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
+func updateFriendshipStreak(user1, user2 string) error {
+	streaks, err := readFriendshipStreaks()
+	if err != nil {
+		return err
+	}
+
+	today := time.Now().UTC().Format("2006-01-02")
+	var found *int
+	for i, s := range streaks {
+		if (s.User1 == user1 && s.User2 == user2) || (s.User1 == user2 && s.User2 == user1) {
+			found = &i
+			break
+		}
+	}
+
+	if found != nil {
+		// уже есть запись
+		s := &streaks[*found]
+		if s.LastActive == today {
+			// уже обновляли сегодня
+			return nil
+		}
+		yesterday := time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02")
+		if s.LastActive == yesterday {
+			s.Streak++
+		} else {
+			s.Streak = 1
+		}
+		s.LastActive = today
+	} else {
+		// новая пара
+		streaks = append(streaks, FriendshipStreak{
+			User1:      user1,
+			User2:      user2,
+			Streak:     1,
+			LastActive: today,
+		})
+	}
+
+	return saveFriendshipStreaks(streaks)
+}
+
+func readFriendshipStreaks() ([]FriendshipStreak, error) {
+	file, err := os.ReadFile("friendship_streaks.json")
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []FriendshipStreak{}, nil
+		}
+		return nil, err
+	}
+	var streaks []FriendshipStreak
+	err = json.Unmarshal(file, &streaks)
+	return streaks, err
+}
+
+func saveFriendshipStreaks(streaks []FriendshipStreak) error {
+	data, err := json.MarshalIndent(streaks, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile("friendship_streaks.json", data, 0644)
+}
+
+func updateAllFriendshipStreaks(username string) error {
+	users, err := readUsers()
+	if err != nil {
+		return err
+	}
+	var currentUser *User
+	for i := range users {
+		if users[i].Username == username {
+			currentUser = &users[i]
+			break
+		}
+	}
+	if currentUser == nil {
+		return fmt.Errorf("user not found")
+	}
+	if len(currentUser.Friends) == 0 {
+		return nil // не с кем обновлять
+	}
+
+	// Для каждого друга проверяем, был ли он сегодня активен
+	today := time.Now().UTC().Format("2006-01-02")
+	for _, friend := range currentUser.Friends {
+		var friendUser *User
+		for i := range users {
+			if users[i].Username == friend {
+				friendUser = &users[i]
+				break
+			}
+		}
+		if friendUser == nil {
+			continue
+		}
+		// Если друг тоже сегодня заходил (LastLogin == today)
+		if friendUser.LastLogin == today {
+			// обновляем совместный стрик
+			if err := updateFriendshipStreak(username, friend); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func main() {
@@ -509,6 +628,31 @@ func main() {
 				return
 			}
 		}
+
+		if user.ReferralCode == "" {
+			user.ReferralCode = generateReferralCode()
+		}
+		if user.ReferralCode != "" {
+			var inviter *User
+			for i, u := range users {
+				if u.ReferralCode == user.ReferralCode {
+					inviter = &users[i]
+					break
+				}
+			}
+			if inviter == nil {
+				c.JSON(400, gin.H{"error": "Invalid referral code", "message": "Реферальный код не найден."})
+				return
+			}
+
+			user.ReferredBy = inviter.Username
+			user.Friends = append(user.Friends, inviter.Username)
+			inviter.Friends = append(inviter.Friends, user.Username) 
+			inviter.ReferralCount++
+			inviter.Coins += 50
+			user.Coins += 25 
+		}
+
 
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 		user.Password = string(hashedPassword)
@@ -688,6 +832,11 @@ func main() {
 				if err := saveUsers(users); err != nil {
 					c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error(), "message": "Проблема сохранения файла users.json. Убедитесь, что файл доступен для записи."})
 					return
+				}
+
+				if err := updateAllFriendshipStreaks(username); err != nil {
+					// логируем ошибку, но не прерываем ответ
+					fmt.Println("Error updating friendship streaks:", err)
 				}
 
 				c.JSON(200, gin.H{
@@ -934,6 +1083,11 @@ func main() {
 					return
 				}
 
+				if err := updateAllFriendshipStreaks(username); err != nil {
+					// логируем ошибку, но не прерываем ответ
+					fmt.Println("Error updating friendship streaks:", err)
+				}
+
 				c.JSON(200, gin.H{"message": "Statistics updated"})
 				return
 			}
@@ -1047,6 +1201,11 @@ func main() {
 				if err := saveUsers(users); err != nil {
 					c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error(), "message": "Проблема сохранения файла users.json. Убедитесь, что файл доступен для записи."})
 					return
+				}
+
+				if err := updateAllFriendshipStreaks(username); err != nil {
+					// логируем ошибку, но не прерываем ответ
+					fmt.Println("Error updating friendship streaks:", err)
 				}
 
 				c.JSON(200, gin.H{
@@ -1197,6 +1356,96 @@ func main() {
 		}
 
 		c.JSON(404, gin.H{"error": "user not found"})
+	})
+
+	res.GET("/api/referral", authMiddleware(), func(c *gin.Context) {
+		username := c.GetString("username")
+
+		users, err := readUsers()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read users", "details": err.Error(), "message": "Проблема открытия файла users.json. Убедитесь, что файл существует и имеет правильный формат."})
+			return
+		}
+
+		for _, u := range users {
+			if u.Username == username {
+				c.JSON(200, gin.H{
+					"referral_code": u.ReferralCode,
+					"referred_by": u.ReferredBy,
+					"referral_count": u.ReferralCount,
+				})
+				return
+			}
+		}
+
+		c.JSON(404, gin.H{"error": "user not found", "message": "Пользователь не найден. Убедитесь, что вы используете правильный токен и что пользователь существует."})
+	})
+
+	res.GET("/api/friends", authMiddleware(), func(c *gin.Context) {
+		username := c.GetString("username")
+
+		users, err := readUsers()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read users"})
+			return
+		}
+		streaks, err := readFriendshipStreaks()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read streaks"})
+			return
+		}
+
+		var currentUser *User
+		for _, u := range users {
+			if u.Username == username {
+				currentUser = &u
+				break
+			}
+		}
+		if currentUser == nil {
+			c.JSON(404, gin.H{"error": "User not found"})
+			return
+		}
+
+		type friendInfo struct {
+			Username      string `json:"username"`
+			Streak        int    `json:"streak"`
+			LastActive    string `json:"last_active"`
+			IndividualStreak int `json:"individual_streak"`
+		}
+		friendsList := []friendInfo{}
+
+		for _, friend := range currentUser.Friends {
+			// найдём пользователя-друга
+			var friendUser *User
+			for _, u := range users {
+				if u.Username == friend {
+					friendUser = &u
+					break
+				}
+			}
+			if friendUser == nil {
+				continue
+			}
+			// найдём совместный стрик
+			streak := 0
+			lastActive := ""
+			for _, s := range streaks {
+				if (s.User1 == username && s.User2 == friend) || (s.User1 == friend && s.User2 == username) {
+					streak = s.Streak
+					lastActive = s.LastActive
+					break
+				}
+			}
+			friendsList = append(friendsList, friendInfo{
+				Username:      friend,
+				Streak:        streak,
+				LastActive:    lastActive,
+				IndividualStreak: friendUser.Streak,
+			})
+		}
+
+		c.JSON(200, gin.H{"friends": friendsList})
 	})
 
 	res.Run(":8080")
