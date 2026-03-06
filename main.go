@@ -606,24 +606,57 @@ func updateAllFriendshipStreaks(username string) error {
 }
 
 func addToFriends(username string) error {
+
 	users, err := readUsers()
 	if err != nil {
 		return err
 	}
+
 	var currentUser *User
+	var inviter *User
+
+	// находим текущего пользователя
 	for i := range users {
 		if users[i].Username == username {
 			currentUser = &users[i]
 			break
 		}
 	}
+
 	if currentUser == nil {
 		return fmt.Errorf("user not found")
 	}
 
-	friends := currentUser.Friends
-	RefBy := currentUser.ReferredBy
+	// если нет реферала — выходим
+	if currentUser.ReferredBy == "" {
+		return nil
+	}
 
+	// ищем пригласившего по коду
+	for i := range users {
+		if users[i].ReferralCode == currentUser.ReferredBy {
+			inviter = &users[i]
+			break
+		}
+	}
+
+	if inviter == nil {
+		return fmt.Errorf("inviter not found")
+	}
+
+	// добавляем текущего пользователя в друзья пригласившего
+	inviter.Friends = append(inviter.Friends, currentUser.Username)
+
+	// добавляем пригласившего в друзья текущего пользователя
+	currentUser.Friends = append(currentUser.Friends, inviter.Username)
+
+	// сохраняем
+	err = saveUsers(users)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func main() {
@@ -704,6 +737,8 @@ func main() {
 			return
 		}
 
+		addToFriends(user.Username)
+
 		c.JSON(200, gin.H{"message": "User saved"})
 	})
 
@@ -766,6 +801,9 @@ func main() {
 
 		updateStreak(foundUser)
 		updateAllFriendshipStreaks(foundUser.Username)
+		if foundUser.ReferralCode == "" {
+			foundUser.ReferralCode = generateReferralCode(users)
+		}
 
 		saveUsers(users)
 
