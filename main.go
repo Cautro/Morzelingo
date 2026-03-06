@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -117,6 +118,13 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type RegisterInput struct {
+    Username string `json:"username"`
+    Email string `json:"email"`
+    Password string `json:"password"`
+    ReferralInput string `json:"referral_code"`
+}
+
 type Claims struct {
 	Username string `json:"username"`
 	jwt.RegisteredClaims
@@ -148,6 +156,24 @@ type SymbolStat struct {
 	Symbol  string `json:"symbol"`
 	Correct int    `json:"correct"`
 	Wrong   int    `json:"wrong"`
+}
+
+var usersMutex sync.Mutex
+var userIndex map[string]int
+
+func buildUserIndex(users []User) {
+	userIndex = make(map[string]int)
+
+	for i, u := range users {
+		userIndex[u.Username] = i
+	}
+}
+
+func safeSaveUsers(users []User) error {
+	usersMutex.Lock()
+	defer usersMutex.Unlock()
+
+	return saveUsers(users)
 }
 
 func checkAchievements(user *User) ([]Achievement, error) {
@@ -362,7 +388,7 @@ func addUser(newUser User) error {
 
 	users = append(users, newUser)
 
-	return saveUsers(users)
+	return safeSaveUsers(users)
 }
 
 func getLimiter(ip string) *rate.Limiter {
@@ -477,7 +503,7 @@ func generateReferralCode(users []User) string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	for {
 
-		b := make([]byte, 4)
+		b := make([]byte, 6)
 		for i := range b {
 			b[i] = charset[rand.Intn(len(charset))]
 		}
@@ -634,7 +660,7 @@ func addToFriends(username string) error {
 
 	// ищем пригласившего по коду
 	for i := range users {
-		if users[i].ReferralCode == currentUser.ReferredBy {
+		if users[i].Username == currentUser.ReferredBy {
 			inviter = &users[i]
 			break
 		}
@@ -651,7 +677,7 @@ func addToFriends(username string) error {
 	currentUser.Friends = append(currentUser.Friends, inviter.Username)
 
 	// сохраняем
-	err = saveUsers(users)
+	err = safeSaveUsers(users)
 	if err != nil {
 		return err
 	}
@@ -670,13 +696,16 @@ func main() {
 	res := gin.Default()
 
 	res.POST("/api/register", func(c *gin.Context) {
-		var user User
+		var input RegisterInput
 
-		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(400, gin.H{
-				"error": err.Error(),
-			})
+		if err := c.ShouldBindJSON(&input); err != nil {
 			return
+		}
+
+		user := User{
+			Username: input.Username,
+			Email: input.Email,
+			Password: input.Password,
 		}
 
 		users, err := readUsers()
@@ -685,6 +714,30 @@ func main() {
 			return
 		}
 
+		if input.ReferralInput != "" {
+
+		var inviter *User
+
+		for i := range users {
+			if users[i].ReferralCode == input.ReferralInput {
+				inviter = &users[i]
+				break
+			}
+		}
+
+		if inviter == nil {
+			c.JSON(400, gin.H{"error": "Invalid referral code"})
+			return
+		}
+
+		user.ReferredBy = inviter.Username
+		inviter.ReferralCount++
+		inviter.Coins += 50
+		user.Coins += 25
+	}
+
+	user.ReferralCode = generateReferralCode(users)
+	
 		// Проверка на существование
 		for _, u := range users {
 			if u.Username == user.Username {
@@ -700,39 +753,11 @@ func main() {
 			}
 		}
 
-		inviterCode := user.ReferralCode
-
-		if inviterCode != "" {
-
-			var inviter *User
-
-			for i := range users {
-				if users[i].ReferralCode == inviterCode {
-					inviter = &users[i]
-					break
-				}
-			}
-
-			if inviter == nil {
-				c.JSON(400, gin.H{
-					"error": "Invalid referral code",
-				})
-				return
-			}
-
-			user.ReferredBy = inviter.Username
-			inviter.ReferralCount++
-			inviter.Coins += 50
-			user.Coins += 25
-		}
-
-		user.ReferralCode = generateReferralCode(users)
-
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 		user.Password = string(hashedPassword)
 		users = append(users, user)
 
-		if err := saveUsers(users); err != nil {
+		if err := safeSaveUsers(users); err != nil {
 			c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error(), "message": "Проблема сохранения файла users.json. Убедитесь, что файл доступен для записи."})
 			return
 		}
@@ -805,7 +830,7 @@ func main() {
 			foundUser.ReferralCode = generateReferralCode(users)
 		}
 
-		saveUsers(users)
+		safeSaveUsers(users)
 
 		token, err := generateToken(foundUser.Username)
 		if err != nil {
@@ -830,7 +855,30 @@ func main() {
 			return
 		}
 
-		users, _ := readUsers()
+		users, err := readUsers()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read users", "details": err.Error(), "message": "Проблема открытия файла users.json. Убедитесь, что файл существует и имеет правильный формат."})
+			return
+		}
+
+		streaks, err := readFriendshipStreaks()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "failed"})
+			return
+		}
+
+		var result FriendshipStreak
+
+		fmt.Println("result", result)
+		fmt.Println("streaks", streaks)
+
+		for _, s := range streaks {
+			if s.User1 == username || s.User2 == username {
+				result = s
+			}
+		}
+
+		fmt.Println("result", result)
 
 		for _, u := range users {
 			if u.Username == username {
@@ -851,6 +899,9 @@ func main() {
 					"symbol_stats":         u.SymbolStats,
 					"need_xp":              u.NeedXp,
 					"UnlockedAchievements": u.UnlockedAchievements,
+					"TogetherStreak":       result.Streak,
+					"User1":                result.User1,
+					"User2":                result.User2,
 				})
 				return
 			}
@@ -920,7 +971,7 @@ func main() {
 				users[i].Streak++
 				users[i].LastLogin = time.Now().Format("2006-01-02")
 
-				if err := saveUsers(users); err != nil {
+				if err := safeSaveUsers(users); err != nil {
 					c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error(), "message": "Проблема сохранения файла users.json. Убедитесь, что файл доступен для записи."})
 					return
 				}
@@ -1169,7 +1220,7 @@ func main() {
 					}
 				}
 
-				if err := saveUsers(users); err != nil {
+				if err := safeSaveUsers(users); err != nil {
 					c.JSON(500, gin.H{"error": "Failed to save users"})
 					return
 				}
@@ -1289,7 +1340,7 @@ func main() {
 				updateStreak(&users[i])
 
 
-				if err := saveUsers(users); err != nil {
+				if err := safeSaveUsers(users); err != nil {
 					c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error(), "message": "Проблема сохранения файла users.json. Убедитесь, что файл доступен для записи."})
 					return
 				}
@@ -1383,7 +1434,7 @@ func main() {
 		users[userIndex].Coins -= selectedItem.Price
 		users[userIndex].Items = append(users[userIndex].Items, selectedItem.ID)
 
-		if err := saveUsers(users); err != nil {
+		if err := safeSaveUsers(users); err != nil {
 			c.JSON(500, gin.H{"error": "Failed to save users"})
 			return
 		}
@@ -1436,7 +1487,7 @@ func main() {
 					users[i].AnswerStreak = 0
 				}
 
-				saveUsers(users)
+				safeSaveUsers(users)
 
 				c.JSON(200, gin.H{
 					"answer_streak": users[i].AnswerStreak,
@@ -1464,7 +1515,7 @@ func main() {
 
 			if users[i].ReferralCode == "" {
 				users[i].ReferralCode = generateReferralCode(users)
-				saveUsers(users)
+				safeSaveUsers(users)
 			}
 
 			c.JSON(200, gin.H{
@@ -1474,8 +1525,7 @@ func main() {
 			})
 			return
 		}
-	}
-
+	}		
 		c.JSON(404, gin.H{"error": "user not found", "message": "Пользователь не найден. Убедитесь, что вы используете правильный токен и что пользователь существует."})
 	})
 
