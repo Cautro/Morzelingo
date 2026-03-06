@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/config.dart';
+import 'package:morzelingo/settings_context.dart';
 import 'package:morzelingo/storage_context.dart';
 
 class LoginPage extends StatefulWidget {
@@ -53,7 +54,28 @@ class _LoginPageState extends State<LoginPage> {
           textColor: Colors.white
       );
       print(res.body);
+      SettingsService.setDefault();
     }
+  }
+
+  Future<void> checkLogined() async {
+    String? token = await StorageService.getItem("token");
+    final res = await http.get(Uri.parse("${API}/api/profile"),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    final data = await jsonDecode(res.body);
+    print(data);
+    if (res.statusCode == 200) {
+      Navigator.pushReplacementNamed(context, "/home");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkLogined();
   }
 
   @override

@@ -3,6 +3,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'dart:async';
 import 'package:morzelingo/app_theme.dart';
 
+import '../settings_context.dart';
+
 typedef MorseCallback = void Function(String decodedText);
 
 class MorseKeyWidget extends StatefulWidget {
@@ -16,15 +18,15 @@ class MorseKeyWidget extends StatefulWidget {
 
 class _MorseKeyWidgetState extends State<MorseKeyWidget> {
   static const Map<String, String> morseToText = {
-    '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E',
-    '..-.': 'F', '--.': 'G', '....': 'H', '..': 'I', '.---': 'J',
-    '-.-': 'K', '.-..': 'L', '--': 'M', '-.': 'N', '---': 'O',
-    '.--.': 'P', '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T',
-    '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X', '-.--': 'Y',
-    '--..': 'Z',
-    '-----': '0', '.----': '1', '..---': '2', '...--': '3',
-    '....-': '4', '.....': '5', '-....': '6',
-    '--...': '7', '---..': '8', '----.': '9',
+    '•—': 'A', '—•••': 'B', '—•—•': 'C', '—••': 'D', '•': 'E',
+    '••—•': 'F', '——•': 'G', '••••': 'H', '••': 'I', '•———': 'J',
+    '—•—': 'K', '•—••': 'L', '——': 'M', '—•': 'N', '———': 'O',
+    '•——•': 'P', '——•—': 'Q', '•—•': 'R', '•••': 'S', '—': 'T',
+    '••—': 'U', '•••—': 'V', '•——': 'W', '—••—': 'X', '—•——': 'Y',
+    '——••': 'Z',
+    '—————': '0', '•————': '1', '••———': '2', '•••——': '3',
+    '••••—': '4', '•••••': '5', '—••••': '6',
+    '——•••': '7', '———••': '8', '————•': '9',
     '/': ' '
   };
 
@@ -33,21 +35,30 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
   String decodedText = "";
   Timer? pauseTimer;
   bool isPressed = false;
+  late MorseTiming timing;
 
   @override
   void initState() {
     super.initState();
     player.setReleaseMode(ReleaseMode.stop);
+    _loadTiming();
+  }
+
+  Future<void> _loadTiming() async {
+    final wpm = await SettingsService.getWpm();
+    setState(() {
+      timing = MorseTiming(wpm);
+    });
   }
 
   void _addDot() async {
     await player.play(AssetSource('sounds/dot.wav'));
-    _addSymbol('.');
+    _addSymbol('•');
   }
 
   void _addDash() async {
     await player.play(AssetSource('sounds/dash.wav'));
-    _addSymbol('-');
+    _addSymbol('—');
   }
 
   void _addSymbol(String symbol) {
@@ -56,7 +67,10 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
     });
 
     pauseTimer?.cancel();
-    pauseTimer = Timer(const Duration(milliseconds: 900), _finishLetter);
+    pauseTimer = Timer(
+      Duration(milliseconds: timing.letterPause * 4),
+      _finishLetter,
+    );
   }
   
   void _finishLetter() {
@@ -72,7 +86,10 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
       currentMorse = "";
     });
 
-    pauseTimer = Timer(const Duration(milliseconds: 1800), _addSpace);
+    pauseTimer = Timer(
+      Duration(milliseconds: timing.wordPause + timing.letterPause),
+      _addSpace,
+    );
   }
 
   void _addSpace() {
@@ -102,15 +119,15 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
+
             /// Расшифрованный текст
             Align(
               alignment: Alignment.centerLeft,
@@ -118,40 +135,47 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
                 "Decoded:",
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[600],
+                  color: theme.textTheme.bodyMedium?.color,
                 ),
               ),
             ),
-            SizedBox(height: 8),
+
+            const SizedBox(height: 8),
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade300),
+                border: Border.all(
+                  color: colors.outline.withOpacity(0.4),
+                ),
+                color: colors.surface,
               ),
               child: Text(
                 decodedText.isEmpty ? "..." : decodedText,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
+                  color: colors.onSurface,
                 ),
               ),
             ),
 
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             /// Текущий сигнал
             Text(
               currentMorse,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 26,
                 letterSpacing: 4,
                 fontWeight: FontWeight.bold,
+                color: colors.onSurface,
               ),
             ),
 
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             /// Телеграфный ключ
             GestureDetector(
@@ -167,8 +191,8 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   color: isPressed
-                      ? Theme.of(context).primaryColor.withOpacity(0.7)
-                      : Theme.of(context).primaryColor,
+                      ? colors.primary.withOpacity(0.7)
+                      : colors.primary,
                 ),
                 child: const Center(
                   child: Text(
@@ -184,36 +208,44 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
               ),
             ),
 
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-            /// Очистка
+            /// Кнопки
             Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.textSecondary
-                      ),
-                      onPressed: _clear,
-                      child: Text("Очистить",),
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.textSecondary,
+                      foregroundColor: colors.onSurface,
                     ),
+                    onPressed: _clear,
+                    child: const Text("Очистить",style: TextStyle(color: Colors.white),),
                   ),
-                  SizedBox(width: 8,),
-                  SizedBox(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
-                        onPressed: () {
-                          setState(() {
-                            decodedText = decodedText.substring(0, decodedText.length - 1);
-                          });
-                        },
-                        child: Icon(Icons.backspace),
-                    ),
-                    width: 50,
-                  )
+                ),
 
-                ],
-              )
+                const SizedBox(width: 8),
+
+                SizedBox(
+                  width: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.error,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        if (decodedText.isNotEmpty) {
+                          decodedText =
+                              decodedText.substring(0, decodedText.length - 1);
+                        }
+                      });
+                    },
+                    child: const Icon(Icons.backspace),
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),

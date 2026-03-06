@@ -1,10 +1,13 @@
 import "package:flutter/material.dart";
 import 'package:http/http.dart' as http;
 import "package:morzelingo/app_theme.dart";
+import "package:morzelingo/pages/loading_page.dart";
 import "package:morzelingo/storage_context.dart";
 import "dart:convert";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:morzelingo/config.dart";
+
+import "../theme_controller.dart";
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -22,6 +25,9 @@ class _ProfilePageState extends State<ProfilePage> {
   String? level;
   String? coins;
   String? streak;
+  String? needxp;
+  String? refferal;
+  bool isLoading = true;
 
   @override
 
@@ -42,6 +48,9 @@ class _ProfilePageState extends State<ProfilePage> {
       level = data["level"].toString();
       coins = data["coins"].toString();
       streak = data["streak"].toString();
+      needxp = data["need_xp"].toString();
+      refferal = data["refferal_code"].toString();
+      isLoading = false;
     });
   }
 
@@ -53,23 +62,39 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (isLoading) {
+      return LoadingPage();
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(16),
           child: SizedBox(
             width: double.infinity,
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
+            child: Container(
+              child: Column(
                   children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, "/settings");
+                          },
+                          icon: Icon(Icons.settings),
+                        )
+                      ],
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.person, size: 50,),
+                        Icon(Icons.person, size: 50, color: themeController.themeMode == ThemeMode.dark ? AppTheme.DarktextPrimary : AppTheme.textPrimary,),
                       ],
                     ),
+                    SizedBox(height: 8,),
+                    Text(username!, style: Theme.of(context).textTheme.titleLarge,),
                     _ProfileCard(
                       username: "${username}" ?? "",
                       email: "${email}" ?? "",
@@ -78,6 +103,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       coins: "${coins}" ?? "",
                       level: "${level}" ?? "",
                       streak: "${streak}" ?? "",
+                      needxp: "${needxp}" ?? "",
+                      refferal: "${refferal}" ?? "",
                     ),
                     SizedBox(
                       width: double.infinity,
@@ -98,7 +125,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
-      ),
     );
   }
 }
@@ -111,6 +137,8 @@ class _ProfileCard extends StatelessWidget {
   final String coins;
   final String level;
   final String streak;
+  final String needxp;
+  final String refferal;
 
   const _ProfileCard({
     super.key,
@@ -120,7 +148,9 @@ class _ProfileCard extends StatelessWidget {
     required this.lessondone,
     required this.coins,
     required this.level,
-    required this.streak
+    required this.streak,
+    required this.needxp,
+    required this.refferal,
   });
 
   @override
@@ -130,13 +160,38 @@ class _ProfileCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(padding: EdgeInsetsGeometry.all(8)),
-          _ProfileItem(text: username, icon: Icon(Icons.person),),
-          _ProfileItem(text: email, icon: Icon(Icons.email)),
-          _ProfileItem(text: level, icon: Icon(Icons.leaderboard),),
-          _ProfileItem(text: xp, icon: Icon(Icons.star_rounded)),
-          _ProfileItem(text: coins, icon: Icon(Icons.monetization_on_rounded)),
-          _ProfileItem(text: lessondone, icon: Icon(Icons.download_done_rounded)),
-          _ProfileItem(text: streak, icon: Icon(Icons.date_range)),
+          Row(
+            children: [
+              _ProfileItem(text: level, icon: Icon(Icons.leaderboard, color: Colors.blue  ,)),
+              _ProfileItem(text: xp, icon: Icon(Icons.star_rounded, color: Colors.amber,)),
+            ]
+          ),
+          Row(
+              children: [
+                _ProfileItem(text: streak, icon: Icon(Icons.local_fire_department, color: Colors.orange,)),
+                _ProfileItem(text: lessondone, icon: Icon(Icons.done_outline, color: AppTheme.success,)),
+              ]
+          ),
+          Row(
+            children: [
+              _ProfileItem(text: "Опыта до повышения: ${needxp}", icon: Icon(Icons.upgrade, color: Colors.amber ,)),
+            ],
+          ),
+          Row(
+            children: [
+              _ProfileItem(text: "Реферальный код: ${refferal}", icon: Icon(Icons.link, color: Colors.blue,))
+            ],
+          ),
+          Padding(padding: EdgeInsets.all(8)),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, "/lettersstats");
+              },
+              child: Text("Статистика букв"),
+            ),
+          )
         ],
       )
     );
@@ -154,8 +209,7 @@ class _ProfileItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
+    return Expanded(
       child: Card(
         child: Padding(
             padding: EdgeInsetsGeometry.all(16),
@@ -163,7 +217,7 @@ class _ProfileItem extends StatelessWidget {
               children: [
                 icon,
                 Padding(padding: EdgeInsetsGeometry.symmetric(horizontal: 8)),
-                Text(text, style: Theme.of(context).textTheme.titleLarge),
+                Text(text, style: Theme.of(context).textTheme.bodyLarge),
               ],
             )
         ),

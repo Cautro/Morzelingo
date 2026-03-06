@@ -37,7 +37,7 @@ class _FreemodePageState extends State<FreemodePage> {
                                 onPressed: () {
                                   Navigator.pushNamed(context, "/freemodeaudio");
                                 },
-                                child: Text("Играть в режиме аудио", style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),),
+                                child: Text("Играть в режиме аудио", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),),
                               ),
                           ),
                           SizedBox(height: 16,),
@@ -47,7 +47,7 @@ class _FreemodePageState extends State<FreemodePage> {
                                 onPressed: () {
                                   Navigator.pushNamed(context, "/freemodetext");
                                 },
-                                child: Text("Играть в режиме текста", style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),),
+                                child: Text("Играть в режиме текста", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),),
                               ),
                             ),
                         ]

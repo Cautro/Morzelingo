@@ -40,13 +40,23 @@ class _FreemodeTextPageState extends State<FreemodeTextPage> {
   }
 
   Future<void> answerHandler() async {
+    String? token = await StorageService.getItem("token");
     if (decoded.trim() == answer) {
+      final resp = await http.post(
+        Uri.parse("${API}/api/checker-practice"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode(
+          {"correct": true},
+        ),
+      );
       Fluttertoast.showToast(
           msg: "Верно!",
           backgroundColor: AppTheme.success,
           textColor: Colors.white
       );
-      String? token = await StorageService.getItem("token");
       final res = await http.post(Uri.parse("${API}/api/freemode/complete"),
         headers: {
           'Authorization': 'Bearer $token',
@@ -57,6 +67,16 @@ class _FreemodeTextPageState extends State<FreemodeTextPage> {
       });
       getQuestion();
     } else {
+      final res = await http.post(
+        Uri.parse("${API}/api/checker-practice"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode(
+          {"correct": false},
+        ),
+      );
       Fluttertoast.showToast(
           msg: "Неправильно",
           backgroundColor: AppTheme.error,

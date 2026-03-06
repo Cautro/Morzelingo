@@ -13,6 +13,18 @@ class AppTheme {
   static const Color textPrimary = Color(0xFF0F172A);
   static const Color textSecondary = Color(0xFF64748B);
 
+  static const Color Darkprimary = Color(0xFF3B82F6);
+  static const Color DarkprimaryDark = Color(0xFF1D4ED8);
+  static const Color Darkaccent = Color(0xFF60A5FA);
+  static const Color Darkbackground = Color(0xFF0F172A);
+  static const Color Darkcard = Color(0xFF1E293B);
+  static const Color Darkerror = Color(0xFFF87171);
+  static const Color Darksuccess = Color(0xFF4ADE80);
+  static const Color Darkwarning = Color(0xFFFBBF24);
+  static const Color Darkinfo = Color(0xFF38BDF8);
+  static const Color DarktextPrimary = Color(0xFFF1F5F9);
+  static const Color DarktextSecondary = Color(0xFF94A3B8);
+
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     scaffoldBackgroundColor: background,
@@ -69,4 +81,72 @@ class AppTheme {
       ),
     ),
   );
+
+  static ThemeData darkTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: Darkbackground,
+
+    colorScheme: const ColorScheme.dark(
+      primary: Darkprimary,
+      secondary: Darkaccent,
+      surface: Darkcard,
+      error: Darkerror,
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
+      onSurface: DarktextPrimary,
+    ),
+
+    cardTheme: CardThemeData(
+      color: Darkcard,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
+
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Darkprimary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+      ),
+    ),
+
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Darkcard,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: DarktextSecondary.withOpacity(0.3)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: DarktextSecondary.withOpacity(0.3)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Darkprimary, width: 2),
+      ),
+    ),
+
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(
+        color: DarktextPrimary,
+        fontWeight: FontWeight.w500,
+      ),
+      bodyMedium: TextStyle(
+        color: DarktextSecondary,
+      ),
+      titleLarge: TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+        color: DarktextPrimary,
+      ),
+    ),
+  );
+
 }

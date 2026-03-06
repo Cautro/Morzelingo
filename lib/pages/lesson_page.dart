@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:morzelingo/pages/loading_page.dart';
 
 import '../config.dart';
 import '../storage_context.dart';
@@ -18,10 +19,11 @@ class _LessonPageState extends State<LessonPage> {
   String? lessondone;
   var done = false;
   var id;
+  bool isLoading = true;
 
   @override
 
-  void getLesson() async {
+  void getData() async {
     String? id = await StorageService.getItem("lessonid");
     String? token = await StorageService.getItem("token");
     final res = await http.get(Uri.parse("${API}/api/lessons/${id}"),
@@ -34,26 +36,22 @@ class _LessonPageState extends State<LessonPage> {
       lesson = data;
     });
     print(lesson);
-  }
 
-  Future<void> getProfileData() async {
-    String? token = await StorageService.getItem("token");
-
-    final res = await http.get(Uri.parse("${API}/api/profile"),
+    final res1 = await http.get(Uri.parse("${API}/api/profile"),
       headers: {
         'Authorization': 'Bearer $token',
       },
     );
-    final data = await jsonDecode(res.body);
+    final data1 = await jsonDecode(res1.body);
     print(data);
     setState(() {
-      lessondone = data["lesson_done"].toString();
+      lessondone = data1["lesson_done"].toString();
     });
     print(lessondone);
 
     id = await StorageService.getItem("lessonid");
     print("id ${id}, done${lessondone}");
-    if ((int.parse(lessondone!)) >= (int.parse(id))) {
+    if ((int.parse(lessondone!)) >= (int.parse(id!))) {
       setState(() {
         done = true;
       });
@@ -61,18 +59,28 @@ class _LessonPageState extends State<LessonPage> {
       done = false;
     }
     print(done);
+    setState(() {
+      isLoading = false;
+    });
   }
+
 
 
   @override
   void initState() {
     super.initState();
-    getLesson();
-    getProfileData();
+    getData();
   }
 
   @override
   Widget build(BuildContext context) {
+
+    if (isLoading) {
+      return Scaffold(
+        body: LoadingPage(),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text("Теория")),
       body: SafeArea(
@@ -82,26 +90,32 @@ class _LessonPageState extends State<LessonPage> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  child: Card(
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(
-                            lesson["Title"],
-                            style: Theme.of(context).textTheme.titleLarge,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Card(
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Text(
+                                  lesson["Title"],
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Text(
+                                  lesson["Theory"],
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(
-                            lesson["Theory"],
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      )
+                    ],
+                  )
                 ),
               ),
 

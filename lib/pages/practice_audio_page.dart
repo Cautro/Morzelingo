@@ -13,7 +13,9 @@ class PracticeAudioPage extends StatefulWidget {
   final String question;
   final String answer;
   final Function onAnswer;
-  const PracticeAudioPage({super.key, required this.answer, required this.question, required this.onAnswer});
+  final bool isLetter;
+  final bool isLast;
+  const PracticeAudioPage({super.key, required this.answer, required this.question, required this.onAnswer, required this.isLetter, required this.isLast});
 
   @override
   State<PracticeAudioPage> createState() => _PracticeAudioPageState();
@@ -36,10 +38,10 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
 
     for (int i = 0; i < widget.question.length; i++) {
       final char = widget.question[i];
-      if (char == '.') {
+      if (char == '•') {
         await player.play(AssetSource('sounds/dot.wav'));
         await Future.delayed(Duration(milliseconds: dotDuration));
-      } else if (char == '-') {
+      } else if (char == '—') {
         await player.play(AssetSource('sounds/dash.wav'));
         await Future.delayed(Duration(milliseconds: dashDuration));
       } else if (char == ' ') {
@@ -118,8 +120,23 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
   }
 
   Future<void> answerHandler() async {
-    checkAnswer();
+    String? token = await StorageService.getItem("token");
+    if (!widget.isLetter) {
+      checkAnswer();
+    }
     if (text.trim().toUpperCase() == widget.answer) {
+      if (!widget.isLetter) {
+        final res = await http.post(
+          Uri.parse("${API}/api/checker-practice"),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: jsonEncode(
+            {"correct": true},
+          ),
+        );
+      }
       Fluttertoast.showToast(
           msg: "Верно!",
           backgroundColor: AppTheme.success,
@@ -130,6 +147,18 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
       });
       widget.onAnswer();
     } else {
+      if (!widget.isLetter) {
+        final res = await http.post(
+          Uri.parse("${API}/api/checker-practice"),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: jsonEncode(
+            {"correct": false},
+          ),
+        );
+      }
       Fluttertoast.showToast(
           msg: "Неправильно",
           backgroundColor: AppTheme.error,
@@ -177,7 +206,7 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
                                 onPressed: () {
                                   playMorse();
                                 },
-                                child: Text("Прослушать", style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),)
+                                child: Text("Прослушать", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),)
                             ),
                           ),
                           SizedBox(height: 16,),
@@ -187,7 +216,7 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
                                 onPressed: () {
                                   answerHandler();
                                 },
-                                child: Text("Ответить", style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),)
+                                child:  Text( !widget.isLast ? "Ответить" : "Закончить", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white), )
                             ),
                           )
                         ],

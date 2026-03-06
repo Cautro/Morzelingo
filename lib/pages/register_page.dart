@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/config.dart';
+import 'package:morzelingo/settings_context.dart';
 import 'package:morzelingo/storage_context.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -46,6 +47,7 @@ class _RegisterPageState extends State<RegisterPage> {
         })
     );
     final data = jsonDecode(res.body);
+    print("${res.statusCode} ${res.body}");
     if (res.statusCode == 200) {
       await StorageService.setItem("token", data["token"]);
       Fluttertoast.showToast(
@@ -62,6 +64,7 @@ class _RegisterPageState extends State<RegisterPage> {
           textColor: Colors.white
       );
       print(res.body);
+      SettingsService.setDefault();
     }
   }
 

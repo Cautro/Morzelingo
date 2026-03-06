@@ -12,7 +12,9 @@ class PracticeMorsePage extends StatefulWidget {
   final String question;
   final String answer;
   final Function onAnswer;
-  const PracticeMorsePage({super.key, required this.answer, required this.question, required this.onAnswer});
+  final bool isLetter;
+  final bool isLast;
+  const PracticeMorsePage({super.key, required this.answer, required this.question, required this.onAnswer, required this.isLetter, required this.isLast});
 
   @override
   State<PracticeMorsePage> createState() => _PracticeMorsePageState();
@@ -88,8 +90,23 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
   }
 
   Future<void> answerHandler() async {
-    checkAnswer();
+    String? token = await StorageService.getItem("token");
+    if (!widget.isLetter) {
+      checkAnswer();
+    }
     if (text.trim().toUpperCase() == widget.answer) {
+      if (!widget.isLetter) {
+        final res = await http.post(
+          Uri.parse("${API}/api/checker-practice"),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: jsonEncode(
+            {"correct": true},
+          ),
+        );
+      }
       Fluttertoast.showToast(
           msg: "Верно!",
           backgroundColor: AppTheme.success,
@@ -100,6 +117,18 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
       });
       widget.onAnswer();
     } else {
+      if (!widget.isLetter) {
+        final res = await http.post(
+          Uri.parse("${API}/api/checker-practice"),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: jsonEncode(
+            {"correct": false},
+          ),
+        );
+      }
       Fluttertoast.showToast(
           msg: "Неправильно",
           backgroundColor: AppTheme.error,
@@ -157,7 +186,7 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
                                 onPressed: () {
                                   answerHandler();
                                 },
-                                child: Text("Ответить", style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),)
+                                child:  Text( !widget.isLast ? "Ответить" : "Закончить", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white), )
                             ),
                           )
                         ],

@@ -1,9 +1,11 @@
+import 'dart:ffi';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/config.dart';
+import 'package:morzelingo/pages/loading_page.dart';
 import 'dart:convert';
 
 import 'package:morzelingo/storage_context.dart';
@@ -16,12 +18,13 @@ class EducationPage extends StatefulWidget {
 }
 
 class _EducationPageState extends State<EducationPage> {
-  String? lessondone;
+  int? lessondone;
   List lessons = [];
+  bool isLoading = true;
 
   @override
 
-  void getProfileData() async {
+  void getData() async {
     String? token = await StorageService.getItem("token");
     final res = await http.get(Uri.parse("${API}/api/profile"),
       headers: {
@@ -30,187 +33,94 @@ class _EducationPageState extends State<EducationPage> {
     );
     final data = await jsonDecode(res.body);
     setState(() {
-      lessondone = data["lesson_done"].toString();
+      lessondone = int.parse(data["lesson_done"].toString());
     });
-    print(lessondone);
-  }
+    print(data);
+    print("done: ${lessondone}");
 
-  void getLessons() async {
-    String? token = await StorageService.getItem("token");
-    final res = await http.get(Uri.parse("${API}/api/lessons"),
+    final res1 = await http.get(Uri.parse("${API}/api/lessons"),
       headers: {
         'Authorization': 'Bearer $token',
       },
     );
-    var data = jsonDecode(res.body);
+    print(token);
+    var data1 = jsonDecode(res1.body);
     setState(() {
-      lessons = data;
+      lessons = data1;
+      isLoading = false;
     });
-    print(lessons);
+    print(lessons[lessondone!]["XPReward"]);
   }
 
   @override
   void initState() {
     super.initState();
-    getLessons();
-    getProfileData();
+    getData();
   }
 
   @override
   Widget build(BuildContext context) {
+    
+    if (isLoading) {
+      return Scaffold(
+        body: LoadingPage()
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsetsGeometry.all(24,),
-            child: Container(
-              width: double.infinity,
-              child: Column(
-                children: lessons.map((item) {
-                  double randomOffset = (Random().nextDouble() - 0.5) * 120;
-                  return Transform.translate(
-                      offset: Offset(randomOffset, 0),
-                      child: _lessonWidget(
-                        data: item,
-                        buttonHandler: () {
-                          print("done");
-                        },
-                        lessondone: lessondone ?? "",
-                      ),
-                  );
-                }).toList(),
-              ),
-          ),
-          )
-      ),
-    );
-  }
-}
-
-class _lessonWidget extends StatefulWidget {
-  final Function buttonHandler;
-  final Map<String, dynamic> data;
-  final String lessondone;
-  const _lessonWidget({super.key, required this.data, required this.buttonHandler, required this.lessondone });
-
-
-  @override
-  State<_lessonWidget> createState() => _lessonWidgetState();
-}
-
-class _lessonWidgetState extends State<_lessonWidget> {
-  bool expanded = false;
-  bool locked = false;
-
-  @override
-
-  void _checkLocked () async {
-    if ((int.tryParse(widget.lessondone) ?? 0) < (int.tryParse(widget.data["ID"].toString()) ?? 0) - 1) {
-      setState(() {
-        locked = true;
-      });
-    } else {
-      setState(() {
-        locked = false;
-      });
-    }
-    print(locked);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _checkLocked();
-  }
-
-
-  @override
-  void didUpdateWidget(covariant _lessonWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.lessondone != widget.lessondone) {
-      _checkLocked();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-        padding: EdgeInsetsGeometry.all(32),
-        child: Column(
-          children: [
-            Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.textPrimary.withOpacity(0.4),
-                      offset: Offset(4, 4),
-                      blurRadius: 5,
-                      spreadRadius: 2
-                    ),
-                    BoxShadow(
-                        color: Colors.white,
-                        offset: Offset(-5, -5),
-                        blurRadius: 5,
-                        spreadRadius: 2
-                    )
-                  ],
-                  shape: BoxShape.circle,
-                  color: AppTheme.primary,
-                ),
-              child: IconButton(
-                onPressed: () {
-                  if (!locked) {
-                    setState(() {
-                      expanded = !expanded;
-                      print(widget.data);
-                      print("${widget.lessondone} fgf");
-                    });
-                } else {}
-                },
-                icon: locked ? Icon(Icons.lock, size: 40,) : Icon(Icons.star_rounded, size: 40,),
-                style: IconButton.styleFrom(
-                  backgroundColor: locked ? AppTheme.textSecondary : AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.all(16),
-                  shape: CircleBorder(),
-                ),
-              ),
-            ),
-            AnimatedSize(
-                duration: Duration(milliseconds: 300),
-                  child: expanded ? Container(
-                    width: 200,
-                    child: Card(
-                      child: Padding(
-                        child: Column(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(24),
+              child: Center(
+                child: Container(
+                    width: double.infinity,
+                    child: Column(
+                      children: [
+                        Row(
                           children: [
-                            Text("${widget.data["Title"]}", style: Theme.of(context).textTheme.titleLarge!,),
-                            SizedBox(height: 8,),
-                            SizedBox(
-                              child: ElevatedButton(
-                                  onPressed: () {
-                                    widget.buttonHandler();
-                                    Navigator.pushNamed(context, '/lesson',);
-                                    print("${widget.data["ID"]}");
-                                    StorageService.setItem("lessonid", widget.data["ID"].toString());
-                                  },
-                                  child: Text("Начать", style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    color: Colors.white
-                                  )),
+                            Expanded(
+                              child: Card(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+                                  child: Column(
+                                    children: [
+                                      Text(lessons[lessondone!]["Title"], style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
+                                      SizedBox(height: 16,),
+                                      Text("Награда ${lessons[lessondone!]["XPReward"].toString()} опыта", style: Theme.of(context).textTheme.titleMedium,),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              width: double.infinity,
                             )
                           ],
                         ),
-                        padding: EdgeInsetsGeometry.all(8)),
 
+                        SizedBox(height: 16,),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/lesson',);
+                              StorageService.setItem("lessonid", lessons[lessondone!]["ID"].toString());
+                            },
+                            child: Text("Начать урок", style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),),
+                          ),
+                        ),
+                        SizedBox(height: 8,),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/completedlessons',);
+                          },
+                          child: Text("К пройденным урокам"),
+                        )
+                      ],
                     )
-                  ) : SizedBox(),
+                ),
+              )
             )
-          ],
-        )
+            )
+          )
     );
   }
 }
-
-

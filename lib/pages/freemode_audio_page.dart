@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 import '../app_theme.dart';
 import '../config.dart';
+import '../settings_context.dart';
 import '../storage_context.dart';
 
 class FreemodeAudioPage extends StatefulWidget {
@@ -21,6 +22,7 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
   String question = '';
   String answer = '';
   String text = "";
+  bool isPlaying = false;
   TextEditingController _controller = TextEditingController();
 
   @override
@@ -41,40 +43,56 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
   }
 
   Future<void> playMorse() async {
-    const int dotDuration = 200;   // миллисекунды для точки
-    const int dashDuration = 600;  // тире = 3 точки
-    const int symbolPause = 100;   // пауза между символами
-    const int letterPause = 600;   // пауза между буквами (3 точки)
-    const int wordPause = 1400;    // пауза между словами (7 точек)
+
+    if (isPlaying) return;
+
+    isPlaying = true;
+
+    final wpm = await SettingsService.getWpm();
+    final timing = MorseTiming(wpm);
 
     for (int i = 0; i < question.length; i++) {
+
       final char = question[i];
-      if (char == '.') {
+
+      if (char == '•') {
         await player.play(AssetSource('sounds/dot.wav'));
-        await Future.delayed(Duration(milliseconds: dotDuration));
-      } else if (char == '-') {
+        await Future.delayed(Duration(milliseconds: timing.dot));
+
+      } else if (char == '—') {
         await player.play(AssetSource('sounds/dash.wav'));
-        await Future.delayed(Duration(milliseconds: dashDuration));
+        await Future.delayed(Duration(milliseconds: timing.dash));
+
       } else if (char == ' ') {
-        // если пробел, это конец буквы или слова
-        await Future.delayed(Duration(milliseconds: letterPause));
+        await Future.delayed(Duration(milliseconds: timing.letterPause));
       }
 
-      // пауза между символами (если это не последний символ и не пробел)
       if (i < question.length - 1 && question[i + 1] != ' ' && char != ' ') {
-        await Future.delayed(Duration(milliseconds: symbolPause));
+        await Future.delayed(Duration(milliseconds: timing.symbolPause));
       }
     }
+
+    isPlaying = false;
   }
 
   Future<void> answerHandler() async {
+    String? token = await StorageService.getItem("token");
     if (text.trim().toUpperCase() == answer) {
+      final resp = await http.post(
+        Uri.parse("${API}/api/checker-practice"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode(
+          {"correct": true},
+        ),
+      );
       Fluttertoast.showToast(
           msg: "Верно!",
           backgroundColor: AppTheme.success,
           textColor: Colors.white
       );
-      String? token = await StorageService.getItem("token");
       final res = await http.post(Uri.parse("${API}/api/freemode/complete"),
         headers: {
           'Authorization': 'Bearer $token',
@@ -85,6 +103,16 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
       });
       getQuestion();
     } else {
+      final res = await http.post(
+        Uri.parse("${API}/api/checker-practice"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode(
+          {"correct": false},
+        ),
+      );
       Fluttertoast.showToast(
           msg: "Неправильно",
           backgroundColor: AppTheme.error,

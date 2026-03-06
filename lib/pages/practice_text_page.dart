@@ -12,8 +12,9 @@ class PracticeTextPage extends StatefulWidget {
   final String answer;
   final Function onAnswer;
   final bool isLast;
+  final bool isLetter;
 
-  const PracticeTextPage({super.key, required this.answer, required this.question, required this.onAnswer, required this.isLast});
+  const PracticeTextPage({super.key, required this.answer, required this.question, required this.onAnswer, required this.isLast, required this. isLetter});
 
   @override
   State<PracticeTextPage> createState() => _PracticeTextPageState();
@@ -88,9 +89,24 @@ class _PracticeTextPageState extends State<PracticeTextPage> {
   }
 
   Future<void> answerHandler() async {
-    checkAnswer();
+    String? token = await StorageService.getItem("token");
+    if (!widget.isLetter) {
+      checkAnswer();
+    }
     print('data: ${decoded}, ${widget.question}, ${widget.answer}');
     if (decoded.trim() == widget.answer) {
+      if (!widget.isLetter) {
+        final res = await http.post(
+          Uri.parse("${API}/api/checker-practice"),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: jsonEncode(
+            {"correct": true},
+          ),
+        );
+      }
       Fluttertoast.showToast(
           msg: "Верно!",
           backgroundColor: AppTheme.success,
@@ -98,6 +114,18 @@ class _PracticeTextPageState extends State<PracticeTextPage> {
       );
       widget.onAnswer();
     } else {
+      if (!widget.isLetter) {
+        final res = await http.post(
+          Uri.parse("${API}/api/checker-practice"),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: jsonEncode(
+            {"correct": false},
+          ),
+        );
+      }
       Fluttertoast.showToast(
           msg: "Неправильно",
           backgroundColor: AppTheme.error,

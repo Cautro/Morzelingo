@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:morzelingo/pages/education_page.dart';
 import 'package:morzelingo/pages/freemode_text_page.dart';
+import 'package:morzelingo/pages/letters_page.dart';
+import 'package:morzelingo/pages/practice_letters_page.dart';
 import 'package:morzelingo/pages/login_page.dart';
 import 'package:morzelingo/pages/profile_page.dart';
 import '../app_theme.dart';
@@ -20,6 +22,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
   final List<Widget> _screens = [
     FreemodePage(), // Вкладка 0
     EducationPage(),
+    LettersPage(),
     ProfilePage(), // Вкладка 1
   ];
 
@@ -58,9 +61,19 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
           ),
           NavigationDestination(
             icon: Icon(
-              Icons.person,
+              Icons.font_download,
               size: 30,
               color: _currentIndex == 2
+                  ? AppTheme.primary
+                  : Colors.grey,
+            ),
+            label: '',
+          ),
+          NavigationDestination(
+            icon: Icon(
+              Icons.person,
+              size: 30,
+              color: _currentIndex == 3
                   ? AppTheme.primary
                   : Colors.grey,
             ),

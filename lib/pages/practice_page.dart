@@ -96,7 +96,7 @@ class _PracticePageState extends State<PracticePage> {
           appBar: AppBar(
               title: Text("Отработайте навыки")
           ),
-          body: PracticeTextPage(answer: answer, question: question, isLast: isLast,
+          body: PracticeTextPage(answer: answer, question: question, isLast: isLast, isLetter: false,
             onAnswer: () {
               setState(() {
                 nextQuestion();
@@ -109,7 +109,7 @@ class _PracticePageState extends State<PracticePage> {
           appBar: AppBar(
               title: Text("Отработайте навыки")
           ),
-          body: PracticeAudioPage(answer: answer, question: question,
+          body: PracticeAudioPage(answer: answer, question: question, isLetter: false, isLast: isLast,
             onAnswer: () {
               setState(() {
                 nextQuestion();
@@ -121,7 +121,7 @@ class _PracticePageState extends State<PracticePage> {
           appBar: AppBar(
               title: Text("Отработайте навыки")
           ),
-            body: PracticeMorsePage(answer: answer, question: question,
+            body: PracticeMorsePage(answer: answer, question: question, isLetter: false, isLast: isLast,
               onAnswer: () {
                 setState(() {
                   nextQuestion();
