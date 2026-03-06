@@ -19,7 +19,7 @@ import (
 var supersecretkey string
 var loginLimiters = make(map[string]*rate.Limiter)
 
-var morseDictionary = map[string]string{
+var englishMorseDictionary = map[string]string{
 	"A": "•—",
 	"B": "—•••",
 	"C": "—•—•",
@@ -48,11 +48,56 @@ var morseDictionary = map[string]string{
 	"Z": "——••",
 }
 
+var russianMorseDictionary = map[string]string{
+	"А": "•—",
+	"Б": "—•••",
+	"В": "•——",
+	"Г": "——•",
+	"Д": "—••",
+	"Е": "•",
+	"Ж": "•••—",
+	"З": "——••",
+	"И": "••",
+	"Й": "•———",
+	"К": "—•—",
+	"Л": "•—••",
+	"М": "——",
+	"Н": "—•",
+	"О": "———",
+	"П": "•——•",
+	"Р": "•—•",
+	"С": "•••",
+	"Т": "—",
+	"У": "••—",
+	"Ф": "••—•",
+	"Х": "••••",
+	"Ц": "—•—•",
+	"Ч": "———•",
+	"Ш": "————",
+	"Щ": "——•—",
+	"Ъ": "——•——",
+	"Ы": "—•——",
+	"Ь": "—••—",
+	"Э": "••—••",
+	"Ю": "••——",
+	"Я": "•—•—",
+	"0": "—————",
+	"1": "•————",
+	"2": "••———",
+	"3": "•••——",
+	"4": "••••—",
+	"5": "•••••",
+	"6": "—••••",
+	"7": "——•••",
+	"8": "———••",
+	"9": "————•",
+}
 
 var defaultLessons = []Lesson{
 	{ID: 1, Title: "Буквы A и B", Theory: "A = .- , B = -...", Symbols: []string{"A","B"}, XPReward: 50},
 	{ID: 2, Title: "Добавляем C", Theory: "C = -.-.", Symbols: []string{"A","B","C"}, XPReward: 50},
 }
+
 
 type SymbolUpdate struct {
     Symbol  string `json:"symbol" binding:"required"`
@@ -158,6 +203,10 @@ type SymbolStat struct {
 	Wrong   int    `json:"wrong"`
 }
 
+type AddFriendRequest struct {
+    ReferralCode string `json:"referral_code"`
+}
+
 var usersMutex sync.Mutex
 var userIndex map[string]int
 
@@ -248,16 +297,31 @@ func generateRandomWord(symbols []string, length int) string {
 	return result
 }
 
-func textToMorse(text string) string {
+func textToMorse(text string, lang string) string {
+	fmt.Println("text:", text)
 	var result []string
 
-	for _, char := range text {
-		upper := strings.ToUpper(string(char))
-		if morse, ok := morseDictionary[upper]; ok {
-			result = append(result, morse)
+	if lang == "ru" {
+		morseDictionary := russianMorseDictionary
+		for _, char := range text {
+			upper := strings.ToUpper(string(char))
+			if morse, ok := morseDictionary[upper]; ok {
+				result = append(result, morse)
+			}
 		}
-	}
+		return strings.Join(result, " ")
 
+	} else if lang == "en" {
+		morseDictionary := englishMorseDictionary
+		for _, char := range text {
+			upper := strings.ToUpper(string(char))
+			if morse, ok := morseDictionary[upper]; ok {
+				result = append(result, morse)
+			}
+		}
+
+		return strings.Join(result, " ")
+	}
 	return strings.Join(result, " ")
 }
 
@@ -350,16 +414,22 @@ func readShop() ([]ShopItem, error) {
 	return shop, err
 }
 
-func readLessons() ([]Lesson, error) {
-	if _, err := os.Stat("lessons.json"); err != nil {
-		return defaultLessons, nil
+func readLessons(lang string) ([]Lesson, error) {
+
+	fileName := "lessons-EN.json"
+
+	if lang == "ru" {
+		fileName = "lessons-RU.json"
 	}
-	file, err := os.ReadFile("lessons.json")
+
+	file, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
+
 	var lessons []Lesson
 	err = json.Unmarshal(file, &lessons)
+
 	return lessons, err
 }
 
@@ -716,27 +786,27 @@ func main() {
 
 		if input.ReferralInput != "" {
 
-		var inviter *User
+			var inviter *User
 
-		for i := range users {
-			if users[i].ReferralCode == input.ReferralInput {
-				inviter = &users[i]
-				break
+			for i := range users {
+				if users[i].ReferralCode == input.ReferralInput {
+					inviter = &users[i]
+					break
+				}
 			}
+
+			if inviter == nil {
+				c.JSON(400, gin.H{"error": "Invalid referral code"})
+				return
+			}
+
+			user.ReferredBy = inviter.Username
+			inviter.ReferralCount++
+			inviter.Coins += 50
+			user.Coins += 25
 		}
 
-		if inviter == nil {
-			c.JSON(400, gin.H{"error": "Invalid referral code"})
-			return
-		}
-
-		user.ReferredBy = inviter.Username
-		inviter.ReferralCount++
-		inviter.Coins += 50
-		user.Coins += 25
-	}
-
-	user.ReferralCode = generateReferralCode(users)
+		user.ReferralCode = generateReferralCode(users)
 	
 		// Проверка на существование
 		for _, u := range users {
@@ -911,7 +981,7 @@ func main() {
 	})
 
 	res.POST("/api/complete-lesson", authMiddleware(), func(c *gin.Context) {
-
+		lang := c.DefaultQuery("lang", "en")
 		username := c.GetString("username")
 
 		var input struct {
@@ -929,7 +999,7 @@ func main() {
 			return
 		}
 
-		Lessons, err := readLessons()
+		Lessons, err := readLessons(lang)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Failed to read lessons", "details": err.Error(), "message": "Проблема открытия файла lessons.json. Убедитесь, что файл существует и имеет правильный формат."})
 			return
@@ -998,19 +1068,21 @@ func main() {
 	})
 
 	res.GET("/api/lessons", authMiddleware(), func(c *gin.Context) {
-		lessons, err := readLessons()
+		lang := c.DefaultQuery("lang", "en")
+
+		lessons, err := readLessons(lang)
 		if err != nil {
-			c.JSON(500, gin.H{
-				"message": "Проблема открытия файла с уроками. Убедитесь, что файл существует и имеет правильный формат.",
-				"error": "Failed to read lessons",
-			})
+			c.JSON(500, gin.H{"error": "failed"})
 			return
 		}
+
 		c.JSON(200, lessons)
+		
 	})
 
 	res.GET("/api/lessons/:id", authMiddleware(), func(c *gin.Context) {
-		lessons, err := readLessons()
+		lang := c.DefaultQuery("lang", "en")
+		lessons, err := readLessons(lang)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"message": "Проблема открытия файла с уроками. Убедитесь, что файл существует и имеет правильный формат.",
@@ -1030,9 +1102,10 @@ func main() {
 	})
 
 	res.GET("/api/practice/:id", authMiddleware(), func(c *gin.Context) {
+		lang := c.DefaultQuery("lang", "en")
 		username := c.GetString("username")
 
-		lessons, err := readLessons()
+		lessons, err := readLessons(lang)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Failed to read lessons"})
 			return
@@ -1113,7 +1186,7 @@ func main() {
 				})
 
 			case "morse":
-				correctWordMorse := textToMorse(correctWord)
+				correctWordMorse := textToMorse(correctWord, lang)
 
 				questions = append(questions, PracticeQuestion{
 					Type:     "morse",
@@ -1122,7 +1195,7 @@ func main() {
 				})
 
 			case "audio":
-				correctWordMorse := textToMorse(correctWord)
+				correctWordMorse := textToMorse(correctWord, lang)
 
 				questions = append(questions, PracticeQuestion{
 					Type:     "audio",
@@ -1141,7 +1214,17 @@ func main() {
 
 	res.POST("/api/practice", authMiddleware(), func(c *gin.Context) {
 		letters := c.Query("letters")
+		lang := c.Query("lang")
+		fmt.Println("letters:", letters)
+		fmt.Println("bytes:", []byte(letters))
 
+		if lang == "ru" && strings.ContainsAny(letters, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
+			c.JSON(400, gin.H{
+				"error": "Используйте русские буквы для lang=ru",
+			})
+			return
+		}
+		
 		types := []string{"text", "morse", "audio"}
 
 		var questions []LettersQuestion
@@ -1152,6 +1235,10 @@ func main() {
 
 			correctWord := generatePractice([]string{letters}, randomNumberOfSymbols)
 
+			if correctWord == "" {
+				fmt.Println("ERROR: correctWord empty")
+			}
+
 			switch randomType {
 
 			case "text":
@@ -1161,7 +1248,7 @@ func main() {
 				})
 
 			case "morse":
-				correctWordMorse := textToMorse(correctWord)
+				correctWordMorse := textToMorse(correctWord, lang)
 
 				questions = append(questions, LettersQuestion{
 					Type:     "morse",
@@ -1169,7 +1256,7 @@ func main() {
 				})
 
 			case "audio":
-				correctWordMorse := textToMorse(correctWord)
+				correctWordMorse := textToMorse(correctWord, lang)
 
 				questions = append(questions, LettersQuestion{
 					Type:     "audio",
@@ -1238,7 +1325,7 @@ func main() {
 	})
 
 	res.GET("/api/freemode", authMiddleware(), func(c *gin.Context) {
-
+		lang := c.Query("lang")
 		username := c.GetString("username")
 
 		users, err := readUsers()
@@ -1295,7 +1382,7 @@ func main() {
 			})
 
 		case "morse":
-			morse := textToMorse(question)
+			morse := textToMorse(question, lang)
 			c.JSON(200, gin.H{
 				"level": userLevel,
 				"type": "morse",
@@ -1511,21 +1598,21 @@ func main() {
 
 		for i := range users {
 
-		if users[i].Username == username {
+			if users[i].Username == username {
 
-			if users[i].ReferralCode == "" {
-				users[i].ReferralCode = generateReferralCode(users)
-				safeSaveUsers(users)
+				if users[i].ReferralCode == "" {
+					users[i].ReferralCode = generateReferralCode(users)
+					safeSaveUsers(users)
+				}
+
+				c.JSON(200, gin.H{
+					"referral_code":  users[i].ReferralCode,
+					"referred_by":    users[i].ReferredBy,
+					"referral_count": users[i].ReferralCount,
+				})
+				return
 			}
-
-			c.JSON(200, gin.H{
-				"referral_code":  users[i].ReferralCode,
-				"referred_by":    users[i].ReferredBy,
-				"referral_count": users[i].ReferralCount,
-			})
-			return
-		}
-	}		
+		}		
 		c.JSON(404, gin.H{"error": "user not found", "message": "Пользователь не найден. Убедитесь, что вы используете правильный токен и что пользователь существует."})
 	})
 
@@ -1615,6 +1702,117 @@ func main() {
 		}
 
 		c.JSON(200, result)
+	})
+
+	res.POST("/api/add-to-friend", authMiddleware(), func(c *gin.Context) {
+		type friendInfo struct {
+			Username         string `json:"username"`
+			Streak           int    `json:"streak"`
+			LastActive       string `json:"last_active"`
+			IndividualStreak int    `json:"individual_streak"`
+		}
+
+		type AddFriendRequest struct {
+			ReferralCode string `json:"referral_code"`
+		}
+
+		var req AddFriendRequest
+		if err := c.BindJSON(&req); err != nil {
+			c.JSON(400, gin.H{"error": "Invalid request body"})
+			return
+		}
+
+		code := req.ReferralCode
+		username := c.GetString("username")
+		friendsList := []friendInfo{}
+
+		// Читаем пользователей
+		users, err := readUsers()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read users", "details": err.Error()})
+			return
+		}
+
+		// Быстрый доступ по username
+		usersMap := make(map[string]*User)
+		for i := range users {
+			usersMap[users[i].Username] = &users[i]
+		}
+
+		// Ищем пользователя по реферальному коду
+		var friendUser *User
+		for i := range users {
+			if users[i].ReferralCode == code && users[i].Username != username {
+				friendUser = &users[i]
+				break
+			}
+		}
+
+		if friendUser != nil {
+			currUser := usersMap[username]
+
+			// Добавляем друг друга без дублей
+			addFriend := func(u *User, f string) {
+				if u.Friends == nil {
+					u.Friends = []string{}
+				}
+				for _, fr := range u.Friends {
+					if fr == f {
+						return
+					}
+				}
+				u.Friends = append(u.Friends, f)
+			}
+
+			addFriend(currUser, friendUser.Username)
+			addFriend(friendUser, username)
+
+			if err := safeSaveUsers(users); err != nil {
+				c.JSON(500, gin.H{"error": "Failed to save users", "details": err.Error()})
+				return
+			}
+		}
+
+		// Читаем streaks
+		streaks, err := readFriendshipStreaks()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read streaks"})
+			return
+		}
+
+		// Формируем friendsList без дублей
+		currUser := usersMap[username]
+		friendSet := map[string]bool{}
+		for _, f := range currUser.Friends {
+			if friendSet[f] {
+				continue
+			}
+			friendSet[f] = true
+
+			fUser, ok := usersMap[f]
+			if !ok {
+				continue
+			}
+
+			streak := 0
+			lastActive := ""
+			for _, s := range streaks {
+				if (s.User1 == username && s.User2 == f) || (s.User1 == f && s.User2 == username) {
+					streak = s.Streak
+					lastActive = s.LastActive
+					break
+				}
+			}
+
+			friendsList = append(friendsList, friendInfo{
+				Username:         f,
+				Streak:           streak,
+				LastActive:       lastActive,
+				IndividualStreak: fUser.Streak,
+			})
+		}
+
+		c.JSON(200, gin.H{"friends": friendsList})
 	})
 
 	res.Run(":8080")
