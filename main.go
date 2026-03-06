@@ -430,8 +430,8 @@ func weightedRandom(symbols []string, stats []SymbolStat) string {
 			weight = 1
 		}
 
-		if weight > 15 {
-			weight = 15
+		if weight > 5 {
+			weight = 5
 		}
 
 		weights[symbol] = weight
@@ -473,13 +473,30 @@ func updateStreak(user *User) {
 	user.LastLogin = today
 }
 
-func generateReferralCode() string {
+func generateReferralCode(users []User) string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, 8)
-	for i := range b {
-		b[i] = charset[rand.Intn(len(charset))]
+	for {
+
+		b := make([]byte, 4)
+		for i := range b {
+			b[i] = charset[rand.Intn(len(charset))]
+		}
+
+		code := string(b)
+
+		exists := false
+
+		for _, u := range users {
+			if u.ReferralCode == code {
+				exists = true
+				break
+			}
+		}
+
+		if !exists {
+			return code
+		}
 	}
-	return string(b)
 }
 
 func updateFriendshipStreak(user1, user2 string) error {
@@ -588,6 +605,27 @@ func updateAllFriendshipStreaks(username string) error {
 	return nil
 }
 
+func addToFriends(username string) error {
+	users, err := readUsers()
+	if err != nil {
+		return err
+	}
+	var currentUser *User
+	for i := range users {
+		if users[i].Username == username {
+			currentUser = &users[i]
+			break
+		}
+	}
+	if currentUser == nil {
+		return fmt.Errorf("user not found")
+	}
+
+	friends := currentUser.Friends
+	RefBy := currentUser.ReferredBy
+
+}
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	godotenv.Load()
@@ -629,30 +667,33 @@ func main() {
 			}
 		}
 
-		if user.ReferralCode == "" {
-			user.ReferralCode = generateReferralCode()
-		}
-		if user.ReferralCode != "" {
+		inviterCode := user.ReferralCode
+
+		if inviterCode != "" {
+
 			var inviter *User
-			for i, u := range users {
-				if u.ReferralCode == user.ReferralCode {
+
+			for i := range users {
+				if users[i].ReferralCode == inviterCode {
 					inviter = &users[i]
 					break
 				}
 			}
+
 			if inviter == nil {
-				c.JSON(400, gin.H{"error": "Invalid referral code", "message": "Реферальный код не найден."})
+				c.JSON(400, gin.H{
+					"error": "Invalid referral code",
+				})
 				return
 			}
 
 			user.ReferredBy = inviter.Username
-			user.Friends = append(user.Friends, inviter.Username)
-			inviter.Friends = append(inviter.Friends, user.Username) 
 			inviter.ReferralCount++
 			inviter.Coins += 50
-			user.Coins += 25 
+			user.Coins += 25
 		}
 
+		user.ReferralCode = generateReferralCode(users)
 
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 		user.Password = string(hashedPassword)
@@ -716,12 +757,17 @@ func main() {
 			[]byte(foundUser.Password),
 			[]byte(input.Password),
 		); err != nil {
+
 			c.JSON(401, gin.H{
-				"message": "Неверные имя пользователя или пароль. Убедитесь, что вы вводите правильные данные.",
 				"error": "Invalid username or password",
 			})
 			return
 		}
+
+		updateStreak(foundUser)
+		updateAllFriendshipStreaks(foundUser.Username)
+
+		saveUsers(users)
 
 		token, err := generateToken(foundUser.Username)
 		if err != nil {
@@ -751,15 +797,22 @@ func main() {
 		for _, u := range users {
 			if u.Username == username {
 				c.JSON(200, gin.H{
-					"username":    u.Username,
-					"email":       u.Email,
-					"xp":          u.XP,
-					"lesson_done": u.LessonDone,
-					"level":       u.Level,
-					"coins":       u.Coins,
-					"items":       u.Items,
-					"message":     "Профиль успешно загружен.",
-					"streak":      u.Streak,
+					"username":             u.Username,
+					"email":                u.Email,
+					"xp":                   u.XP,
+					"lesson_done":          u.LessonDone,
+					"level":                u.Level,
+					"coins":                u.Coins,
+					"items":                u.Items,
+					"message":              "Профиль успешно загружен.",
+					"streak":               u.Streak,
+					"refferal_code":        u.ReferralCode,
+					"reffered_by":          u.ReferredBy,
+					"referred_count":       u.ReferralCount,
+					"friends":              u.Friends,
+					"symbol_stats":         u.SymbolStats,
+					"need_xp":              u.NeedXp,
+					"UnlockedAchievements": u.UnlockedAchievements,
 				})
 				return
 			}
@@ -1367,16 +1420,23 @@ func main() {
 			return
 		}
 
-		for _, u := range users {
-			if u.Username == username {
-				c.JSON(200, gin.H{
-					"referral_code": u.ReferralCode,
-					"referred_by": u.ReferredBy,
-					"referral_count": u.ReferralCount,
-				})
-				return
+		for i := range users {
+
+		if users[i].Username == username {
+
+			if users[i].ReferralCode == "" {
+				users[i].ReferralCode = generateReferralCode(users)
+				saveUsers(users)
 			}
+
+			c.JSON(200, gin.H{
+				"referral_code":  users[i].ReferralCode,
+				"referred_by":    users[i].ReferredBy,
+				"referral_count": users[i].ReferralCount,
+			})
+			return
 		}
+	}
 
 		c.JSON(404, gin.H{"error": "user not found", "message": "Пользователь не найден. Убедитесь, что вы используете правильный токен и что пользователь существует."})
 	})
@@ -1446,6 +1506,27 @@ func main() {
 		}
 
 		c.JSON(200, gin.H{"friends": friendsList})
+	})
+
+	res.GET("/api/friendship-streaks", authMiddleware(), func(c *gin.Context) {
+
+		username := c.GetString("username")
+
+		streaks, err := readFriendshipStreaks()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "failed"})
+			return
+		}
+
+		var result []FriendshipStreak
+
+		for _, s := range streaks {
+			if s.User1 == username || s.User2 == username {
+				result = append(result, s)
+			}
+		}
+
+		c.JSON(200, result)
 	})
 
 	res.Run(":8080")
