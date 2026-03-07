@@ -210,6 +210,16 @@ type AddFriendRequest struct {
 var usersMutex sync.Mutex
 var userIndex map[string]int
 
+func removeFriend(slice []string, name string) []string {
+    for i, v := range slice {
+        if v == name {
+            // Берем всё до i и добавляем всё после i
+            return append(slice[:i], slice[i+1:]...)
+        }
+    }
+    return slice
+}
+
 func buildUserIndex(users []User) {
 	userIndex = make(map[string]int)
 
@@ -1813,6 +1823,71 @@ func main() {
 		}
 
 		c.JSON(200, gin.H{"friends": friendsList})
+	})
+
+	res.POST("/api/delete-friend", authMiddleware(), func(c *gin.Context) {
+		type friendInfo struct {
+			Username         string `json:"username"`
+			Streak           int    `json:"streak"`
+			LastActive       string `json:"last_active"`
+			IndividualStreak int    `json:"individual_streak"`
+		}
+
+		type DeleteFriendRequest struct {
+			Username string `json:"username"`
+		}
+		var deleteReq DeleteFriendRequest
+		if err := c.ShouldBindJSON(&deleteReq); err != nil {
+			c.JSON(400, gin.H{"error": "Неверный формат запроса"})
+			return
+		}
+
+		username := c.GetString("username")
+
+		users, err := readUsers()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read users", "details": err.Error()})
+			return
+		}
+
+		usersMap := make(map[string]*User)
+		for i := range users {
+			usersMap[users[i].Username] = &users[i]
+		}
+
+		var friendUser *User
+		for i := range users {
+			if users[i].Username == deleteReq.Username {
+				c.JSON(400, gin.H{"error": "Нельзя удалить самого себя"})
+				friendUser = &users[i]
+				break
+			}		
+		}
+
+		if friendUser.Username == username {
+			c.JSON(400, gin.H{"error": "Нельзя удалить самого себя"})
+			return
+		}
+
+		if friendUser == nil {
+			c.JSON(404, gin.H{"error": "Пользователь с таким кодом не найден"})
+			return
+		}
+
+		currUser := usersMap[username]
+		currUser.Friends = removeFriend(currUser.Friends, friendUser.Username)
+		friendUser.Friends = removeFriend(friendUser.Friends, currUser.Username)
+
+		if err := safeSaveUsers(users); err != nil {
+			c.JSON(500, gin.H{"error": "Не удалось сохранить изменения"})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"message": "Друг успешно удален",
+			"friends": currUser.Friends,
+		})
+
 	})
 
 	res.Run(":8080")
