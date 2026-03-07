@@ -1,12 +1,93 @@
 [
   {
-    "username": "admin",
-    "email": "test@test.com",
-    "password": "$2a$10$vZvd3aTRIvNA6V6sxbQ7CObF6GLik0tCFnF1UOGzTCnDPsBDSEaHS",
+    "username": "Cautro",
+    "email": "test@test.test",
+    "password": "$2a$10$Wgn.Lp/t1KweXKPq.kAGZOqHZMFF408y8OsKum18/85ajqx5wZZn2",
     "xp": 0,
     "lesson_done": 0,
-    "level": 1,
+    "level": 0,
     "coins": 0,
-    "items": null
+    "items": null,
+    "need_xp": 0,
+    "streak": 0,
+    "last_streak": 0,
+    "answer_streak": 0,
+    "last_login": "",
+    "UnlockedAchievements": null,
+    "symbol_stats": null,
+    "referral_code": "KWSE",
+    "referred_by": "",
+    "referred_count": 0,
+    "friends": []
+  },
+  {
+    "username": "admin",
+    "email": "test2@test.test",
+    "password": "$2a$10$6ZkSu4687UnX3qa4BOkz0OaaMTxLco5mZwYJlsbAmPh/9PBcJSd76",
+    "xp": 0,
+    "lesson_done": 0,
+    "level": 0,
+    "coins": 100,
+    "items": null,
+    "need_xp": 0,
+    "streak": 1,
+    "last_streak": 0,
+    "answer_streak": 0,
+    "last_login": "2026-03-06",
+    "UnlockedAchievements": null,
+    "symbol_stats": null,
+    "referral_code": "WICE",
+    "referred_by": "",
+    "referred_count": 2,
+    "friends": [
+      "test",
+      "test3"
+    ]
+  },
+  {
+    "username": "test",
+    "email": "test1@test.test",
+    "password": "$2a$10$P60IBdDsPeGLrGkFDVL0U.OxRaaTCnpvCEYcvNU5UNTsy2Tp1Gxym",
+    "xp": 0,
+    "lesson_done": 0,
+    "level": 0,
+    "coins": 25,
+    "items": null,
+    "need_xp": 0,
+    "streak": 2,
+    "last_streak": 2,
+    "answer_streak": 0,
+    "last_login": "2026-03-07",
+    "UnlockedAchievements": null,
+    "symbol_stats": null,
+    "referral_code": "8IRG",
+    "referred_by": "admin",
+    "referred_count": 0,
+    "friends": [
+      "admin"
+    ]
+  },
+  {
+    "username": "test3",
+    "email": "test21@test.test",
+    "password": "$2a$10$2d3qGJ/WXBeVPjb3aVwaMOGGAbg9QouJxdf.6NBPqEShsZ14qP89u",
+    "xp": 0,
+    "lesson_done": 0,
+    "level": 0,
+    "coins": 25,
+    "items": null,
+    "need_xp": 0,
+    "streak": 0,
+    "last_streak": 0,
+    "answer_streak": 0,
+    "last_login": "",
+    "UnlockedAchievements": null,
+    "symbol_stats": null,
+    "referral_code": "KUJTT0",
+    "referred_by": "admin",
+    "referred_count": 0,
+    "friends": [
+      "admin"
+    ]
   }
 ]
