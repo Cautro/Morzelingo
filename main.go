@@ -1811,7 +1811,9 @@ func main() {
 			if users[i].ReferralCode == code && users[i].Username != username {
 				friendUser = &users[i]
 				break
-			}
+			} else if users[i].ReferralCode != code {
+				c.JSON(400, gin.H{"error": "Dont valid code"})
+			} 
 		}
 
 		if friendUser != nil {
