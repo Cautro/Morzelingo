@@ -134,7 +134,9 @@ type User struct {
 	Email                string `json:"email"`
 	Password             string `json:"password"`
 	XP                   int    `json:"xp"`
-	LessonDone           int    `json:"lesson_done"`
+	lastLessonDone       int    `ison:"lesson_done"`
+	LessonDone_RU        int    `json:"lesson_done_ru"`
+	LessonDone_EN		 int    `ison:"lesson_done_en"`
 	Level                int    `json:"level"`
 	Coins                int    `json:"coins"`
 	Items                []int  `json:"items"`
@@ -235,15 +237,20 @@ func safeSaveUsers(users []User) error {
 	return saveUsers(users)
 }
 
-func checkAchievements(user *User) ([]Achievement, error) {
-
+func checkAchievements(user *User, lang string) ([]Achievement, error) {
 	achievements, err := readAchi()
 	if err != nil {
 		return nil, err
 	}
 
-	var unlockedNow []Achievement
+	var LessonDone int
+	if lang == "ru" {
+		LessonDone = user.LessonDone_RU
+	} else if lang == "en" {
+		LessonDone = user.LessonDone_EN
+	}
 
+	var unlockedNow []Achievement
 	for _, ach := range achievements {
 		if contains(user.UnlockedAchievements, ach.Name) {
 			continue
@@ -254,12 +261,12 @@ func checkAchievements(user *User) ([]Achievement, error) {
 		switch ach.ID {
 
 		case 1:
-			if user.LessonDone >= 1 {
+			if LessonDone >= 1 {
 				unlock = true
 			}
 
 		case 2:
-			if user.LessonDone >= 5 {
+			if LessonDone >= 5 {
 				unlock = true
 			}
 
@@ -765,6 +772,32 @@ func addToFriends(username string) error {
 	return nil
 }
 
+func checkAndUpdateParameters(username string) error {
+	users, err := readUsers()
+	if err != nil {
+		return err
+	}
+	updated := false
+	for i := range users {
+		if users[i].Username == username {
+			if users[i].LessonDone_EN == 0 {
+				users[i].LessonDone_EN = users[i].lastLessonDone
+				users[i].lastLessonDone = 0
+				updated = true
+			}
+		}
+	}
+
+	if updated {
+		err := safeSaveUsers(users)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	godotenv.Load()
@@ -860,6 +893,7 @@ func main() {
 		}
 
 		var input LoginInput
+		go checkAndUpdateParameters(input.Username)
 
 		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(400, gin.H{
@@ -905,7 +939,7 @@ func main() {
 		}
 
 		updateStreak(foundUser)
-		updateAllFriendshipStreaks(foundUser.Username)
+	    updateAllFriendshipStreaks(foundUser.Username)
 		if foundUser.ReferralCode == "" {
 			foundUser.ReferralCode = generateReferralCode(users)
 		}
@@ -928,7 +962,7 @@ func main() {
 	})
 
 	res.GET("/api/profile", authMiddleware(), func(c *gin.Context) {
-
+		// lang := c.DefaultQuery("lang", "en")
 		username, exists := c.Get("username")
 		if !exists {
 			c.JSON(500, gin.H{"error": "username not found in context", "message": "Внутренняя ошибка сервера. Попробуйте снова."})
@@ -961,12 +995,20 @@ func main() {
 		fmt.Println("result", result)
 
 		for _, u := range users {
+			go checkAndUpdateParameters(u.Username)
+			// var LessonDone int
+			// if lang == "ru" {
+			// 	LessonDone = u.LessonDone_RU
+			// } else if lang == "en" {
+			// 	LessonDone = u.LessonDone_EN
+			// }
 			if u.Username == username {
 				c.JSON(200, gin.H{
 					"username":             u.Username,
 					"email":                u.Email,
 					"xp":                   u.XP,
-					"lesson_done":          u.LessonDone,
+					"lesson_done_ru":       u.LessonDone_RU,
+					"lesson_done_en":		u.LessonDone_EN,
 					"level":                u.Level,
 					"coins":                u.Coins,
 					"items":                u.Items,
@@ -1016,21 +1058,33 @@ func main() {
 		}
 
 		for i, u := range users {
+			go checkAndUpdateParameters(u.Username)
+			var LessonDone int
+			if lang == "ru" {
+				LessonDone = u.LessonDone_RU
+			} else if lang == "en" {
+				LessonDone = u.LessonDone_EN
+			}
 			if u.Username == username {
-				if input.LessonID != u.LessonDone+1 {
+				if input.LessonID != LessonDone+1 {
 					c.JSON(400, gin.H{"error": "Invalid lesson order", "message": "Неверный порядок уроков. Убедитесь, что вы завершаете уроки в правильной последовательности."})
 					return
 				}
 
-				newAchievements, err := checkAchievements(&users[i])
+				newAchievements, err := checkAchievements(&users[i], lang)
 				if err != nil {
 					c.JSON(500, gin.H{"error": "Failed to check achievements"})
 					return
 				}
 
-				users[i].LessonDone++
+				LessonDone++
 				users[i].XP += Lessons[input.LessonID-1].XPReward 
-				
+				switch lang {
+				case "ru":
+					users[i].LessonDone_RU = LessonDone
+				case "en":
+					users[i].LessonDone_EN = LessonDone
+				}
 				needXpForNewLevel := 1 + float64(users[i].Level)*1.5
 				users[i].NeedXp = int(needXpForNewLevel * 100)
 				updateStreak(&users[i])
@@ -1057,7 +1111,6 @@ func main() {
 				}
 
 				if err := updateAllFriendshipStreaks(username); err != nil {
-					// логируем ошибку, но не прерываем ответ
 					fmt.Println("Error updating friendship streaks:", err)
 				}
 
@@ -1135,6 +1188,7 @@ func main() {
 				break
 			}
 		}
+		go checkAndUpdateParameters(user.Username)
 
 		if user == nil {
 			c.JSON(404, gin.H{"error": "User not found"})
@@ -1297,6 +1351,7 @@ func main() {
 		}
 
 		for i, u := range users {
+			go checkAndUpdateParameters(u.Username)
 			if u.Username == username {
 				for _, upd := range updates {
 					found := false
@@ -1418,6 +1473,7 @@ func main() {
 		}
 		
 		for i, u := range users {
+			go checkAndUpdateParameters(u.Username)
 			if u.Username == username {
 
 				users[i].Coins += 5
@@ -1607,7 +1663,7 @@ func main() {
 		}
 
 		for i := range users {
-
+			go checkAndUpdateParameters(users[i].Username)
 			if users[i].Username == username {
 
 				if users[i].ReferralCode == "" {
