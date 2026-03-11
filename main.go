@@ -134,9 +134,9 @@ type User struct {
 	Email                string `json:"email"`
 	Password             string `json:"password"`
 	XP                   int    `json:"xp"`
-	lastLessonDone       int    `ison:"lesson_done"`
+	lastLessonDone       int    `json:"lesson_done"`
 	LessonDone_RU        int    `json:"lesson_done_ru"`
-	LessonDone_EN		 int    `ison:"lesson_done_en"`
+	LessonDone_EN		 int    `json:"lesson_done_en"`
 	Level                int    `json:"level"`
 	Coins                int    `json:"coins"`
 	Items                []int  `json:"items"`
