@@ -48,83 +48,95 @@ type SymbolStat struct {
 }
 
 
-var englishMorseDictionary = map[string]string{
-	"A": "•—",
-	"B": "—•••",
-	"C": "—•—•",
-	"D": "—••",
-	"E": "•",
-	"F": "••—•",
-	"G": "——•",
-	"H": "••••",
-	"I": "••",
-	"J": "•———",
-	"K": "—•—",
-	"L": "•—••",
-	"M": "——",
-	"N": "—•",
-	"O": "———",
-	"P": "•——•",
-	"Q": "——•—",
-	"R": "•—•",
-	"S": "•••",
-	"T": "—",
-	"U": "••—",
-	"V": "•••—",
-	"W": "•——",
-	"X": "—••—",
-	"Y": "—•——",
-	"Z": "——••",
+var EnglishMorseDictionary = map[string]string{
+	"A": ".-",
+	"B": "-...",
+	"C": "-.-.",
+	"D": "-..",
+	"E": ".",
+	"F": "..-.",
+	"G": "--.",
+	"H": "....",
+	"I": "..",
+	"J": ".---",
+	"K": "-.-",
+	"L": ".-..",
+	"M": "--",
+	"N": "-.",
+	"O": "---",
+	"P": ".--.",
+	"Q": "--.-",
+	"R": ".-.",
+	"S": "...",
+	"T": "-",
+	"U": "..-",
+	"V": "...-",
+	"W": ".--",
+	"X": "-..-",
+	"Y": "-.--",
+	"Z": "--..",
 }
 
-var russianMorseDictionary = map[string]string{
-	"А": "•—",
-	"Б": "—•••",
-	"В": "•——",
-	"Г": "——•",
-	"Д": "—••",
-	"Е": "•",
-	"Ж": "•••—",
-	"З": "——••",
-	"И": "••",
-	"Й": "•———",
-	"К": "—•—",
-	"Л": "•—••",
-	"М": "——",
-	"Н": "—•",
-	"О": "———",
-	"П": "•——•",
-	"Р": "•—•",
-	"С": "•••",
-	"Т": "—",
-	"У": "••—",
-	"Ф": "••—•",
-	"Х": "••••",
-	"Ц": "—•—•",
-	"Ч": "———•",
-	"Ш": "————",
-	"Щ": "——•—",
-	"Ъ": "——•——",
-	"Ы": "—•——",
-	"Ь": "—••—",
-	"Э": "••—••",
-	"Ю": "••——",
-	"Я": "•—•—",
-	"0": "—————",
-	"1": "•————",
-	"2": "••———",
-	"3": "•••——",
-	"4": "••••—",
-	"5": "•••••",
-	"6": "—••••",
-	"7": "——•••",
-	"8": "———••",
-	"9": "————•",
+var RussianMorseDictionary = map[string]string{
+	"А": ".-",
+	"Б": "-...",
+	"В": ".--",
+	"Г": "--.",
+	"Д": "-..",
+	"Е": ".",
+	"Ж": "...-",
+	"З": "--..",
+	"И": "..",
+	"Й": ".---",
+	"К": "-.-",
+	"Л": ".-..",
+	"М": "--",
+	"Н": "-.",
+	"О": "---",
+	"П": ".--.",
+	"Р": ".-.",
+	"С": "...",
+	"Т": "-",
+	"У": "..-",
+	"Ф": "..-.",
+	"Х": "....",
+	"Ц": "-.-.",
+	"Ч": "---.",
+	"Ш": "----",
+	"Щ": "--.-",
+	"Ъ": "--.--",
+	"Ы": "-.--",
+	"Ь": "-..-",
+	"Э": "..-..",
+	"Ю": "..--",
+	"Я": ".-.-",
+	"0": "-----",
+	"1": ".----",
+	"2": "..---",
+	"3": "...--",
+	"4": "....-",
+	"5": ".....",
+	"6": "-....",
+	"7": "--...",
+	"8": "---..",
+	"9": "----.",
 }
 
-var defaultLessons = []Lesson{
-	{ID: 1, Title: "Буквы A и B", Theory: "A = .- , B = -...", Symbols: []string{"A","B"}, XPReward: 50},
-	{ID: 2, Title: "Добавляем C", Theory: "C = -.-.", Symbols: []string{"A","B","C"}, XPReward: 50},
+var DefaultLessons = []Lesson{
+	{
+		ID: 1,
+		Title: "Буквы A и B",
+		Theory: "A = .- , B = -...",
+		Symbols: []string{"A", "B"},
+		XPReward: 50,
+	},
+	{
+		ID: 2,
+		Title: "Добавляем C",
+		Theory: "C = -.-.",
+		Symbols: []string{"A", "B", "C"},
+		XPReward: 50,
+	},
 }
 
 func removeFriend(slice []string, name string) []string {
@@ -138,7 +150,6 @@ func removeFriend(slice []string, name string) []string {
 
 func buildUserIndex(users []models.User) {
 	userIndex = make(map[string]int)
-
 	for i, u := range users {
 		userIndex[u.Username] = i
 	}
@@ -151,7 +162,7 @@ func safeSaveUsers(users []models.User) error {
 	return saveUsers(users)
 }
 
-func checkAchievements(user []models.User, lang string) ([]Achievement, error) {
+func checkAchievements(user models.User, lang string) ([]Achievement, error) {
 	achievements, err := readAchi()
 	if err != nil {
 		return nil, err
@@ -233,7 +244,7 @@ func textToMorse(text string, lang string) string {
 	var result []string
 
 	if lang == "ru" {
-		morseDictionary := russianMorseDictionary
+		morseDictionary := RussianMorseDictionary
 		for _, char := range text {
 			upper := strings.ToUpper(string(char))
 			if morse, ok := morseDictionary[upper]; ok {
@@ -243,7 +254,7 @@ func textToMorse(text string, lang string) string {
 		return strings.Join(result, " ")
 
 	} else if lang == "en" {
-		morseDictionary := englishMorseDictionary
+		morseDictionary := EnglishMorseDictionary
 		for _, char := range text {
 			upper := strings.ToUpper(string(char))
 			if morse, ok := morseDictionary[upper]; ok {
@@ -362,7 +373,7 @@ func saveUsers(users []models.User) error {
 	return os.WriteFile("users.json", data, 0644)
 }
 
-func addUser(newUser []models.User) error {
+func addUser(newUser models.User) error {
 	users, err := readUsers()
 	if err != nil {
 		return err
@@ -393,7 +404,7 @@ func generatePractice(symbols []string, length int) string {
 	return result
 }
 
-func getHardSymbols(stats []SymbolStat) []string {
+func getHardSymbols(stats []models.SymbolStat) []string {
     var hard []string
     for _, s := range stats {
         if s.Wrong >= 2 {
@@ -403,7 +414,7 @@ func getHardSymbols(stats []SymbolStat) []string {
     return hard
 }
 
-func registerWrong(user []models.User, symbol string) {
+func registerWrong(user models.User, symbol string, username string) {
 	for i := range user.SymbolStats {
 		if user.SymbolStats[i].Symbol == symbol {
 			user.SymbolStats[i].Wrong++
@@ -411,13 +422,13 @@ func registerWrong(user []models.User, symbol string) {
 		}
 	}
 
-	user.SymbolStats = append(user.SymbolStats, SymbolStat{
+	user.SymbolStats = append(user.SymbolStats, models.SymbolStat{
 		Symbol: symbol,
 		Wrong:  1,
 	})
 }
 
-func weightedRandom(symbols []string, stats []SymbolStat) string {
+func weightedRandom(symbols []string, stats []models.SymbolStat) string {
 
 	weights := make(map[string]int)
 	totalWeight := 0
@@ -462,7 +473,7 @@ func weightedRandom(symbols []string, stats []SymbolStat) string {
 	return symbols[rand.Intn(len(symbols))]
 }
 
-func updateStreak(user []models.User) {
+func updateStreak(user models.User) {
 	user.LastStreak = user.Streak
 	today := time.Now().UTC().Format("2006-01-02")
 
@@ -523,10 +534,10 @@ func updateFriendshipStreak(user1, user2 string) error {
 	}
 
 	if found != nil {
-		// уже есть запись
+		// СѓР¶Рµ РµСЃС‚СЊ Р·Р°РїРёСЃСЊ
 		s := &streaks[*found]
 		if s.LastActive == today {
-			// уже обновляли сегодня
+			// СѓР¶Рµ РѕР±РЅРѕРІР»СЏР»Рё СЃРµРіРѕРґРЅСЏ
 			return nil
 		}
 		yesterday := time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02")
@@ -537,7 +548,7 @@ func updateFriendshipStreak(user1, user2 string) error {
 		}
 		s.LastActive = today
 	} else {
-		// новая пара
+		// РЅРѕРІР°СЏ РїР°СЂР°
 		streaks = append(streaks, FriendshipStreak{
 			User1:      user1,
 			User2:      user2,
@@ -575,7 +586,7 @@ func updateAllFriendshipStreaks(username string) error {
 	if err != nil {
 		return err
 	}
-	var currentUser []models.User
+	var currentUser *models.User
 	for i := range users {
 		if users[i].Username == username {
 			currentUser = &users[i]
@@ -591,7 +602,7 @@ func updateAllFriendshipStreaks(username string) error {
 
 	today := time.Now().UTC().Format("2006-01-02")
 	for _, friend := range currentUser.Friends {
-		var friendUser []models.User
+		var friendUser *models.User
 		for i := range users {
 			if users[i].Username == friend {
 				friendUser = &users[i]
@@ -618,8 +629,8 @@ func addToFriends(username string) error {
 		return err
 	}
 
-	var currentUser []models.User
-	var inviter []models.User
+	var currentUser *models.User
+	var inviter *models.User
 
 	for i := range users {
 		if users[i].Username == username {
@@ -667,8 +678,8 @@ func checkAndUpdateParameters(username string) error {
 	for i := range users {
 		if users[i].Username == username {
 			if users[i].LessonDone_EN == 0 {
-				users[i].LessonDone_EN = users[i].lastLessonDone
-				users[i].lastLessonDone = 0
+				users[i].LessonDone_EN = users[i].LastLessonDone
+				users[i].LastLessonDone = 0
 				updated = true
 			}
 		}
@@ -682,4 +693,13 @@ func checkAndUpdateParameters(username string) error {
 	}
 
 	return nil
+}
+
+func FindUser(users []models.User, username string) (*models.User, bool) {
+	for i := range users {
+		if users[i].Username == username {
+			return &users[i], true
+		}
+	}
+	return nil, false
 }

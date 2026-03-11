@@ -12,7 +12,7 @@ import (
 
 	"github.com/cautro/morzelingo/internal/app"
 	"github.com/cautro/morzelingo/internal/models"
-	
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -153,7 +153,10 @@ func MakeRegisterHandler(a *app.App) gin.HandlerFunc {
 		}
 
 		if in.ReferralInput != "" {
-			_ = a.UpdateUser(newUser.Username, func(u *models.User) error { return nil })
+			_, err := a.UpdateUser(newUser.Username, func(u *models.User) error { return nil })
+			if err != nil {
+				c.JSON(500, gin.H{"error": "error in 157 line(auth.go)"})
+			}
 			for i := range users {
 				if users[i].ReferralCode == in.ReferralInput {
 					_, _ = a.UpdateUser(users[i].Username, func(x *models.User) error {
