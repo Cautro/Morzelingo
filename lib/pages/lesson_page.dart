@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:morzelingo/pages/loading_page.dart';
 
 import '../config.dart';
+import '../settings_context.dart';
 import '../storage_context.dart';
 
 class LessonPage extends StatefulWidget {
@@ -26,7 +27,8 @@ class _LessonPageState extends State<LessonPage> {
   void getData() async {
     String? id = await StorageService.getItem("lessonid");
     String? token = await StorageService.getItem("token");
-    final res = await http.get(Uri.parse("${API}/api/lessons/${id}"),
+    final lang = await SettingsService.getLang();
+    final res = await http.get(Uri.parse("${API}/api/lessons/${id}/?lang=${lang.trim()}"),
       headers: {
         'Authorization': 'Bearer $token',
       },

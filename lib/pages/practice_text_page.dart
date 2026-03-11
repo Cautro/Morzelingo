@@ -7,14 +7,17 @@ import 'package:morzelingo/storage_context.dart';
 import 'dart:convert';
 import 'package:morzelingo/widgets/morse_key.dart';
 
+import '../theme_controller.dart';
+
 class PracticeTextPage extends StatefulWidget {
   final String question;
   final String answer;
   final Function onAnswer;
   final bool isLast;
   final bool isLetter;
+  final double currentquestion;
 
-  const PracticeTextPage({super.key, required this.answer, required this.question, required this.onAnswer, required this.isLast, required this. isLetter});
+  const PracticeTextPage({super.key, required this.answer, required this.question, required this.onAnswer, required this.isLast, required this. isLetter, required this.currentquestion});
 
   @override
   State<PracticeTextPage> createState() => _PracticeTextPageState();
@@ -137,6 +140,7 @@ class _PracticeTextPageState extends State<PracticeTextPage> {
   @override
   void initState() {
     super.initState();
+    print(widget.currentquestion);
   }
 
   @override
@@ -148,12 +152,20 @@ class _PracticeTextPageState extends State<PracticeTextPage> {
               padding: EdgeInsets.all(16),
               child: Column(
                 children: [
+                  LinearProgressIndicator(
+                    value: widget.currentquestion,
+                    color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
+                    minHeight: 12,
+                    backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
+                    borderRadius: BorderRadiusGeometry.circular(16),
+                  ),
+                  SizedBox(height: 8,),
                   SizedBox(
                     width: double.infinity,
                     child: Card(
                       child: Padding(
                         padding: EdgeInsets.all(16),
-                        child: Text("Переведите: ${widget.question}"),
+                        child: Text("Переведите: ${widget.question}", style: Theme.of(context).textTheme.bodyLarge,),
                       ),
                     ),
                   ),

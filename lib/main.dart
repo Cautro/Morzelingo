@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:morzelingo/pages/friends_page.dart';
 import 'package:morzelingo/pages/letters_stats_page.dart';
 import 'package:morzelingo/theme_controller.dart';
+import 'package:yandex_mobileads/mobile_ads.dart';
 import 'app_theme.dart';
 import 'pages/login_page.dart';
 import 'pages/register_page.dart';
@@ -19,7 +21,47 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    MobileAds.setUserConsent(true);
+    MobileAds.initialize();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadAd();
+    });
+  }
+
+  BannerAdSize _getAdSize() {
+    final screenwidth = MediaQuery.of(context).size.width.round();
+    return BannerAdSize.inline(width: screenwidth, maxHeight: 60);
+    }
+
+  late BannerAd banner;
+  var isBannerAlreadyCreated = false;
+
+  _loadAd() {
+    banner = _createBanner();
+    banner.loadAd(adRequest: AdRequest());
+    setState(() {
+      isBannerAlreadyCreated = true;
+    });
+  }
+
+  _createBanner() {
+    return BannerAd(
+        adUnitId: 'R-M-18875854-1', // or 'demo-banner-yandex'
+        adSize: _getAdSize(),
+        adRequest: const AdRequest(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +91,23 @@ class MyApp extends StatelessWidget {
             "/practiceletter": (context) => PracticeLettersPage(),
             "/settings": (context) => SettingsPage(),
             "/lettersstats": (context) => LettersStatsPage(),
+            "/friends": (context) => FriendsPage(),
+          },
+          builder: (context, child) {
+            return Column(
+              children: [
+
+                Expanded(
+                  child: child!,
+                ),
+
+                if (isBannerAlreadyCreated)
+                  SizedBox(
+                    height: 60,
+                    child: AdWidget(bannerAd: banner),
+                  ),
+              ],
+            );
           },
         );
       },

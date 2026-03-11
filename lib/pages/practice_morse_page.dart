@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../app_theme.dart';
 import '../config.dart';
 import '../storage_context.dart';
+import '../theme_controller.dart';
 
 class PracticeMorsePage extends StatefulWidget {
   final String question;
@@ -14,7 +15,8 @@ class PracticeMorsePage extends StatefulWidget {
   final Function onAnswer;
   final bool isLetter;
   final bool isLast;
-  const PracticeMorsePage({super.key, required this.answer, required this.question, required this.onAnswer, required this.isLetter, required this.isLast});
+  final double currentquestion;
+  const PracticeMorsePage({super.key, required this.currentquestion, required this.answer, required this.question, required this.onAnswer, required this.isLetter, required this.isLast});
 
   @override
   State<PracticeMorsePage> createState() => _PracticeMorsePageState();
@@ -152,6 +154,14 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
           padding: EdgeInsetsGeometry.all(24),
           child: Column(
             children: [
+              LinearProgressIndicator(
+                value: widget.currentquestion,
+                color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
+                minHeight: 12,
+                backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
+                borderRadius: BorderRadiusGeometry.circular(16),
+              ),
+              SizedBox(height: 8,),
               Container(
                   width: double.infinity,
                   child: Card(
@@ -161,11 +171,13 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
                         children: [
                           SizedBox(
                             width: double.infinity,
-                            child: Card(
-                              child: Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Text("Переведите: ${widget.question}"),
-                              ),
+                            child: Row(
+                              children: [
+                               Padding(
+                                 padding: EdgeInsets.all(8),
+                                 child: Text("Переведите: ${widget.question}", style: Theme.of(context).textTheme.bodyLarge,),
+                               ),
+                              ]
                             ),
                           ),
                           SizedBox(height: 16,),

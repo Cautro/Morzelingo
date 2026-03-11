@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:morzelingo/settings_context.dart';
+import 'package:morzelingo/storage_context.dart';
 import 'package:morzelingo/theme_controller.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -30,7 +31,8 @@ class _SettingsPageState extends State<SettingsPage> {
           child: Column(
             children: [
               _wpmSlider(),
-              _themeController()
+              _themeController(),
+              _langController()
             ],
           ),
         ),
@@ -116,6 +118,72 @@ class _themeControllerState extends State<_themeController> {
           },
         ),
       ),
+    );
+  }
+}
+
+class _langController extends StatefulWidget {
+  const _langController({super.key});
+
+  @override
+  State<_langController> createState() => _langControllerState();
+}
+
+class _langControllerState extends State<_langController> {
+  String selected = "";
+
+  @override
+  Future<void> getLang() async {
+    String? lang = await SettingsService.getLang();
+    setState(() {
+      selected = lang;
+    });
+    print(selected);
+  }
+
+  @override
+  void initState()  {
+    super.initState();
+    getLang();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        children: [
+          Text("Язык обучения", style: Theme.of(context).textTheme.bodyLarge,),
+          Card(
+            child: SizedBox(
+              width: double.infinity,
+              child: SegmentedButton(
+                segments: [
+                  ButtonSegment(
+                      value: "en",
+                      label: Text("Английский")
+                  ),
+                  ButtonSegment(
+                      value: "ru",
+                      label: Text("Русский", style: TextStyle(
+                      ),)
+                  ),
+                ],
+                style: ButtonStyle(
+                    side: MaterialStatePropertyAll(BorderSide.none)
+                ),
+                selected: {selected},
+                onSelectionChanged: (Set<String> newselect) {
+                  setState(() {
+                    selected = newselect.first;
+                  });
+                  SettingsService.setLang(selected);
+                },
+              ),
+            )
+          ),
+        ],
+      )
     );
   }
 }

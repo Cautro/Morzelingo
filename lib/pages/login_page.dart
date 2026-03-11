@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacementNamed(context, "/home");
     } else {
       Fluttertoast.showToast(
-          msg: data["error"],
+          msg: data["message"],
           backgroundColor: AppTheme.error,
           textColor: Colors.white
       );

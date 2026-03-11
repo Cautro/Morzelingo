@@ -54,6 +54,40 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  void Logout() async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Вы уверены что хотите выйти?"),
+            content: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+                    onPressed: () async {
+                      Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false,);
+                      await StorageService.clearAll();
+                    },
+                    child: Text("Выйти!",),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("Остаться"),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -110,10 +144,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
-                          Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false,);
-                          await StorageService.clearAll();
+                          Logout();
                         },
-                        style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.error),
                         child: Text("Выйти из аккаунта", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),),
                       )
                     )
@@ -182,16 +216,28 @@ class _ProfileCard extends StatelessWidget {
               _ProfileItem(text: "Реферальный код: ${refferal}", icon: Icon(Icons.link, color: Colors.blue,))
             ],
           ),
-          Padding(padding: EdgeInsets.all(8)),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, "/lettersstats");
-              },
-              child: Text("Статистика букв"),
-            ),
-          )
+          SizedBox(height: 8,),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/friends");
+                  },
+                  child: Text("Друзья"),
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/lettersstats");
+                  },
+                  child: Text("Статистика букв"),
+                ),
+              ),
+            ],
+          ),
         ],
       )
     );

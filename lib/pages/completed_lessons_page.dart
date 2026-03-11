@@ -71,7 +71,7 @@ class _CompletedLessonsPageState extends State<CompletedLessonsPage> {
         child: Container(
           padding: EdgeInsets.all(24),
           width: double.infinity,
-          child: Column(
+          child: completed.isNotEmpty ? Column(
             children: completed.map((item) {
               return Container(
                 width: double.infinity,
@@ -89,7 +89,7 @@ class _CompletedLessonsPageState extends State<CompletedLessonsPage> {
                 )
               );
             }).toList(),
-          )
+          ) : Center(child: Text("Вы пока не прошли ни одного урока"),)
         )
       ),
     );

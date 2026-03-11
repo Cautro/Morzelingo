@@ -7,6 +7,7 @@ import 'package:morzelingo/pages/practice_morse_page.dart';
 import 'package:morzelingo/pages/practice_text_page.dart';
 
 import '../config.dart';
+import '../settings_context.dart';
 import '../storage_context.dart';
 
 class PracticePage extends StatefulWidget {
@@ -29,7 +30,8 @@ class _PracticePageState extends State<PracticePage> {
   void getQuestion() async {
     String? id = await StorageService.getItem("lessonid");
     String? token = await StorageService.getItem("token");
-    final res = await http.get(Uri.parse("${API}/api/practice/${id}"),
+    final lang = await SettingsService.getLang();
+    final res = await http.get(Uri.parse("${API}/api/practice/${id}?lang=${lang.trim()}"),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -96,7 +98,7 @@ class _PracticePageState extends State<PracticePage> {
           appBar: AppBar(
               title: Text("Отработайте навыки")
           ),
-          body: PracticeTextPage(answer: answer, question: question, isLast: isLast, isLetter: false,
+          body: PracticeTextPage(answer: answer, question: question, isLast: isLast, isLetter: false, currentquestion: ((1 / data["questions"].length) * (index + 1)),
             onAnswer: () {
               setState(() {
                 nextQuestion();
@@ -109,7 +111,7 @@ class _PracticePageState extends State<PracticePage> {
           appBar: AppBar(
               title: Text("Отработайте навыки")
           ),
-          body: PracticeAudioPage(answer: answer, question: question, isLetter: false, isLast: isLast,
+          body: PracticeAudioPage(answer: answer, question: question, isLetter: false, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
             onAnswer: () {
               setState(() {
                 nextQuestion();
@@ -121,7 +123,7 @@ class _PracticePageState extends State<PracticePage> {
           appBar: AppBar(
               title: Text("Отработайте навыки")
           ),
-            body: PracticeMorsePage(answer: answer, question: question, isLetter: false, isLast: isLast,
+            body: PracticeMorsePage(answer: answer, question: question, isLetter: false, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
               onAnswer: () {
                 setState(() {
                   nextQuestion();

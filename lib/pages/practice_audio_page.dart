@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import '../app_theme.dart';
 import '../config.dart';
 import '../storage_context.dart';
+import '../theme_controller.dart';
 
 class PracticeAudioPage extends StatefulWidget {
   final String question;
@@ -15,7 +16,8 @@ class PracticeAudioPage extends StatefulWidget {
   final Function onAnswer;
   final bool isLetter;
   final bool isLast;
-  const PracticeAudioPage({super.key, required this.answer, required this.question, required this.onAnswer, required this.isLetter, required this.isLast});
+  final double currentquestion;
+  const PracticeAudioPage({super.key, required this.currentquestion, required this.answer, required this.question, required this.onAnswer, required this.isLetter, required this.isLast});
 
   @override
   State<PracticeAudioPage> createState() => _PracticeAudioPageState();
@@ -182,6 +184,14 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
           padding: EdgeInsetsGeometry.all(24),
           child: Column(
             children: [
+              LinearProgressIndicator(
+                value: widget.currentquestion,
+                color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
+                minHeight: 12,
+                backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
+                borderRadius: BorderRadiusGeometry.circular(16),
+              ),
+              SizedBox(height: 8,),
               Container(
                   width: double.infinity,
                   child: Card(
@@ -189,6 +199,9 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
                       padding: EdgeInsets.all(16),
                       child: Column(
                         children: [
+                          SizedBox(height: 16,),
+                          Text("Прослушайте морзе и переведите", style: Theme.of(context).textTheme.bodyLarge,),
+                          SizedBox(height: 16,),
                           TextField(
                             controller: _controller,
                             onChanged: (value) {

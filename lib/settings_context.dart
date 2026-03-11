@@ -2,15 +2,16 @@ import 'package:morzelingo/storage_context.dart';
 
 class SettingsService {
   static Future<void> setDefault() async {
-    setWpm(5);
+    setWpm(10);
+    setLang("en");
   }
   
   static Future<int> getWpm() async {
     final wpm = await StorageService.getItem("wpm");
 
     if (wpm == null) {
-      await setWpm(5);
-      return 5;
+      await setWpm(10);
+      return 10;
     }
 
     return int.parse(wpm!);
@@ -19,6 +20,25 @@ class SettingsService {
   static Future<void> setWpm(int value) async {
     await StorageService.setItem("wpm", value.toString());
   }
+
+  static Future<String> getLang() async {
+    final lang = await StorageService.getItem("lang");
+
+    if (lang == null) {
+      await setLang("en");
+      return lang!;
+    }
+
+    return lang;
+  }
+
+  static Future<void> setLang(String value) async {
+    if (value != "ru" || value != "en") {
+      await StorageService.setItem("lang", "en");
+    }
+    await StorageService.setItem("lang", value.toString());
+  }
+
 }
 
 class MorseTiming {

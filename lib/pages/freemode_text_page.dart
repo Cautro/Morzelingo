@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/config.dart';
+import 'package:morzelingo/settings_context.dart';
 import 'package:morzelingo/storage_context.dart';
 import 'dart:convert';
 import 'package:morzelingo/widgets/morse_key.dart';
@@ -24,7 +25,8 @@ class _FreemodeTextPageState extends State<FreemodeTextPage> {
 
   Future<void> getQuestion() async {
     String? token = await StorageService.getItem("token");
-    final res = await http.get(Uri.parse("${API}/api/freemode?mode=text"),
+    String? lang = await SettingsService.getLang();
+    final res = await http.get(Uri.parse("${API}/api/freemode?mode=text&lang=${lang}"),
       headers: {
         'Authorization': 'Bearer $token',
       },);

@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/config.dart';
 import 'package:morzelingo/pages/loading_page.dart';
+import 'package:morzelingo/settings_context.dart';
 import 'dart:convert';
 
 import 'package:morzelingo/storage_context.dart';
@@ -19,13 +20,14 @@ class EducationPage extends StatefulWidget {
 
 class _EducationPageState extends State<EducationPage> {
   int? lessondone;
-  List lessons = [];
+  Map lessons = {};
   bool isLoading = true;
 
   @override
 
   void getData() async {
     String? token = await StorageService.getItem("token");
+    print(token);
     final res = await http.get(Uri.parse("${API}/api/profile"),
       headers: {
         'Authorization': 'Bearer $token',
@@ -38,18 +40,18 @@ class _EducationPageState extends State<EducationPage> {
     print(data);
     print("done: ${lessondone}");
 
-    final res1 = await http.get(Uri.parse("${API}/api/lessons"),
+    final lang = await SettingsService.getLang();
+    final res1 = await http.get(Uri.parse("${API}/api/lessons/${lessondone! + 1}?lang=${lang.trim()}"),
       headers: {
         'Authorization': 'Bearer $token',
       },
     );
-    print(token);
     var data1 = jsonDecode(res1.body);
     setState(() {
       lessons = data1;
       isLoading = false;
     });
-    print(lessons[lessondone!]["XPReward"]);
+    print(lessons);
   }
 
   @override
@@ -85,9 +87,9 @@ class _EducationPageState extends State<EducationPage> {
                                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
                                   child: Column(
                                     children: [
-                                      Text(lessons[lessondone!]["Title"], style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
+                                      Text(lessons["Title"], style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
                                       SizedBox(height: 16,),
-                                      Text("Награда ${lessons[lessondone!]["XPReward"].toString()} опыта", style: Theme.of(context).textTheme.titleMedium,),
+                                      Text("Награда ${lessons["XPReward"].toString()} опыта", style: Theme.of(context).textTheme.titleMedium,),
                                     ],
                                   ),
                                 ),
@@ -102,7 +104,7 @@ class _EducationPageState extends State<EducationPage> {
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.pushNamed(context, '/lesson',);
-                              StorageService.setItem("lessonid", lessons[lessondone!]["ID"].toString());
+                              StorageService.setItem("lessonid", lessons["ID"].toString());
                             },
                             child: Text("Начать урок", style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),),
                           ),

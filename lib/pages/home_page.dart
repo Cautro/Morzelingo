@@ -20,8 +20,8 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
 
   // Список экранов для вкладок
   final List<Widget> _screens = [
-    FreemodePage(), // Вкладка 0
     EducationPage(),
+    FreemodePage(), // Вкладка 0
     LettersPage(),
     ProfilePage(), // Вкладка 1
   ];
@@ -31,6 +31,8 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
     return Scaffold(
       body: _screens[_currentIndex], // показываем выбранный экран
       bottomNavigationBar: NavigationBar(
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+        height: 50,
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
           setState(() {
@@ -41,7 +43,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
         destinations: [
           NavigationDestination(
             icon: Icon(
-              Icons.keyboard,
+              Icons.school,
               size: 30,
               color: _currentIndex == 0
                   ? AppTheme.primary
@@ -51,7 +53,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
           ),
           NavigationDestination(
             icon: Icon(
-              Icons.school,
+              Icons.keyboard,
               size: 30,
               color: _currentIndex == 1
                   ? AppTheme.primary

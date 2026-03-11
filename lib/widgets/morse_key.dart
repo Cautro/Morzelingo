@@ -4,9 +4,10 @@ import 'dart:async';
 import 'package:morzelingo/app_theme.dart';
 
 import '../settings_context.dart';
+import '../theme_controller.dart';
 
 typedef MorseCallback = void Function(String decodedText);
-
+  
 class MorseKeyWidget extends StatefulWidget {
   final MorseCallback onTextDecoded;
 
@@ -17,7 +18,7 @@ class MorseKeyWidget extends StatefulWidget {
 }
 
 class _MorseKeyWidgetState extends State<MorseKeyWidget> {
-  static const Map<String, String> morseToText = {
+  static const Map<String, String> morseToTextEn = {
     '•—': 'A', '—•••': 'B', '—•—•': 'C', '—••': 'D', '•': 'E',
     '••—•': 'F', '——•': 'G', '••••': 'H', '••': 'I', '•———': 'J',
     '—•—': 'K', '•—••': 'L', '——': 'M', '—•': 'N', '———': 'O',
@@ -30,6 +31,16 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
     '/': ' '
   };
 
+  static const Map<String, String> morseToTextRu = {
+    '•—': 'А', '—•••': 'Б', '•——': 'В', '——•': 'Г', '—••': 'Д', '•': 'Е', '•••—': 'Ж', '——••': 'З', '••': 'И',
+    '•———': 'Й', '—•—': 'К', '•—••': 'Л', '——': 'М', '—•': 'Н', '———': 'О', '•——•': 'П', '•—•': 'Р', '•••': 'С',
+    '—': 'Т', '••—': 'У', '••—•': 'Ф', '••••': 'Х', '—•—•': 'Ц', '———•': 'Ч', '————': 'Ш', '——•—': 'Щ', '—•——': 'Ы',
+    '—••—': 'Ь', '••—••': 'Э', '••——': 'Ю', '•—•—': 'Я', '/': ' ',  '—————': '0', '•————': '1', '••———': '2', '•••——': '3',
+    '••••—': '4', '•••••': '5', '—••••': '6', '——•••': '7', '———••': '8', '————•': '9',
+  };
+
+  late Map<String, String> morseToText = {};
+
   final player = AudioPlayer();
   String currentMorse = "";
   String decodedText = "";
@@ -40,8 +51,17 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
   @override
   void initState() {
     super.initState();
+    _initLanguage();
     player.setReleaseMode(ReleaseMode.stop);
     _loadTiming();
+  }
+
+  Future<void> _initLanguage() async {
+    final lang = await SettingsService.getLang();
+    print("l ${lang}");
+    setState(() {
+      morseToText = lang == "ru" ? morseToTextRu : morseToTextEn;
+    });
   }
 
   Future<void> _loadTiming() async {
@@ -54,11 +74,13 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
   void _addDot() async {
     await player.play(AssetSource('sounds/dot.wav'));
     _addSymbol('•');
+    print(SettingsService.getLang());
   }
 
   void _addDash() async {
     await player.play(AssetSource('sounds/dash.wav'));
     _addSymbol('—');
+    print(SettingsService.getLang());
   }
 
   void _addSymbol(String symbol) {
@@ -127,12 +149,10 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-
-            /// Расшифрованный текст
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "Decoded:",
+                "Переведено:",
                 style: TextStyle(
                   fontSize: 14,
                   color: theme.textTheme.bodyMedium?.color,
@@ -164,7 +184,6 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
 
             const SizedBox(height: 24),
 
-            /// Текущий сигнал
             Text(
               currentMorse,
               style: TextStyle(
@@ -177,7 +196,7 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
 
             const SizedBox(height: 24),
 
-            /// Телеграфный ключ
+
             GestureDetector(
               onTap: _addDot,
               onLongPress: _addDash,
@@ -191,12 +210,12 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   color: isPressed
-                      ? colors.primary.withOpacity(0.7)
-                      : colors.primary,
+                      ? themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary.withOpacity(0.7) : AppTheme.primary.withOpacity(0.7)
+                      : themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
                 ),
                 child: const Center(
                   child: Text(
-                    "Tap = Dot\nHold = Dash",
+                    "Нажать = Точка\nЗажать = Тире",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -210,7 +229,6 @@ class _MorseKeyWidgetState extends State<MorseKeyWidget> {
 
             const SizedBox(height: 16),
 
-            /// Кнопки
             Row(
               children: [
                 Expanded(

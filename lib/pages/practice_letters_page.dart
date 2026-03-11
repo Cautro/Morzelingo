@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:morzelingo/pages/practice_audio_page.dart';
 import 'package:morzelingo/pages/practice_morse_page.dart';
 import 'package:morzelingo/pages/practice_text_page.dart';
+import 'package:morzelingo/settings_context.dart';
 
 import '../config.dart';
 import '../storage_context.dart';
@@ -25,7 +26,7 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
   int index = 0;
   String? letter;
 
-  final Map<String, String> morseToLetter = {
+  final Map<String, String> morseToLetterEN = {
     "•—": "A", "—•••": "B", "—•—•": "C", "—••": "D", "•": "E",
     "••—•": "F", "——•": "G", "••••": "H", "••": "I", "•———": "J",
     "—•—": "K", "•—••": "L", "——": "M", "—•": "N", "———": "O",
@@ -34,6 +35,15 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
     "——••": "Z"
   };
 
+  final Map<String, String> morseToLetterRU = {
+    '•—': 'А', '—•••': 'Б', '•——': 'В', '——•': 'Г', '—••': 'Д', '•': 'Е', '•••—': 'Ж', '——••': 'З', '••': 'И',
+    '•———': 'Й', '—•—': 'К', '•—••': 'Л', '——': 'М', '—•': 'Н', '———': 'О', '•——•': 'П', '•—•': 'Р', '•••': 'С',
+    '—': 'Т', '••—': 'У', '••—•': 'Ф', '••••': 'Х', '—•—•': 'Ц', '———•': 'Ч', '————': 'Ш', '——•—': 'Щ', '—•——': 'Ы',
+    '—••—': 'Ь', '••—••': 'Э', '••——': 'Ю', '•—•—': 'Я', '/': ' ',  '—————': '0', '•————': '1', '••———': '2', '•••——': '3',
+    '••••—': '4', '•••••': '5', '—••••': '6', '——•••': '7', '———••': '8', '————•': '9',
+  };
+
+  Map<String, String> morseToLetter = {};
 
   @override
 
@@ -47,12 +57,17 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
 
   void getQuestion() async {
     letter = await StorageService.getItem("letter");
+    String? lang = await SettingsService.getLang();
     String? token = await StorageService.getItem("token");
-    final res = await http.post(Uri.parse("${API}/api/practice?letters=${letter}"),
+    String encodedLetter = Uri.encodeQueryComponent(letter!);
+    final res = await http.post(Uri.parse("${API}/api/practice?letters=${encodedLetter}&lang=${lang}"),
       headers: {
         'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
       },
+      body: jsonEncode({})
     );
+    print(res.body);
     var json = jsonDecode(res.body);
     setState(() {
       data = json;
@@ -73,8 +88,6 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
           });
       }
     });
-    print(data);
-    print("ans ${answer}");
   }
 
   void nextQuestion() {
@@ -108,17 +121,25 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
           answer = decodeMorse(question);
         });
     }
+    print("Q${question} A${answer}");
   }
 
   void complete() async {
     Navigator.pop(context);
   }
 
+  void checkLang() async {
+    String? lang = await SettingsService.getLang();
+    setState(() {
+      morseToLetter = lang == "en" ? morseToLetterEN : morseToLetterRU;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     getQuestion();
-
+    checkLang();
   }
 
   @override
@@ -129,7 +150,7 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
           appBar: AppBar(
               title: Text("Отработайте букву ${letter}")
           ),
-          body: PracticeTextPage(answer: answer, question: question, isLast: isLast, isLetter: true,
+          body: PracticeTextPage(answer: answer, question: question, isLast: isLast, isLetter: true, currentquestion: (1 / data["questions"].length * (index + 1)),
             onAnswer: () {
               setState(() {
                 nextQuestion();
@@ -142,7 +163,7 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
           appBar: AppBar(
               title: Text("Отработайте букву ${letter}")
           ),
-          body: PracticeAudioPage(answer: answer, question: question, isLetter: true, isLast: isLast,
+          body: PracticeAudioPage(answer: answer, question: question, isLetter: true, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
             onAnswer: () {
               setState(() {
                 nextQuestion();
@@ -154,7 +175,7 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
           appBar: AppBar(
               title: Text("Отработайте букву ${letter}")
           ),
-            body: PracticeMorsePage(answer: answer, question: question, isLetter: true, isLast: isLast,
+            body: PracticeMorsePage(answer: answer, question: question, isLetter: true, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
               onAnswer: () {
                 setState(() {
                   nextQuestion();

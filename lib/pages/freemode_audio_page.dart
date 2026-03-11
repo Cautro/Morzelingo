@@ -29,7 +29,8 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
 
   Future<void> getQuestion() async {
     String? token = await StorageService.getItem("token");
-    final res = await http.get(Uri.parse("${API}/api/freemode?mode=morse"),
+    String? lang = await SettingsService.getLang();
+    final res = await http.get(Uri.parse("${API}/api/freemode?mode=morse&lang=${lang}"),
       headers: {
         'Authorization': 'Bearer $token',
       },);
@@ -146,6 +147,9 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
                     padding: EdgeInsets.all(16),
                     child: Column(
                       children: [
+                        SizedBox(height: 16,),
+                        Text("Прослушайте морзе и переведите", style: Theme.of(context).textTheme.bodyLarge,),
+                        SizedBox(height: 16,),
                         TextField(
                           controller: _controller,
                           onChanged: (value) {

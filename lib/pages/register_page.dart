@@ -20,7 +20,7 @@ class _RegisterPageState extends State<RegisterPage> {
   String password = '';
   String confirmpassword = '';
   String email = '';
-
+  String code = '';
 
   void registerHandler() async {
     if (login == "" || password == "" || email == "" || confirmpassword == "") {
@@ -43,23 +43,27 @@ class _RegisterPageState extends State<RegisterPage> {
         body: jsonEncode({
           "username": login,
           "email": email,
-          "password": password
+          "password": password,
+          "referral_code": code,
         })
     );
     final data = jsonDecode(res.body);
     print("${res.statusCode} ${res.body}");
+    print(res.statusCode == 200);
     if (res.statusCode == 200) {
+      Navigator.pushReplacementNamed(context, "/home");
       await StorageService.setItem("token", data["token"]);
       Fluttertoast.showToast(
-          msg: "Регистрация успешна",
-          backgroundColor: AppTheme.success,
-          textColor: Colors.white
+        msg: "Регистрация успешна",
+        backgroundColor: AppTheme.success,
+        textColor: Colors.white,
       );
-      print(data);
-      Navigator.pushReplacementNamed(context, "/home");
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, "/home");
+      }
     } else {
       Fluttertoast.showToast(
-          msg: data["error"],
+          msg: data["message78"],
           backgroundColor: AppTheme.error,
           textColor: Colors.white
       );
@@ -104,7 +108,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                 setState(() {
                                   email = value;
                                 });
-                              } ,
+                              },
+                              onCodeChanged: (value) {
+                                code = value;
+                              },
                             ),
                             SizedBox(height: 24),
                             SizedBox(
@@ -132,13 +139,15 @@ class _LoginForm extends StatelessWidget {
   final Function(String) onPasswordChanged;
   final Function(String) onPasswordConfirmChanged;
   final Function(String) onEmailChanged;
+  final Function(String) onCodeChanged;
 
   const _LoginForm({
     super.key,
     required this.onLoginChanged,
     required this.onEmailChanged,
     required this.onPasswordChanged,
-    required this.onPasswordConfirmChanged
+    required this.onPasswordConfirmChanged,
+    required this.onCodeChanged,
   });
 
   @override
@@ -176,6 +185,14 @@ class _LoginForm extends StatelessWidget {
           decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
               labelText: "Подтвердите пароль"
+          ),
+        ),
+        SizedBox(height: 16),
+        TextField(
+          onChanged: onCodeChanged,
+          decoration: InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+              labelText: "Код друга (если есть)"
           ),
         ),
       ],

@@ -54,6 +54,29 @@ class AppTheme {
       ),
     ),
 
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        side: MaterialStatePropertyAll(BorderSide.none),
+        shape: MaterialStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        backgroundColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return primary;
+          }
+          return card;
+        }),
+        foregroundColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return Colors.white; // цвет текста выбранного
+          }
+          return AppTheme.textSecondary; // цвет текста обычного
+        }),
+      ),
+    ),
+
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: Colors.white,
@@ -80,6 +103,8 @@ class AppTheme {
         color: textPrimary,
       ),
     ),
+
+
   );
 
   static ThemeData darkTheme = ThemeData(
@@ -113,6 +138,29 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
         ),
         padding: const EdgeInsets.symmetric(vertical: 16),
+      ),
+    ),
+
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        side: const MaterialStatePropertyAll(BorderSide.none),
+        shape: MaterialStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        backgroundColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return Darkprimary;
+          }
+          return Darkcard;
+        }),
+        foregroundColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return Colors.white; // цвет текста выбранного
+          }
+          return AppTheme.DarktextSecondary; // цвет текста обычного
+        }),
       ),
     ),
 
