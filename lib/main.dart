@@ -8,13 +8,13 @@ import 'pages/login_page.dart';
 import 'pages/register_page.dart';
 import 'pages/home_page.dart';
 import 'pages/profile_page.dart';
-import 'package:morzelingo/pages/completed_lessons_page.dart';
+import 'package:morzelingo/pages/education/view/completed_lessons_page.dart';
 import 'package:morzelingo/pages/freemode_audio_page.dart';
 import 'package:morzelingo/pages/freemode_page.dart';
 import 'package:morzelingo/pages/freemode_text_page.dart';
-import 'package:morzelingo/pages/lesson_page.dart';
-import 'package:morzelingo/pages/practice_letters_page.dart';
-import 'package:morzelingo/pages/practice_page.dart';
+import 'package:morzelingo/pages/education/view/lesson_page.dart';
+import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
+import 'package:morzelingo/pages/practice/view/practice_page.dart';
 import 'package:morzelingo/pages/settings_page.dart';
 
 void main() {

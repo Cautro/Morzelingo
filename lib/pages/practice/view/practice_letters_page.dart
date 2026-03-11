@@ -2,13 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:morzelingo/pages/practice_audio_page.dart';
-import 'package:morzelingo/pages/practice_morse_page.dart';
-import 'package:morzelingo/pages/practice_text_page.dart';
+import 'package:morzelingo/pages/practice/context/practice_context.dart';
+import 'package:morzelingo/pages/practice/view/practice_audio_page.dart';
+import 'package:morzelingo/pages/practice/view/practice_morse_page.dart';
+import 'package:morzelingo/pages/practice/view/practice_text_page.dart';
 import 'package:morzelingo/settings_context.dart';
 
-import '../config.dart';
-import '../storage_context.dart';
+import '../../../config.dart';
+import '../../../storage_context.dart';
 
 class PracticeLettersPage extends StatefulWidget {
   const PracticeLettersPage({super.key});
@@ -55,20 +56,10 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
     }).join(' '); // Склеиваем слова через пробел
   }
 
+
   void getQuestion() async {
     letter = await StorageService.getItem("letter");
-    String? lang = await SettingsService.getLang();
-    String? token = await StorageService.getItem("token");
-    String encodedLetter = Uri.encodeQueryComponent(letter!);
-    final res = await http.post(Uri.parse("${API}/api/practice?letters=${encodedLetter}&lang=${lang}"),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({})
-    );
-    print(res.body);
-    var json = jsonDecode(res.body);
+    var json = await PracticeContext().getLetterQuestion(index);
     setState(() {
       data = json;
       question = data["questions"][index]["question"].toString().trim();
@@ -90,22 +81,15 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
     });
   }
 
-  void nextQuestion() {
+  void nextQuestion() async {
+    var json = await PracticeContext().nextLetterQuestion(data, index, isLast);
     setState(() {
-      index++;
-      if (index >= data["questions"].length) {
-        isLast = true;
-      } else {
-        isLast = false;
-      }
-      print(isLast);
-      if (isLast) {
-        complete();
-      } else {
-        question = data["questions"][index]["question"].toString().trim();
-        answer = data["questions"][index]["answer"].toString().trim();
-        type = data["questions"][index]["type"];
-      }
+      index = json["index"];
+      isLast = json["islast"];
+
+      question = data["questions"][index]["question"].toString().trim();
+      answer = data["questions"][index]["answer"].toString().trim();
+      type = data["questions"][index]["type"];
     });
     switch (type) {
       case "text":

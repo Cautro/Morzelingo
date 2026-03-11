@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/config.dart';
+import 'package:morzelingo/pages/education/context/education_context.dart';
 import 'package:morzelingo/pages/loading_page.dart';
 import 'package:morzelingo/settings_context.dart';
 import 'dart:convert';
@@ -26,33 +27,13 @@ class _EducationPageState extends State<EducationPage> {
   @override
 
   void getData() async {
-    String? token = await StorageService.getItem("token");
-    print(token);
-    final res = await http.get(Uri.parse("${API}/api/profile"),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    final data = await jsonDecode(res.body);
-    setState(() {
-      lessondone = int.parse(data["lesson_done"].toString());
-    });
-    print(data);
-    print("done: ${lessondone}");
-
-    final lang = await SettingsService.getLang();
-    final res1 = await http.get(Uri.parse("${API}/api/lessons/${lessondone! + 1}?lang=${lang.trim()}"),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    var data1 = jsonDecode(res1.body);
-    setState(() {
-      lessons = data1;
-      isLoading = false;
-    });
-    print(lessons);
+      var les = await EducationContext().getEducationData();
+      setState(() {
+        lessons = les;
+        isLoading = false;
+      });
   }
+
 
   @override
   void initState() {

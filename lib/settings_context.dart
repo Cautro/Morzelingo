@@ -26,7 +26,7 @@ class SettingsService {
 
     if (lang == null) {
       await setLang("en");
-      return lang!;
+      return "en";
     }
 
     return lang;

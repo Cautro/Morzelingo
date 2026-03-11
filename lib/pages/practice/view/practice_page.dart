@@ -2,13 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:morzelingo/pages/practice_audio_page.dart';
-import 'package:morzelingo/pages/practice_morse_page.dart';
-import 'package:morzelingo/pages/practice_text_page.dart';
+import 'package:morzelingo/pages/practice/context/practice_context.dart';
+import 'package:morzelingo/pages/practice/view/practice_audio_page.dart';
+import 'package:morzelingo/pages/practice/view/practice_morse_page.dart';
+import 'package:morzelingo/pages/practice/view/practice_text_page.dart';
 
-import '../config.dart';
-import '../settings_context.dart';
-import '../storage_context.dart';
+import '../../../config.dart';
+import '../../../settings_context.dart';
+import '../../../storage_context.dart';
 
 class PracticePage extends StatefulWidget {
   const PracticePage({super.key});
@@ -28,58 +29,31 @@ class _PracticePageState extends State<PracticePage> {
   @override
 
   void getQuestion() async {
-    String? id = await StorageService.getItem("lessonid");
-    String? token = await StorageService.getItem("token");
-    final lang = await SettingsService.getLang();
-    final res = await http.get(Uri.parse("${API}/api/practice/${id}?lang=${lang.trim()}"),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    var json = jsonDecode(res.body);
+    var res = await PracticeContext().getPracticeQuestion();
+
     setState(() {
-      data = json;
+      data = res["data"];
       question = data["questions"][index]["question"].toString().trim();
       answer = data["questions"][index]["answer"].toString().trim();
       type = data["questions"][index]["type"];
     });
-    print(data);
+    print('${data}');
   }
 
-  void nextQuestion() {
-    setState(() {
-      index++;
-      if (index >= data["questions"].length) {
-        isLast = true;
-      } else {
-        isLast = false;
-      }
-      print(isLast);
-      if (isLast) {
-        complete();
-      } else {
-        question = data["questions"][index]["question"].toString().trim();
-        answer = data["questions"][index]["answer"].toString().trim();
-        type = data["questions"][index]["type"];
-      }
-    });
+  void nextQuestion() async {
+   isLast ? complete() : print('notlast');
+   var res = await PracticeContext().nextPracticeQuestion(data, index, isLast);
+   setState(() {
+     question = res["question"];
+     answer = res["answer"];
+     type = res["type"];
+     isLast = res["islast"];
+     index = res["index"];
+   });
   }
 
   void complete() async {
-    String? id = await StorageService.getItem("lessonid");
-    String? token = await StorageService.getItem("token");
-    print('token: ${token}, id: ${id}');
-    final res = await http.post(Uri.parse("${API}/api/complete-lesson"),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        "lesson_id": int.parse(id ?? "0")
-      }),
-    );
-    var json = jsonDecode(res.body);
-    print(json);
+    PracticeContext().completeLesson();
     Navigator.pop(context);
     Navigator.pop(context);
   }

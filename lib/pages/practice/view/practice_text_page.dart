@@ -3,11 +3,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/config.dart';
+import 'package:morzelingo/pages/practice/context/practice_context.dart';
 import 'package:morzelingo/storage_context.dart';
 import 'dart:convert';
 import 'package:morzelingo/widgets/morse_key.dart';
 
-import '../theme_controller.dart';
+import '../../../theme_controller.dart';
 
 class PracticeTextPage extends StatefulWidget {
   final String question;
@@ -28,87 +29,19 @@ class _PracticeTextPageState extends State<PracticeTextPage> {
 
   @override
 
-  List<SymbolUpdate> calculateStats(
-      String correctAnswer,
-      String userAnswer,
-      ) {
-    correctAnswer = correctAnswer.toUpperCase();
-    userAnswer = userAnswer.toUpperCase();
-
-    Map<String, SymbolUpdate> stats = {};
-
-    int maxLength = correctAnswer.length > userAnswer.length
-        ? correctAnswer.length
-        : userAnswer.length;
-
-    for (int i = 0; i < maxLength; i++) {
-      String? correctChar =
-      i < correctAnswer.length ? correctAnswer[i] : null;
-      String? userChar =
-      i < userAnswer.length ? userAnswer[i] : null;
-
-      // если буква была в правильном ответе
-      if (correctChar != null) {
-        stats.putIfAbsent(
-          correctChar,
-              () => SymbolUpdate(symbol: correctChar),
-        );
-      }
-
-      if (correctChar != null && userChar == correctChar) {
-        stats[correctChar]!.correct++;
-      } else {
-        // ошибка
-        if (correctChar != null) {
-          stats[correctChar]!.wrong++;
-        }
-      }
-    }
-
-    return stats.values.toList();
-  }
-
-  Future<void> sendStats(List<SymbolUpdate> updates) async {
-    String? token = await StorageService.getItem("token");
-    final response = await http.post(
-      Uri.parse("${API}/api/practice/submit"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode(
-        updates.map((e) => e.toJson()).toList(),
-      ),
-    );
-
-    if (response.statusCode != 200) {
-      print("Error: ${response.body}");
-    }
-  }
-
   void checkAnswer() async {
-    final stats = calculateStats(widget.answer, decoded);
-    await sendStats(stats);
+    final stats = PracticeContext().calculateStats(widget.answer, decoded);
+    await PracticeContext().sendStats(stats);
   }
 
   Future<void> answerHandler() async {
-    String? token = await StorageService.getItem("token");
     if (!widget.isLetter) {
       checkAnswer();
     }
     print('data: ${decoded}, ${widget.question}, ${widget.answer}');
     if (decoded.trim() == widget.answer) {
       if (!widget.isLetter) {
-        final res = await http.post(
-          Uri.parse("${API}/api/checker-practice"),
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer $token",
-          },
-          body: jsonEncode(
-            {"correct": true},
-          ),
-        );
+        PracticeContext().practiceChecker(true);
       }
       Fluttertoast.showToast(
           msg: "Верно!",
@@ -118,16 +51,7 @@ class _PracticeTextPageState extends State<PracticeTextPage> {
       widget.onAnswer();
     } else {
       if (!widget.isLetter) {
-        final res = await http.post(
-          Uri.parse("${API}/api/checker-practice"),
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer $token",
-          },
-          body: jsonEncode(
-            {"correct": false},
-          ),
-        );
+        PracticeContext().practiceChecker(false);
       }
       Fluttertoast.showToast(
           msg: "Неправильно",

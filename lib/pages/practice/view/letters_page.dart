@@ -53,7 +53,7 @@ class _LettersPageState extends State<LettersPage> {
     return Scaffold(
       body: SafeArea(
         child: Container(
-          padding: EdgeInsets.all(24),
+          padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: GridView.count(
               crossAxisCount: 4,
               children: Letters.map((item) {

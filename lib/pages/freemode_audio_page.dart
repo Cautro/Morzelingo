@@ -123,10 +123,17 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
   }
 
 
+
   @override
   void initState() {
     super.initState();
     getQuestion();
+  }
+
+  void dispose() {
+    player.stop();
+    player.dispose();
+    super.dispose();
   }
 
   @override

@@ -2,11 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:morzelingo/pages/education/context/education_context.dart';
 import 'package:morzelingo/pages/loading_page.dart';
 
-import '../config.dart';
-import '../settings_context.dart';
-import '../storage_context.dart';
+import '../../../config.dart';
+import '../../../settings_context.dart';
+import '../../../storage_context.dart';
 
 class LessonPage extends StatefulWidget {
   const LessonPage({super.key,});
@@ -25,43 +26,10 @@ class _LessonPageState extends State<LessonPage> {
   @override
 
   void getData() async {
-    String? id = await StorageService.getItem("lessonid");
-    String? token = await StorageService.getItem("token");
-    final lang = await SettingsService.getLang();
-    final res = await http.get(Uri.parse("${API}/api/lessons/${id}/?lang=${lang.trim()}"),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    var data = jsonDecode(res.body);
+    var data = await EducationContext().getLessonData();
     setState(() {
-      lesson = data;
-    });
-    print(lesson);
-
-    final res1 = await http.get(Uri.parse("${API}/api/profile"),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    final data1 = await jsonDecode(res1.body);
-    print(data);
-    setState(() {
-      lessondone = data1["lesson_done"].toString();
-    });
-    print(lessondone);
-
-    id = await StorageService.getItem("lessonid");
-    print("id ${id}, done${lessondone}");
-    if ((int.parse(lessondone!)) >= (int.parse(id!))) {
-      setState(() {
-        done = true;
-      });
-    } else {
-      done = false;
-    }
-    print(done);
-    setState(() {
+      lesson = data["lesson"];
+      done = data["done"];
       isLoading = false;
     });
   }

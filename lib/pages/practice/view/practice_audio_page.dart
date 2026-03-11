@@ -1,94 +1,42 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 
-import '../app_theme.dart';
-import '../config.dart';
-import '../storage_context.dart';
-import '../theme_controller.dart';
+import '../../../app_theme.dart';
+import '../../../config.dart';
+import '../../../storage_context.dart';
+import '../../../theme_controller.dart';
+import '../context/practice_context.dart';
 
-class PracticeMorsePage extends StatefulWidget {
+class PracticeAudioPage extends StatefulWidget {
   final String question;
   final String answer;
   final Function onAnswer;
   final bool isLetter;
   final bool isLast;
   final double currentquestion;
-  const PracticeMorsePage({super.key, required this.currentquestion, required this.answer, required this.question, required this.onAnswer, required this.isLetter, required this.isLast});
+  const PracticeAudioPage({super.key, required this.currentquestion, required this.answer, required this.question, required this.onAnswer, required this.isLetter, required this.isLast});
 
   @override
-  State<PracticeMorsePage> createState() => _PracticeMorsePageState();
+  State<PracticeAudioPage> createState() => _PracticeAudioPageState();
 }
 
-class _PracticeMorsePageState extends State<PracticeMorsePage> {
+class _PracticeAudioPageState extends State<PracticeAudioPage> {
+  final player = AudioPlayer();
+
   String text = "";
   TextEditingController _controller = TextEditingController();
 
   @override
 
-  List<SymbolUpdate> calculateStats(
-      String correctAnswer,
-      String userAnswer,
-      ) {
-    correctAnswer = correctAnswer.toUpperCase();
-    userAnswer = userAnswer.toUpperCase();
-
-    Map<String, SymbolUpdate> stats = {};
-
-    int maxLength = correctAnswer.length > userAnswer.length
-        ? correctAnswer.length
-        : userAnswer.length;
-
-    for (int i = 0; i < maxLength; i++) {
-      String? correctChar =
-      i < correctAnswer.length ? correctAnswer[i] : null;
-      String? userChar =
-      i < userAnswer.length ? userAnswer[i] : null;
-
-      // если буква была в правильном ответе
-      if (correctChar != null) {
-        stats.putIfAbsent(
-          correctChar,
-              () => SymbolUpdate(symbol: correctChar),
-        );
-      }
-
-      if (correctChar != null && userChar == correctChar) {
-        stats[correctChar]!.correct++;
-      } else {
-        // ошибка
-        if (correctChar != null) {
-          stats[correctChar]!.wrong++;
-        }
-      }
-    }
-
-    return stats.values.toList();
-  }
-
-  Future<void> sendStats(List<SymbolUpdate> updates) async {
-    String? token = await StorageService.getItem("token");
-    final response = await http.post(
-      Uri.parse("${API}/api/practice/submit"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode(
-        updates.map((e) => e.toJson()).toList(),
-      ),
-    );
-
-    if (response.statusCode != 200) {
-      print("Error: ${response.body}");
-    }
-  }
-
+  
+  
   void checkAnswer() async {
-    final stats = calculateStats(widget.answer, text);
-    await sendStats(stats);
+    final stats = PracticeContext().calculateStats(widget.answer, text);
+    await PracticeContext().sendStats(stats);
   }
 
   Future<void> answerHandler() async {
@@ -98,16 +46,7 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
     }
     if (text.trim().toUpperCase() == widget.answer) {
       if (!widget.isLetter) {
-        final res = await http.post(
-          Uri.parse("${API}/api/checker-practice"),
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer $token",
-          },
-          body: jsonEncode(
-            {"correct": true},
-          ),
-        );
+        PracticeContext().practiceChecker(true);
       }
       Fluttertoast.showToast(
           msg: "Верно!",
@@ -120,16 +59,7 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
       widget.onAnswer();
     } else {
       if (!widget.isLetter) {
-        final res = await http.post(
-          Uri.parse("${API}/api/checker-practice"),
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer $token",
-          },
-          body: jsonEncode(
-            {"correct": false},
-          ),
-        );
+        PracticeContext().practiceChecker(false);
       }
       Fluttertoast.showToast(
           msg: "Неправильно",
@@ -144,6 +74,12 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
   void initState() {
     super.initState();
     print(widget.question);
+  }
+
+  void dispose() {
+    player.stop();
+    player.dispose();
+    super.dispose();
   }
 
   @override
@@ -169,17 +105,8 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
                       padding: EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          SizedBox(
-                            width: double.infinity,
-                            child: Row(
-                              children: [
-                               Padding(
-                                 padding: EdgeInsets.all(8),
-                                 child: Text("Переведите: ${widget.question}", style: Theme.of(context).textTheme.bodyLarge,),
-                               ),
-                              ]
-                            ),
-                          ),
+                          SizedBox(height: 16,),
+                          Text("Прослушайте морзе и переведите", style: Theme.of(context).textTheme.bodyLarge,),
                           SizedBox(height: 16,),
                           TextField(
                             controller: _controller,
@@ -190,6 +117,16 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
                               });
                             },
                             decoration: InputDecoration(labelText: "Ответ"),
+                          ),
+                          SizedBox(height: 16,),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  PracticeContext().playMorseAudio(widget.question);
+                                },
+                                child: Text("Прослушать", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),)
+                            ),
                           ),
                           SizedBox(height: 16,),
                           SizedBox(

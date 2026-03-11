@@ -2,10 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:morzelingo/pages/education/context/education_context.dart';
 import 'package:morzelingo/pages/loading_page.dart';
 
-import '../config.dart';
-import '../storage_context.dart';
+import '../../../config.dart';
+import '../../../storage_context.dart';
 
 class CompletedLessonsPage extends StatefulWidget {
   const CompletedLessonsPage({super.key});
@@ -16,34 +17,14 @@ class CompletedLessonsPage extends StatefulWidget {
 
 class _CompletedLessonsPageState extends State<CompletedLessonsPage> {
   int? lessondone;
-  List lessons = [];
   bool isLoading = true;
   List completed = [];
 
   @override
   void getData() async {
-    String? token = await StorageService.getItem("token");
-    final res = await http.get(Uri.parse("${API}/api/profile"),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    final data = await jsonDecode(res.body);
+    var data = await EducationContext().getCompletedLessonsData();
     setState(() {
-      lessondone = int.parse(data["lesson_done"].toString());
-    });
-    print(data);
-    print("done: ${lessondone}");
-
-    final res1 = await http.get(Uri.parse("${API}/api/lessons"),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    var data1 = jsonDecode(res1.body);
-    setState(() {
-      lessons = data1;
-      completed = lessons.take(lessondone!).toList();
+      completed = data;
       isLoading = false;
     });
   }
