@@ -182,10 +182,10 @@ class PracticeContext {
 
     for (int i = 0; i < question.length; i++) {
       final char = question[i];
-      if (char == '•') {
+      if (char == '.') {
         await player.play(AssetSource('sounds/dot.wav'));
         await Future.delayed(Duration(milliseconds: dotDuration));
-      } else if (char == '—') {
+      } else if (char == '-') {
         await player.play(AssetSource('sounds/dash.wav'));
         await Future.delayed(Duration(milliseconds: dashDuration));
       } else if (char == ' ') {

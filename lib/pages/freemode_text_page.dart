@@ -26,7 +26,8 @@ class _FreemodeTextPageState extends State<FreemodeTextPage> {
   Future<void> getQuestion() async {
     String? token = await StorageService.getItem("token");
     String? lang = await SettingsService.getLang();
-    final res = await http.get(Uri.parse("${API}/api/freemode?mode=text&lang=${lang}"),
+    final res = await http.get(Uri.parse("${API}/api/freemode?"
+        "mode=text&lang=${lang}"),
       headers: {
         'Authorization': 'Bearer $token',
       },);

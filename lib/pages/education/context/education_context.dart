@@ -19,12 +19,12 @@ class EducationContext {
       },
     );
     final data = await jsonDecode(res.body);
-    int lessondone = int.parse(data["lesson_done"].toString());
+    final lang = await SettingsService.getLang();
+    int lessondone = int.parse(data["lesson_done_${lang.trim()}"].toString());
     print(data);
     print("done: ${lessondone}");
 
-    final lang = await SettingsService.getLang();
-    final res1 = await http.get(Uri.parse("${API}/api/lessons/${lessondone! + 1}?lang=${lang.trim()}"),
+    final res1 = await http.get(Uri.parse("${API}/api/lessons/${lessondone + 1}?lang=${lang.trim()}"),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -56,7 +56,7 @@ class EducationContext {
     );
     final data1 = await jsonDecode(res1.body);
     print(data);
-    String lessondone = data1["lesson_done"].toString();
+    String lessondone = data1["lesson_done_${lang}"].toString();
     print(lessondone);
 
     bool done = false;
@@ -75,6 +75,7 @@ class EducationContext {
   }
 
   Future<List> getCompletedLessonsData() async {
+    String? lang = await SettingsService.getLang();
     String? token = await StorageService.getItem("token");
     final res = await http.get(Uri.parse("${API}/api/profile"),
       headers: {
@@ -82,7 +83,7 @@ class EducationContext {
       },
     );
     final data = await jsonDecode(res.body);
-    int lessondone = int.parse(data["lesson_done"].toString());
+    int lessondone = int.parse(data["lesson_done_${lang}"].toString());
     print(data);
     print("done: ${lessondone}");
 

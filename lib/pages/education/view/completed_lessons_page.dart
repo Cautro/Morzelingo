@@ -58,13 +58,13 @@ class _CompletedLessonsPageState extends State<CompletedLessonsPage> {
                 width: double.infinity,
                 child: GestureDetector(
                   onTap: () {
-                    StorageService.setItem("lessonid", item["ID"].toString());
+                    StorageService.setItem("lessonid", item["id"].toString());
                     Navigator.pushNamed(context, "/lesson");
                   },
                   child: Card(
                       child: Padding(
                         padding: EdgeInsets.all(16),
-                        child: Text(item["Title"]),
+                        child: Text(item["title"]),
                       )
                   ),
                 )

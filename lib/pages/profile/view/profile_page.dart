@@ -1,13 +1,16 @@
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import 'package:http/http.dart' as http;
 import "package:morzelingo/app_theme.dart";
 import "package:morzelingo/pages/loading_page.dart";
+import "package:morzelingo/pages/profile/bloc/profile_bloc.dart";
+import "package:morzelingo/settings_context.dart";
 import "package:morzelingo/storage_context.dart";
 import "dart:convert";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:morzelingo/config.dart";
 
-import "../theme_controller.dart";
+import "../../../theme_controller.dart";
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -20,39 +23,18 @@ class _ProfilePageState extends State<ProfilePage> {
   String? username;
   String? email;
   String? xp;
-  String? lessondone;
+  String? lessondone_en;
+  String? lessondone_ru;
   String? token;
   String? level;
   String? coins;
   String? streak;
   String? needxp;
-  String? refferal;
+  String? referral;
   bool isLoading = true;
 
   @override
 
-  Future<void> getProfileData() async {
-    String? token = await StorageService.getItem("token");
-    final res = await http.get(Uri.parse("${API}/api/profile"),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    final data = await jsonDecode(res.body);
-    print(data);
-    setState(() {
-      username = data["username"].toString();
-      email = data["email"].toString();
-      xp = data["xp"].toString();
-      lessondone = data["lesson_done"].toString();
-      level = data["level"].toString();
-      coins = data["coins"].toString();
-      streak = data["streak"].toString();
-      needxp = data["need_xp"].toString();
-      refferal = data["refferal_code"].toString();
-      isLoading = false;
-    });
-  }
 
   void Logout() async {
     showDialog(
@@ -91,75 +73,98 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    getProfileData();
   }
 
   @override
   Widget build(BuildContext context) {
 
-    if (isLoading) {
-      return LoadingPage();
-    }
+    return BlocProvider(
+      create: (_) => ProfileBloc()..add(GetProfileDataEvent()),
+      child: BlocListener<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileDataState) {
+            setState(() {
+              xp = state.xp;
+              referral = state.referral;
+              level = state.level;
+              lessondone_en = state.lessondone_en;
+              lessondone_ru = state.lessondone_ru;
+              coins = state.coins;
+              streak = state.streak;
+              needxp = state.needxp;
+              referral = state.referral;
+              email = state.email;
+              username = state.username;
+              isLoading = false;
+            });
+          }
+        },
+        child: BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, state) {
+            return isLoading ? Scaffold(body: LoadingPage(),) : Scaffold(
+              body: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Container(
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(context, "/settings");
+                                  },
+                                  icon: Icon(Icons.settings),
+                                )
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.person, size: 50, color: themeController.themeMode == ThemeMode.dark ? AppTheme.DarktextPrimary : AppTheme.textPrimary,),
+                              ],
+                            ),
+                            SizedBox(height: 8,),
+                            Text(username!, style: Theme.of(context).textTheme.titleLarge,),
+                            _ProfileCard(
+                              username: "${username}" ?? "",
+                              email: "${email}" ?? "",
+                              xp: "${xp}" ?? "",
+                              lessondone: "${SettingsService.getLang() == "en" ? lessondone_en : lessondone_ru}" ?? "",
+                              coins: "${coins}" ?? "",
+                              level: "${level}" ?? "",
+                              streak: "${streak}" ?? "",
+                              needxp: "${needxp}" ?? "",
+                              refferal: "${referral}" ?? "",
+                            ),
+                            SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    Logout();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.error),
+                                  child: Text("Выйти из аккаунта", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),),
+                                )
+                            )
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: SizedBox(
-            width: double.infinity,
-            child: Container(
-              child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, "/settings");
-                          },
-                          icon: Icon(Icons.settings),
+                          ],
                         )
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.person, size: 50, color: themeController.themeMode == ThemeMode.dark ? AppTheme.DarktextPrimary : AppTheme.textPrimary,),
-                      ],
-                    ),
-                    SizedBox(height: 8,),
-                    Text(username!, style: Theme.of(context).textTheme.titleLarge,),
-                    _ProfileCard(
-                      username: "${username}" ?? "",
-                      email: "${email}" ?? "",
-                      xp: "${xp}" ?? "",
-                      lessondone: "${lessondone}" ?? "",
-                      coins: "${coins}" ?? "",
-                      level: "${level}" ?? "",
-                      streak: "${streak}" ?? "",
-                      needxp: "${needxp}" ?? "",
-                      refferal: "${refferal}" ?? "",
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          Logout();
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.error),
-                        child: Text("Выйти из аккаунта", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),),
-                      )
-                    )
 
-                  ],
-                )
-
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
+      ),
     );
+
   }
 }
 

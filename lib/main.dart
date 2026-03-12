@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:morzelingo/pages/friends_page.dart';
-import 'package:morzelingo/pages/letters_stats_page.dart';
+import 'package:morzelingo/pages/authorization/view/login_page.dart';
+import 'package:morzelingo/pages/authorization/view/register_page.dart';
+import 'package:morzelingo/pages/friends/view/friends_page.dart';
+import 'package:morzelingo/pages/profile/view/letters_stats_page.dart';
+import 'package:morzelingo/pages/profile/view/profile_page.dart';
 import 'package:morzelingo/theme_controller.dart';
 import 'package:yandex_mobileads/mobile_ads.dart';
 import 'app_theme.dart';
-import 'pages/login_page.dart';
-import 'pages/register_page.dart';
 import 'pages/home_page.dart';
-import 'pages/profile_page.dart';
 import 'package:morzelingo/pages/education/view/completed_lessons_page.dart';
 import 'package:morzelingo/pages/freemode_audio_page.dart';
 import 'package:morzelingo/pages/freemode_page.dart';
@@ -15,7 +15,7 @@ import 'package:morzelingo/pages/freemode_text_page.dart';
 import 'package:morzelingo/pages/education/view/lesson_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_page.dart';
-import 'package:morzelingo/pages/settings_page.dart';
+import 'package:morzelingo/pages/profile/view/settings_page.dart';
 
 void main() {
   runApp(MyApp());

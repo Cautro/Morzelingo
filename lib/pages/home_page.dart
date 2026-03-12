@@ -3,8 +3,7 @@ import 'package:morzelingo/pages/education/view/education_page.dart';
 import 'package:morzelingo/pages/freemode_text_page.dart';
 import 'package:morzelingo/pages/practice/view/letters_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
-import 'package:morzelingo/pages/login_page.dart';
-import 'package:morzelingo/pages/profile_page.dart';
+import 'package:morzelingo/pages/profile/view/profile_page.dart';
 import '../app_theme.dart';
 import 'freemode_page.dart';
 

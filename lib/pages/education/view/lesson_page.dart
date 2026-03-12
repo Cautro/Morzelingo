@@ -69,14 +69,14 @@ class _LessonPageState extends State<LessonPage> {
                               Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Text(
-                                  lesson["Title"],
+                                  lesson["title"],
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Text(
-                                  lesson["Theory"],
+                                  lesson["theory"],
                                   style: Theme.of(context).textTheme.bodyLarge,
                                 ),
                               ),

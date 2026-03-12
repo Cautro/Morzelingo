@@ -38,7 +38,6 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
   }
 
   Future<void> answerHandler() async {
-    String? token = await StorageService.getItem("token");
     if (!widget.isLetter) {
       checkAnswer();
     }
@@ -72,6 +71,7 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
   void initState() {
     super.initState();
     print(widget.question);
+    print(widget.answer);
   }
 
   @override

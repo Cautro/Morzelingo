@@ -68,9 +68,9 @@ class _EducationPageState extends State<EducationPage> {
                                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
                                   child: Column(
                                     children: [
-                                      Text(lessons["Title"], style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
+                                      Text(lessons["title"], style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
                                       SizedBox(height: 16,),
-                                      Text("Награда ${lessons["XPReward"].toString()} опыта", style: Theme.of(context).textTheme.titleMedium,),
+                                      Text("Награда ${lessons["xp_reward"].toString()} опыта", style: Theme.of(context).textTheme.titleMedium,),
                                     ],
                                   ),
                                 ),
@@ -85,7 +85,7 @@ class _EducationPageState extends State<EducationPage> {
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.pushNamed(context, '/lesson',);
-                              StorageService.setItem("lessonid", lessons["ID"].toString());
+                              StorageService.setItem("lessonid", lessons["id"].toString());
                             },
                             child: Text("Начать урок", style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),),
                           ),
