@@ -794,3 +794,46 @@ func MakeDeleteFriendHandler(a *app.App) gin.HandlerFunc {
 
 	}
 }
+
+func MakeReplayLessonHandler(a *app.App) gin.HandlerFunc {
+	return func (c *gin.Context)  {
+		lang := c.DefaultQuery("lang", "en")
+		// username := c.GetString("username")
+		idStr := c.Param("id")
+
+		lessons, err := readLessons(lang)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read lessons"})
+			return
+		}
+
+		var selected *models.Lesson
+		for i := range lessons {
+			if strconv.Itoa(lessons[i].ID) == idStr {
+				selected = &lessons[i]
+				break
+			}
+		}
+		if selected == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "lesson not found"})
+			return
+		}
+
+		types := []string{"text", "morse", "audio"}
+		questions := make([]models.PracticeQuestion, 0, 20)
+		symbols := selected.Symbols
+
+		for i := 0; i < 20; i++ {
+			randomType := types[rand.Intn(len(types))]
+			randomNumberOfSymbols := rand.Intn(3) + 1
+			correctWord := generatePractice(symbols, randomNumberOfSymbols)
+			switch randomType {
+			case "text":
+				questions = append(questions, models.PracticeQuestion{Type: "text", Question: correctWord})
+			case "morse", "audio":
+				questions = append(questions, models.PracticeQuestion{Type: randomType, Question: textToMorse(correctWord, lang)})
+			}
+		}
+		c.JSON(http.StatusOK, models.PracticeResponse{Questions: questions})
+	}
+}

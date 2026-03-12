@@ -70,6 +70,7 @@ func main() {
 		auth.POST("/friends/update-streaks", handlers.MakeUpdateStreakHandler(a))
 		auth.GET("/friendship-streaks", handlers.MakeFriendShipStreakHandler(a))
 		auth.POST("/friends/delete", handlers.MakeDeleteFriendHandler(a))
+		auth.GET("/practice/replay/:id", handlers.MakeReplayLessonHandler(a))
 	}
 
 	addr := ":8080"
