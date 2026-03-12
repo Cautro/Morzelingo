@@ -50,6 +50,16 @@ func (a *App) AddUser(u models.User) []models.User {
 	return cop
 }
 
+func (a *App) GetUserRaw(username string) (models.User, bool) { 
+	a.mu.RLock() 
+	defer a.mu.RUnlock() 
+	for i := range a.users { 
+		if a.users[i].Username == username { 
+			return a.users[i], true } 
+		} 
+		return models.User{}, false
+	}
+
 func (a *App) FindUserByUsername(username string) (int, bool) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()

@@ -4,8 +4,9 @@
     "email": "test@test.test",
     "password": "$2a$10$Wgn.Lp/t1KweXKPq.kAGZOqHZMFF408y8OsKum18/85ajqx5wZZn2",
     "xp": 0,
+    "lesson_done": 0,
     "lesson_done_ru": 0,
-    "LessonDone_EN": 0,
+    "lesson_done_en": 0,
     "level": 0,
     "coins": 0,
     "items": null,
@@ -19,15 +20,17 @@
     "referral_code": "KWSE",
     "referred_by": "",
     "referred_count": 0,
-    "friends": []
+    "friends": [],
+    "registered_date": ""
   },
   {
     "username": "admin",
     "email": "test2@test.test",
     "password": "$2a$10$6ZkSu4687UnX3qa4BOkz0OaaMTxLco5mZwYJlsbAmPh/9PBcJSd76",
     "xp": 0,
+    "lesson_done": 0,
     "lesson_done_ru": 0,
-    "LessonDone_EN": 0,
+    "lesson_done_en": 0,
     "level": 0,
     "coins": 100,
     "items": null,
@@ -42,41 +45,19 @@
     "referred_by": "",
     "referred_count": 2,
     "friends": [
-      "test",
-      "test3"
-    ]
-  },
-  {
-    "username": "test",
-    "email": "test1@test.test",
-    "password": "$2a$10$P60IBdDsPeGLrGkFDVL0U.OxRaaTCnpvCEYcvNU5UNTsy2Tp1Gxym",
-    "xp": 0,
-    "lesson_done_ru": 0,
-    "LessonDone_EN": 0,
-    "level": 0,
-    "coins": 25,
-    "items": null,
-    "need_xp": 0,
-    "streak": 2,
-    "last_streak": 2,
-    "answer_streak": 0,
-    "last_login": "2026-03-07",
-    "UnlockedAchievements": null,
-    "symbol_stats": null,
-    "referral_code": "8IRG",
-    "referred_by": "admin",
-    "referred_count": 0,
-    "friends": [
-      "admin"
-    ]
+      "test3",
+      "quickfixuser"
+    ],
+    "registered_date": ""
   },
   {
     "username": "test3",
     "email": "test21@test.test",
     "password": "$2a$10$2d3qGJ/WXBeVPjb3aVwaMOGGAbg9QouJxdf.6NBPqEShsZ14qP89u",
     "xp": 0,
+    "lesson_done": 0,
     "lesson_done_ru": 0,
-    "LessonDone_EN": 0,
+    "lesson_done_en": 0,
     "level": 0,
     "coins": 25,
     "items": null,
@@ -92,6 +73,68 @@
     "referred_count": 0,
     "friends": [
       "admin"
-    ]
+    ],
+    "registered_date": ""
+  },
+  {
+    "username": "quickfixuser",
+    "email": "qf@example.test",
+    "password": "$2a$10$xSwVrxLdE30buG4jUuuRVuvVLZuw1g2unUOTbie1k27326GuaUqvu",
+    "xp": 0,
+    "lesson_done": 0,
+    "lesson_done_ru": 0,
+    "lesson_done_en": 4,
+    "level": 0,
+    "coins": 70,
+    "items": null,
+    "need_xp": 100,
+    "streak": 1,
+    "last_streak": 0,
+    "answer_streak": 0,
+    "last_login": "2026-03-12",
+    "UnlockedAchievements": null,
+    "symbol_stats": null,
+    "referral_code": "MSWE1B",
+    "referred_by": "",
+    "referred_count": 0,
+    "friends": [
+      "admin"
+    ],
+    "registered_date": ""
+  },
+  {
+    "username": "test",
+    "email": "test@test.com",
+    "password": "$2a$10$R7cYhl5RGgLj5lRqM/VdAe7SuOJGgIeHgKdH/B5DQZ6kNng44m2P2",
+    "xp": 1,
+    "lesson_done": 0,
+    "lesson_done_ru": 0,
+    "lesson_done_en": 1,
+    "level": 0,
+    "coins": 10,
+    "items": null,
+    "need_xp": 100,
+    "streak": 1,
+    "last_streak": 0,
+    "answer_streak": 0,
+    "last_login": "2026-03-12",
+    "UnlockedAchievements": null,
+    "symbol_stats": [
+      {
+        "symbol": "A",
+        "correct": 3,
+        "wrong": 1
+      },
+      {
+        "symbol": "B",
+        "correct": 2,
+        "wrong": 2
+      }
+    ],
+    "referral_code": "17O1LA",
+    "referred_by": "",
+    "referred_count": 0,
+    "friends": [],
+    "registered_date": "2026-03-12"
   }
 ]

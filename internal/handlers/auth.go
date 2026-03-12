@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
+	"os"
+	"log"
 
 	"github.com/cautro/morzelingo/internal/app"
 	"github.com/cautro/morzelingo/internal/models"
@@ -18,62 +19,94 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type LoginInput struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-type RegisterInput struct {
-	Username      string `json:"username"`
-	Email         string `json:"email"`
-	Password      string `json:"password"`
-	ReferralInput string `json:"referral_code"`
-}
-
-type SymbolUpdate struct {
-	Symbol  string `json:"symbol" binding:"required"`
-	Correct int    `json:"correct"`
-	Wrong   int    `json:"wrong"`
-}
-
-type PracticeQuestion struct {
-	Type     string `json:"type"`
-	Question string `json:"question"`
-	Answer   string `json:"answer,omitempty"`
-}
-
-type PracticeResponse struct {
-	Questions []PracticeQuestion `json:"questions"`
-}
-
-type Lesson struct {
-	ID          int
-	Title       string
-	Theory      string
-	Symbols     []string
-	XPReward    int
-	Practice string
-}
-
-type Claims struct {
-	Username string `json:"username"`
-	jwt.RegisteredClaims
-}
-
-func readLessons(lang string) ([]Lesson, error) {
-	filename := "lessons-EN.json"
+func readLessons(lang string) ([]models.Lesson, error) {
+	filename := "data/lessons-EN.json"
 	if lang == "ru" {
-		filename = "lessons-RU.json"
+		filename = "data/lessons-RU.json"
 	}
-	b, err := os.ReadFile(filename)
+	b, err := osReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	var lessons []Lesson
+	var lessons []models.Lesson
 	if err := json.Unmarshal(b, &lessons); err != nil {
 		return nil, err
 	}
 	return lessons, nil
+}
+
+func osReadFile(path string) ([]byte, error) {
+	return os.ReadFile(path)
+}
+
+func textToMorse(text string, lang string) string {
+	var dict map[string]string
+	if lang == "ru" {
+		dict = models.RussianMorseDictionary
+	} else {
+		dict = models.EnglishMorseDictionary
+	}
+
+	out := make([]string, 0, len(text))
+	for _, ch := range text {
+		upper := strings.ToUpper(string(ch))
+		if m, ok := dict[upper]; ok {
+			out = append(out, m)
+		}
+	}
+	return strings.Join(out, " ")
+}
+
+func generatePractice(symbols []string, length int) string {
+	if len(symbols) == 0 {
+		return ""
+	}
+	sb := make([]string, length)
+	for i := 0; i < length; i++ {
+		sb[i] = symbols[rand.Intn(len(symbols))]
+	}
+	return strings.Join(sb, "")
+}
+
+func getHardSymbols(stats []models.SymbolStat) []string {
+	hard := make([]string, 0)
+	for _, s := range stats {
+		if s.Wrong >= 2 {
+			hard = append(hard, s.Symbol)
+		}
+	}
+	return hard
+}
+
+func weightedRandom(symbols []string, stats []models.SymbolStat) string {
+	if len(symbols) == 0 {
+		return ""
+	}
+	weights := make([]int, len(symbols))
+	total := 0
+	for i, sym := range symbols {
+		w := 10
+		for _, st := range stats {
+			if st.Symbol == sym {
+				w = 10 + st.Wrong*5 - st.Correct*3
+				break
+			}
+		}
+		if w < 1 {
+			w = 1
+		}
+		weights[i] = w
+		total += w
+	}
+	r := rand.Intn(total)
+	acc := 0
+	for i, w := range weights {
+		acc += w
+		if r < acc {
+			return symbols[i]
+		}
+	}
+	return symbols[rand.Intn(len(symbols))]
 }
 
 func AuthMiddleware(a *app.App) gin.HandlerFunc {
@@ -91,7 +124,7 @@ func AuthMiddleware(a *app.App) gin.HandlerFunc {
 			return
 		}
 		tokenStr := parts[1]
-		claims := &Claims{}
+		claims := &models.Claims{}
 		tok, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method")
@@ -110,7 +143,7 @@ func AuthMiddleware(a *app.App) gin.HandlerFunc {
 
 func MakeRegisterHandler(a *app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var in RegisterInput
+		var in models.RegisterInput
 		if err := c.ShouldBindJSON(&in); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid json"})
 			return
@@ -123,15 +156,16 @@ func MakeRegisterHandler(a *app.App) gin.HandlerFunc {
 			return
 		}
 
-		users := a.GetUsers()
-		for _, u := range users {
-			if u.Username == in.Username {
-				c.JSON(http.StatusConflict, gin.H{"error": "username exists"})
-				return
-			}
-			if u.Email == in.Email && in.Email != "" {
-				c.JSON(http.StatusConflict, gin.H{"error": "email exists"})
-				return
+		if _, ok := a.FindUserByUsername(in.Username); ok {
+			c.JSON(http.StatusConflict, gin.H{"error": "username exists"})
+			return
+		}
+		if in.Email != "" {
+			for _, u := range a.GetUsers() {
+				if u.Email == in.Email {
+					c.JSON(http.StatusConflict, gin.H{"error": "email exists"})
+					return
+				}
 			}
 		}
 
@@ -142,30 +176,27 @@ func MakeRegisterHandler(a *app.App) gin.HandlerFunc {
 		}
 
 		newUser := models.User{
-			Username:    in.Username,
-			Email:       in.Email,
-			Password:    string(hashed),
-			XP:          0,
-			ReferralCode: generateReferralCode(users),
-			Friends:     []string{},
-			Items:       nil,
-			SymbolStats: nil,
+			Username:     in.Username,
+			Email:        in.Email,
+			Password:     string(hashed),
+			XP:           0,
+			ReferralCode: generateReferralCode(a.GetUsers()),
+			Friends:      []string{},
+			Items:        nil,
+			SymbolStats:  nil,
+			RegisteredDate: time.Now().UTC().Format("2006-01-02"),
 		}
 
 		if in.ReferralInput != "" {
-			_, err := a.UpdateUser(newUser.Username, func(u *models.User) error { return nil })
-			if err != nil {
-				c.JSON(500, gin.H{"error": "error in 157 line(auth.go)"})
-			}
-			for i := range users {
-				if users[i].ReferralCode == in.ReferralInput {
-					_, _ = a.UpdateUser(users[i].Username, func(x *models.User) error {
+			for _, u := range a.GetUsers() {
+				if u.ReferralCode == in.ReferralInput {
+					_, _ = a.UpdateUser(u.Username, func(x *models.User) error {
 						x.ReferralCount++
 						x.Coins += 50
 						x.Friends = append(x.Friends, newUser.Username)
 						return nil
 					})
-					newUser.ReferredBy = users[i].Username
+					newUser.ReferredBy = u.Username
 					newUser.Coins += 25
 					break
 				}
@@ -175,36 +206,43 @@ func MakeRegisterHandler(a *app.App) gin.HandlerFunc {
 		toSave := a.AddUser(newUser)
 		a.Saver.Schedule(toSave)
 
-		c.JSON(http.StatusCreated, gin.H{"ok": true})
+		claims := models.Claims{
+			Username: in.Username,
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+				IssuedAt:  jwt.NewNumericDate(time.Now()),
+			},
+		}
+		tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		signed, err := tok.SignedString([]byte(a.Secret))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate token"})
+			return
+		}
+		c.JSON(http.StatusCreated, gin.H{"ok": true, "token": signed})
 	}
 }
 
 func MakeLoginHandler(a *app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var in LoginInput
+		var in models.LoginInput
 		if err := c.ShouldBindJSON(&in); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
 			return
 		}
-		users := a.GetUsers()
-		var found *models.User
-		for i := range users {
-			if users[i].Username == in.Username {
-				tmp := users[i] 
-				found = &tmp
-				break
-			}
-		}
-		if found == nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
-			return
-		}
-		if err := bcrypt.CompareHashAndPassword([]byte(found.Password), []byte(in.Password)); err != nil {
+
+		user, ok := a.GetUserRaw(in.Username)
+		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
 			return
 		}
 
-		toSave, err := a.UpdateUser(found.Username, func(u *models.User) error {
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(in.Password)); err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+			return
+		}
+
+		toSave, err := a.UpdateUser(user.Username, func(u *models.User) error {
 			today := time.Now().UTC().Format("2006-01-02")
 			yesterday := time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02")
 			if u.LastLogin == today {
@@ -224,7 +262,7 @@ func MakeLoginHandler(a *app.App) gin.HandlerFunc {
 			a.Saver.Schedule(toSave)
 		}
 
-		claims := Claims{
+		claims := models.Claims{
 			Username: in.Username,
 			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
@@ -237,7 +275,6 @@ func MakeLoginHandler(a *app.App) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate token"})
 			return
 		}
-
 		c.JSON(http.StatusOK, gin.H{"token": signed})
 	}
 }
@@ -257,22 +294,24 @@ func MakeProfileHandler(a *app.App) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"username":              u.Username,
-			"email":                 u.Email,
-			"xp":                    u.XP,
-			"lesson_done_ru":        u.LessonDone_RU,
-			"lesson_done_en":        u.LessonDone_EN,
-			"level":                 u.Level,
-			"coins":                 u.Coins,
-			"items":                 u.Items,
-			"streak":                u.Streak,
-			"referral_code":         u.ReferralCode,
-			"referred_by":           u.ReferredBy,
-			"referred_count":        u.ReferralCount,
-			"friends":               u.Friends,
-			"symbol_stats":          u.SymbolStats,
-			"need_xp":               u.NeedXp,
-			"UnlockedAchievements":  u.UnlockedAchievements,
+			"username":             u.Username,
+			"email":                u.Email,
+			"xp":                   u.XP,
+			"lesson_done_ru":       u.LessonDone_RU,
+			"lesson_done_en":       u.LessonDone_EN,
+			"level":                u.Level,
+			"coins":                u.Coins,
+			"items":                u.Items,
+			"streak":               u.Streak,
+			"referral_code":        u.ReferralCode,
+			"referred_by":          u.ReferredBy,
+			"referred_count":       u.ReferralCount,
+			"friends":              u.Friends,
+			"symbol_stats":         u.SymbolStats,
+			"need_xp":              u.NeedXp,
+			"UnlockedAchievements": u.UnlockedAchievements,
+			"registred_date":       u.RegisteredDate,
+			"LastLogin":            u.LastLogin,
 		})
 	}
 }
@@ -281,6 +320,7 @@ func MakeCompleteLessonHandler(a *app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.GetString("username")
 		lang := c.DefaultQuery("lang", "en")
+
 		var in struct {
 			LessonID int `json:"lesson_id" binding:"required"`
 		}
@@ -301,36 +341,22 @@ func MakeCompleteLessonHandler(a *app.App) gin.HandlerFunc {
 
 		toSave, err := a.UpdateUser(username, func(u *models.User) error {
 			var done int
-			if lang == "ru" {
-				done = u.LessonDone_RU
-			} else {
-				done = u.LessonDone_EN
-			}
+			if lang == "ru" { done = u.LessonDone_RU } else { done = u.LessonDone_EN }
 			if in.LessonID != done+1 {
 				return fmt.Errorf("invalid lesson order")
 			}
-
 			u.XP += lessons[in.LessonID-1].XPReward
-			if lang == "ru" {
-				u.LessonDone_RU = done + 1
-			} else {
-				u.LessonDone_EN = done + 1
-			}
-
+			if lang == "ru" { u.LessonDone_RU = done + 1 } else { u.LessonDone_EN = done + 1 }
 			need := 1 + float64(u.Level)*1.5
 			u.NeedXp = int(need * 100)
-			if u.XP >= 100*int(need) {
+			if u.XP >= u.NeedXp {
 				u.Level++
-				u.XP = u.XP - 100*int(need)
+				u.XP -= u.NeedXp
 			}
-
 			mult := 1 + u.Level*2
-			if mult > 100 {
-				mult = 100
-			}
+			if mult > 100 { mult = 100 }
 			u.Coins += 10 * mult
 			u.LastLogin = time.Now().Format("2006-01-02")
-			u.Streak++
 			return nil
 		})
 		if err != nil {
@@ -342,8 +368,26 @@ func MakeCompleteLessonHandler(a *app.App) gin.HandlerFunc {
 			return
 		}
 
+		var updated models.User
+		for _, u := range toSave {
+			if u.Username == username {
+				updated = u
+				break
+			}
+		}
+
 		a.Saver.Schedule(toSave)
-		c.JSON(http.StatusOK, gin.H{"message": "lesson completed"})
+
+		c.JSON(http.StatusOK, gin.H{
+			"message":        "lesson completed",
+			"lesson_done_EN": updated.LessonDone_EN,
+			"lesson_done_RU": updated.LessonDone_RU,
+			"streak":         updated.Streak,
+			"last_login":     updated.LastLogin,
+			"xp":             updated.XP,
+			"level":          updated.Level,
+			"coins":          updated.Coins,
+		})
 	}
 }
 
@@ -390,7 +434,7 @@ func MakePracticeByLessonHandler(a *app.App) gin.HandlerFunc {
 			return
 		}
 
-		var selected *Lesson
+		var selected *models.Lesson
 		for i := range lessons {
 			if strconv.Itoa(lessons[i].ID) == idStr {
 				selected = &lessons[i]
@@ -425,20 +469,23 @@ func MakePracticeByLessonHandler(a *app.App) gin.HandlerFunc {
 		for s := range symbolSet {
 			practiceSymbols = append(practiceSymbols, s)
 		}
+		if len(practiceSymbols) == 0 {
+			practiceSymbols = selected.Symbols
+		}
 
 		types := []string{"text", "morse", "audio"}
-		questions := make([]PracticeQuestion, 0, 20)
+		questions := make([]models.PracticeQuestion, 0, 20)
 		for i := 0; i < 20; i++ {
 			randomType := types[rand.Intn(len(types))]
 			correctWord := weightedRandom(practiceSymbols, userCopy.SymbolStats)
 			switch randomType {
 			case "text":
-				questions = append(questions, PracticeQuestion{Type: "text", Question: correctWord, Answer: correctWord})
+				questions = append(questions, models.PracticeQuestion{Type: "text", Question: correctWord, Answer: correctWord})
 			case "morse", "audio":
-				questions = append(questions, PracticeQuestion{Type: randomType, Question: textToMorse(correctWord, lang), Answer: correctWord})
+				questions = append(questions, models.PracticeQuestion{Type: randomType, Question: textToMorse(correctWord, lang), Answer: correctWord})
 			}
 		}
-		c.JSON(http.StatusOK, PracticeResponse{Questions: questions})
+		c.JSON(http.StatusOK, models.PracticeResponse{Questions: questions})
 	}
 }
 
@@ -451,26 +498,30 @@ func MakeLettersPracticeHandler(a *app.App) gin.HandlerFunc {
 			return
 		}
 		types := []string{"text", "morse", "audio"}
-		questions := make([]PracticeQuestion, 0, 20)
+		questions := make([]models.PracticeQuestion, 0, 20)
+		symbols := []string{}
+		if letters != "" {
+			symbols = strings.Split(letters, "")
+		}
 		for i := 0; i < 20; i++ {
 			randomType := types[rand.Intn(len(types))]
 			randomNumberOfSymbols := rand.Intn(3) + 1
-			correctWord := generatePractice(strings.Split(letters, ""), randomNumberOfSymbols)
+			correctWord := generatePractice(symbols, randomNumberOfSymbols)
 			switch randomType {
 			case "text":
-				questions = append(questions, PracticeQuestion{Type: "text", Question: correctWord})
+				questions = append(questions, models.PracticeQuestion{Type: "text", Question: correctWord})
 			case "morse", "audio":
-				questions = append(questions, PracticeQuestion{Type: randomType, Question: textToMorse(correctWord, lang)})
+				questions = append(questions, models.PracticeQuestion{Type: randomType, Question: textToMorse(correctWord, lang)})
 			}
 		}
-		c.JSON(http.StatusOK, PracticeResponse{Questions: questions})
+		c.JSON(http.StatusOK, models.PracticeResponse{Questions: questions})
 	}
 }
 
 func MakePracticeSubmitHandler(a *app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.GetString("username")
-		var updates []SymbolUpdate
+		var updates []models.SymbolUpdate
 		if err := c.ShouldBindJSON(&updates); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
 			return
@@ -511,21 +562,235 @@ func MakeFreemodeHandler(a *app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		lang := c.DefaultQuery("lang", "en")
 		letters := c.DefaultQuery("letters", "")
-		if letters == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "letters query required"})
-			return
-		}
 		countStr := c.DefaultQuery("count", "20")
 		cnt, _ := strconv.Atoi(countStr)
 		if cnt <= 0 {
 			cnt = 20
 		}
-		questions := make([]PracticeQuestion, 0, cnt)
-		for i := 0; i < cnt; i++ {
-			randomNumberOfSymbols := rand.Intn(3) + 1
-			word := generatePractice(strings.Split(letters, ""), randomNumberOfSymbols)
-			questions = append(questions, PracticeQuestion{Type: "morse", Question: textToMorse(word, lang), Answer: word})
+
+		username := c.GetString("username")
+		user, _ := a.GetUserCopy(username) // if not found, zero-level user
+
+		var symbolPool []string
+		if letters != "" {
+			symbolPool = strings.Split(letters, "")
+		} else {
+			// default pool based on language
+			if lang == "ru" {
+				for k := range models.RussianMorseDictionary {
+					symbolPool = append(symbolPool, k)
+				}
+			} else {
+				for k := range models.EnglishMorseDictionary {
+					// skip digits for letters-mode primarily; they can be included if needed
+					if len(k) == 1 {
+						symbolPool = append(symbolPool, k)
+					}
+				}
+			}
 		}
-		c.JSON(http.StatusOK, PracticeResponse{Questions: questions})
+		if len(symbolPool) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no symbols available"})
+			return
+		}
+
+		questions := make([]models.PracticeQuestion, 0, cnt)
+
+		for i := 0; i < cnt; i++ {
+			// decide freemode subtype depending on level
+			if user.Level <= 10 {
+				// letters mode: 1..2 symbols
+				n := 1 + rand.Intn(2)
+				word := generatePractice(symbolPool, n)
+				questions = append(questions, models.PracticeQuestion{Type: "morse", Question: textToMorse(word, lang), Answer: word})
+			} else if user.Level <= 20 {
+				// words mode: 2..5 symbols
+				n := 2 + rand.Intn(4)
+				word := generatePractice(symbolPool, n)
+				questions = append(questions, models.PracticeQuestion{Type: "morse", Question: textToMorse(word, lang), Answer: word})
+			} else {
+				// sentences mode: combine several words (2..4 words)
+				wordsCount := 2 + rand.Intn(3)
+				parts := make([]string, 0, wordsCount)
+				for w := 0; w < wordsCount; w++ {
+					n := 2 + rand.Intn(4)
+					parts = append(parts, generatePractice(symbolPool, n))
+				}
+				sentence := strings.Join(parts, " ")
+				questions = append(questions, models.PracticeQuestion{Type: "morse", Question: textToMorse(sentence, lang), Answer: sentence})
+			}
+		}
+
+		c.JSON(http.StatusOK, models.PracticeResponse{Questions: questions})
+	}
+}
+
+func MakeListFriendHandler(a *app.App) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		username := c.GetString("username")
+			u, err := a.GetUserCopy(username)
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"friends": u.Friends})
+	}
+}
+
+func MakeAddFriendHandler(a *app.App) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		username := c.GetString("username")
+		var body struct {
+			Friend string `json:"friend" binding:"required"`
+		}
+		if err := c.ShouldBindJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "friend required"})
+			return
+		}
+		friend := body.Friend
+		if friend == username {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "cannot add yourself"})
+			return
+		}
+
+		if _, ok := a.FindUserByUsername(friend); !ok {
+			c.JSON(http.StatusNotFound, gin.H{"error": "friend user not found"})
+			return
+		}
+
+		toSave, err := a.UpdateUser(username, func(u *models.User) error {
+			for _, f := range u.Friends {
+				if f == friend {
+					return nil
+				}
+			}
+			u.Friends = append(u.Friends, friend)
+			return nil
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		toSave, err = a.UpdateUser(friend, func(u *models.User) error {
+			for _, f := range u.Friends {
+				if f == username {
+					return nil
+				}
+			}
+			u.Friends = append(u.Friends, username)
+			return nil
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		a.Saver.Schedule(toSave)
+
+		if err := touchFriendshipStreak(username, friend); err != nil {
+			log.Printf("warning: friendship streak update failed: %v", err)
+		}
+
+		var u models.User
+		for _, up := range toSave {
+			if up.Username == username {
+				up = u
+				break
+			}
+		}
+
+		c.JSON(http.StatusOK, gin.H{"ok": true, "friends_of": username, "friends": u.Friends})
+	}
+}
+
+func MakeUpdateStreakHandler(a *app.App) gin.HandlerFunc {
+	return func (c *gin.Context)  {
+		username := c.GetString("username")
+		if err := updateAllFriendshipStreaks(a, username); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"ok": true})
+	}
+}
+
+func MakeFriendShipStreakHandler(a *app.App) gin.HandlerFunc {
+	return func (c *gin.Context) {
+		meOnly := c.DefaultQuery("me", "false")
+		username := c.GetString("username")
+		streaks, err := readFriendshipStreaks()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if meOnly == "true" {
+			filter := make([]models.FriendshipStreak, 0)
+			for _, s := range streaks {
+				if s.User1 == username || s.User2 == username {
+					filter = append(filter, s)
+				}
+			}
+			c.JSON(http.StatusOK, filter)
+			return
+		}
+		c.JSON(http.StatusOK, streaks)
+	}
+	
+}
+
+func MakeDeleteFriendHandler(a *app.App) gin.HandlerFunc {
+	return func (c *gin.Context)  {
+		username := c.GetString("username")
+		var body struct {
+			Friend string `json:"friend" binding:"required"`
+		}
+		if err := c.ShouldBindJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "friend required"})
+			return
+		}
+
+		friend := body.Friend
+		if friend == username {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "cannot add yourself"})
+			return
+		}
+
+		_, ok := a.FindUserByUsername(friend)
+		if !ok {
+			c.JSON(http.StatusNotFound, gin.H{"error": "friend user not found"})
+			return
+		}
+
+		toSave, err := a.UpdateUser(username, func(u *models.User) error {
+			u.Friends = removeFriend(u.Friends, friend) 
+			return nil
+		})
+
+		toSave, err = a.UpdateUser(friend, func(u *models.User) error {
+			u.Friends = removeFriend(u.Friends, username)
+			return nil
+		})
+
+		if err != nil {
+			c.JSON(500, gin.H{"error": "failed to update"})
+			return
+		}
+
+		a.Saver.Schedule(toSave)
+
+		if err := touchFriendshipStreak(username, friend); err != nil {
+			log.Printf("warning: failed to delete friend: %v", err)
+		}
+
+		var u models.User
+		for _, up := range toSave {
+			if up.Username == username {
+				up = u
+				break
+			}
+		}
+
+		c.JSON(http.StatusOK, gin.H{"ok": true, "friends_of": username, "friends": u.Friends, "message": "friend deleted"})
+
 	}
 }

@@ -227,7 +227,6 @@ var userIndex map[string]int
 func removeFriend(slice []string, name string) []string {
     for i, v := range slice {
         if v == name {
-            // Р‘РµСЂРµРј РІСЃС‘ РґРѕ i Рё РґРѕР±Р°РІР»СЏРµРј РІСЃС‘ РїРѕСЃР»Рµ i
             return append(slice[:i], slice[i+1:]...)
         }
     }
