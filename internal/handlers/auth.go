@@ -569,20 +569,18 @@ func MakeFreemodeHandler(a *app.App) gin.HandlerFunc {
 		}
 
 		username := c.GetString("username")
-		user, _ := a.GetUserCopy(username) // if not found, zero-level user
+		user, _ := a.GetUserCopy(username) 
 
 		var symbolPool []string
 		if letters != "" {
 			symbolPool = strings.Split(letters, "")
 		} else {
-			// default pool based on language
 			if lang == "ru" {
 				for k := range models.RussianMorseDictionary {
 					symbolPool = append(symbolPool, k)
 				}
 			} else {
 				for k := range models.EnglishMorseDictionary {
-					// skip digits for letters-mode primarily; they can be included if needed
 					if len(k) == 1 {
 						symbolPool = append(symbolPool, k)
 					}
@@ -597,19 +595,15 @@ func MakeFreemodeHandler(a *app.App) gin.HandlerFunc {
 		questions := make([]models.PracticeQuestion, 0, cnt)
 
 		for i := 0; i < cnt; i++ {
-			// decide freemode subtype depending on level
 			if user.Level <= 10 {
-				// letters mode: 1..2 symbols
 				n := 1 + rand.Intn(2)
 				word := generatePractice(symbolPool, n)
-				questions = append(questions, models.PracticeQuestion{Type: "morse", Question: textToMorse(word, lang), Answer: word})
+				questions = append(questions, models.PracticeQuestion{Type: "text", Question: word, Answer: word})
 			} else if user.Level <= 20 {
-				// words mode: 2..5 symbols
 				n := 2 + rand.Intn(4)
 				word := generatePractice(symbolPool, n)
-				questions = append(questions, models.PracticeQuestion{Type: "morse", Question: textToMorse(word, lang), Answer: word})
+				questions = append(questions, models.PracticeQuestion{Type: "text", Question: word, Answer: word})
 			} else {
-				// sentences mode: combine several words (2..4 words)
 				wordsCount := 2 + rand.Intn(3)
 				parts := make([]string, 0, wordsCount)
 				for w := 0; w < wordsCount; w++ {
@@ -617,7 +611,7 @@ func MakeFreemodeHandler(a *app.App) gin.HandlerFunc {
 					parts = append(parts, generatePractice(symbolPool, n))
 				}
 				sentence := strings.Join(parts, " ")
-				questions = append(questions, models.PracticeQuestion{Type: "morse", Question: textToMorse(sentence, lang), Answer: sentence})
+				questions = append(questions, models.PracticeQuestion{Type: "text", Question: sentence, Answer: sentence})
 			}
 		}
 

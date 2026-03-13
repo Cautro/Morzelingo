@@ -8,6 +8,35 @@ type SymbolStat struct {
 	Wrong   int    `json:"wrong"`
 }
 
+type Duel struct {
+    ID string `json:"id"`
+
+    Player1 string `json:"player1"`
+    Player2 string `json:"player2"`
+
+    Status string `json:"status"` 
+    // waiting
+    // active
+    // finished
+
+    Tasks []MorseTask `json:"tasks"`
+
+    P1Score int `json:"p1_score"`
+    P2Score int `json:"p2_score"`
+
+    P1Time int64 `json:"p1_time"`
+    P2Time int64 `json:"p2_time"`
+
+    Winner string `json:"winner"`
+
+    CreatedAt int64 `json:"created_at"`
+}
+
+type MorseTask struct {
+    Morse string `json:"morse"`
+    Answer string `json:"answer"`
+}
+
 type User struct {	
 	Username             string       `json:"username"`
 	Email                string       `json:"email"`

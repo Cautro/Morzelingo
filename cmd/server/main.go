@@ -71,6 +71,9 @@ func main() {
 		auth.GET("/friendship-streaks", handlers.MakeFriendShipStreakHandler(a))
 		auth.POST("/friends/delete", handlers.MakeDeleteFriendHandler(a))
 		auth.GET("/practice/replay/:id", handlers.MakeReplayLessonHandler(a))
+		// auth.POST("/duel/create")
+		// auth.POST("/duel/join")
+		// auth.GET("/duels")
 	}
 
 	addr := ":8080"
