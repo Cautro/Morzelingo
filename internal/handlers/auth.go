@@ -574,7 +574,9 @@ func MakeFreemodeHandler(a *app.App) gin.HandlerFunc {
 
 		var symbolPool []string
 		if letters != "" {
-			symbolPool = strings.Split(letters, "")
+			for _, r := range letters {
+				symbolPool = append(symbolPool, string(r))
+			}
 		} else {
 			if lang == "ru" {
 				for k := range models.RussianMorseDictionary {
