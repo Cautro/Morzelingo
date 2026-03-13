@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 
@@ -9,6 +10,7 @@ import '../../../app_theme.dart';
 import '../../../config.dart';
 import '../../../storage_context.dart';
 import '../../../theme_controller.dart';
+import '../bloc/practice_bloc.dart';
 import '../context/practice_context.dart';
 
 class PracticeAudioPage extends StatefulWidget {
@@ -31,46 +33,6 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
   TextEditingController _controller = TextEditingController();
 
   @override
-
-  
-  
-  void checkAnswer() async {
-    final stats = PracticeContext().calculateStats(widget.answer, text);
-    await PracticeContext().sendStats(stats);
-  }
-
-  Future<void> answerHandler() async {
-    String? token = await StorageService.getItem("token");
-    if (!widget.isLetter) {
-      checkAnswer();
-    }
-    if (text.trim().toUpperCase() == widget.answer) {
-      if (!widget.isLetter) {
-        PracticeContext().practiceChecker(true);
-      }
-      Fluttertoast.showToast(
-          msg: "Верно!",
-          backgroundColor: AppTheme.success,
-          textColor: Colors.white
-      );
-      setState(() {
-        _controller.text = "";
-      });
-      widget.onAnswer();
-    } else {
-      if (!widget.isLetter) {
-        PracticeContext().practiceChecker(false);
-      }
-      Fluttertoast.showToast(
-          msg: "Неправильно",
-          backgroundColor: AppTheme.error,
-          textColor: Colors.white
-      );
-    }
-  }
-
-
-  @override
   void initState() {
     super.initState();
     print(widget.question);
@@ -84,70 +46,91 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsetsGeometry.all(24),
-          child: Column(
-            children: [
-              LinearProgressIndicator(
-                value: widget.currentquestion,
-                color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
-                minHeight: 12,
-                backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
-                borderRadius: BorderRadiusGeometry.circular(16),
-              ),
-              SizedBox(height: 8,),
-              Container(
-                  width: double.infinity,
-                  child: Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          SizedBox(height: 16,),
-                          Text("Прослушайте морзе и переведите", style: Theme.of(context).textTheme.bodyLarge,),
-                          SizedBox(height: 16,),
-                          TextField(
-                            controller: _controller,
-                            onChanged: (value) {
-                              setState(() {
-                                text = value;
-                                print(text);
-                              });
-                            },
-                            decoration: InputDecoration(labelText: "Ответ"),
-                          ),
-                          SizedBox(height: 16,),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  PracticeContext().playMorseAudio(widget.question);
-                                },
-                                child: Text("Прослушать", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),)
+    return BlocProvider(
+        create: (_) => PracticeBloc(),
+        child: BlocListener<PracticeBloc, PracticeState>(
+            listener: (context, state) {
+              if (state is PracticeMorseAnswerState) {
+                Fluttertoast.showToast(
+                    msg: state.message,
+                    backgroundColor: state.success ? AppTheme.success : AppTheme.error,
+                    textColor: Colors.white
+                );
+                _controller.text = "";
+                state.success ? widget.onAnswer() : print('Wrong');
+              }
+            },
+            child: BlocBuilder<PracticeBloc, PracticeState>(
+                builder: (context, state) {
+                  return Scaffold(
+                    body: SafeArea(
+                      child: Padding(
+                        padding: EdgeInsetsGeometry.all(24),
+                        child: Column(
+                          children: [
+                            LinearProgressIndicator(
+                              value: widget.currentquestion,
+                              color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
+                              minHeight: 12,
+                              backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
+                              borderRadius: BorderRadiusGeometry.circular(16),
                             ),
-                          ),
-                          SizedBox(height: 16,),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  answerHandler();
-                                },
-                                child:  Text( !widget.isLast ? "Ответить" : "Закончить", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white), )
-                            ),
-                          )
-                        ],
+                            SizedBox(height: 8,),
+                            Container(
+                                width: double.infinity,
+                                child: Card(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Column(
+                                      children: [
+                                        SizedBox(height: 16,),
+                                        Text("Прослушайте морзе и переведите", style: Theme.of(context).textTheme.bodyLarge,),
+                                        SizedBox(height: 16,),
+                                        TextField(
+                                          controller: _controller,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              text = value;
+                                              print(text);
+                                            });
+                                          },
+                                          decoration: InputDecoration(labelText: "Ответ"),
+                                        ),
+                                        SizedBox(height: 16,),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                              onPressed: () {
+                                                PracticeContext().playMorseAudio(widget.question);
+                                              },
+                                              child: Text("Прослушать", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),)
+                                          ),
+                                        ),
+                                        SizedBox(height: 16,),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                              onPressed: () {
+                                                context.read<PracticeBloc>().add(PracticeMorseAnswerEvent(text: text, isLetter: widget.isLetter, answer: widget.answer));
+                                              },
+                                              child:  Text( !widget.isLast ? "Ответить" : "Закончить", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white), )
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                )
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                  )
-              )
-            ],
-          ),
-        ),
-      ),
+                  );
+                }
+            )
+        )
     );
+
   }
 }
 

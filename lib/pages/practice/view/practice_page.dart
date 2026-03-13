@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:morzelingo/pages/loading_page.dart';
 import 'package:morzelingo/pages/practice/context/practice_context.dart';
 import 'package:morzelingo/pages/practice/view/practice_audio_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_morse_page.dart';
@@ -10,6 +12,7 @@ import 'package:morzelingo/pages/practice/view/practice_text_page.dart';
 import '../../../config.dart';
 import '../../../settings_context.dart';
 import '../../../storage_context.dart';
+import '../bloc/practice_bloc.dart';
 
 class PracticePage extends StatefulWidget {
   const PracticePage({super.key});
@@ -27,84 +30,78 @@ class _PracticePageState extends State<PracticePage> {
   int index = 0;
 
   @override
-
-  void getQuestion() async {
-    var res = await PracticeContext().getPracticeQuestion();
-
-    setState(() {
-      data = res["data"];
-      question = data["questions"][index]["question"].toString().trim();
-      answer = data["questions"][index]["answer"].toString().trim();
-      type = data["questions"][index]["type"];
-    });
-    print('${data}');
-  }
-
-  void nextQuestion() async {
-   isLast ? complete() : print('notlast');
-   var res = await PracticeContext().nextPracticeQuestion(data, index, isLast);
-   setState(() {
-     question = res["question"];
-     answer = res["answer"];
-     type = res["type"];
-     isLast = res["islast"];
-     index = res["index"];
-   });
-  }
-
-  void complete() async {
-    PracticeContext().completeLesson();
-    Navigator.pop(context);
-    Navigator.pop(context);
-  }
-
-  @override
   void initState() {
     super.initState();
-    getQuestion();
   }
 
   @override
   Widget build(BuildContext context) {
-    switch (type) {
-      case "text":
-        return Scaffold(
-          appBar: AppBar(
-              title: Text("Отработайте навыки")
-          ),
-          body: PracticeTextPage(answer: answer, question: question, isLast: isLast, isLetter: false, currentquestion: ((1 / data["questions"].length) * (index + 1)),
-            onAnswer: () {
-              setState(() {
-                nextQuestion();
-              });
-            },
-          ),
-        );
-      case "audio":
-        return Scaffold(
-          appBar: AppBar(
-              title: Text("Отработайте навыки")
-          ),
-          body: PracticeAudioPage(answer: answer, question: question, isLetter: false, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
-            onAnswer: () {
-              setState(() {
-                nextQuestion();
-              });
-            } ,)
-        );
-      case "morse":
-        return Scaffold(
-          appBar: AppBar(
-              title: Text("Отработайте навыки")
-          ),
-            body: PracticeMorsePage(answer: answer, question: question, isLetter: false, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
-              onAnswer: () {
-                setState(() {
-                  nextQuestion();
-                });
-              } ,)
-        );
-      default: return Scaffold(body: Text("Error"),);
-    }
+    return BlocProvider(
+      create: (_) => PracticeBloc()..add(PracticeGetQuestionEvent()),
+      child: BlocListener<PracticeBloc, PracticeState>(
+        listener: (context, state) {
+          if (state is PracticeGetQuestionState) {
+            setState(() {
+              data = state.data;
+              type = data["questions"][index]["type"];
+              question = data["questions"][index]["question"];
+              answer = data["questions"][index]["answer"];
+            });
+          }
+          if (state is PracticeNextQuestionState) {
+            setState(() {
+              question = state.question;
+              answer = state.answer;
+              type = state.type;
+              index = state.index;
+              isLast = state.isLast;
+            });
+          }
+          if (state is PracticeCompleteState) {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          }
+        },
+        child: BlocBuilder<PracticeBloc, PracticeState>(
+          builder: (context, state) {
+            switch (type) {
+              case "text":
+                return Scaffold(
+                  appBar: AppBar(
+                      title: Text("Отработайте навыки")
+                  ),
+                  body: PracticeTextPage(answer: answer, question: question, isLast: isLast, isLetter: false, currentquestion: ((1 / data["questions"].length) * (index + 1)),
+                    onAnswer: () {
+                      context.read<PracticeBloc>().add(PracticeNextQuestionEvent(data: data, index: index, isLast: isLast));
+                    },
+                  ),
+                );
+              case "audio":
+                return Scaffold(
+                    appBar: AppBar(
+                        title: Text("Отработайте навыки")
+                    ),
+                    body: PracticeAudioPage(answer: answer, question: question, isLetter: false, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
+                      onAnswer: () {
+                        context.read<PracticeBloc>().add(PracticeNextQuestionEvent(data: data, index: index, isLast: isLast));
+                      } ,)
+                );
+              case "morse":
+                return Scaffold(
+                    appBar: AppBar(
+                        title: Text("Отработайте навыки")
+                    ),
+                    body: PracticeMorsePage(answer: answer, question: question, isLetter: false, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
+                      onAnswer: () {
+                        context.read<PracticeBloc>().add(PracticeNextQuestionEvent(data: data, index: index, isLast: isLast));
+                      } ,)
+                );
+              default: return LoadingPage();
+            }
+          },
+        ),
+      ),
+    );
+
   }
 }

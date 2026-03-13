@@ -36,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
 
 
-  void Logout() async {
+  void Logout(ProfileBloc bloc,) async {
     showDialog(
         context: context,
         builder: (context) {
@@ -48,8 +48,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
                     onPressed: () async {
-                      Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false,);
-                      await StorageService.clearAll();
+                      bloc.add(LogoutEvent());
                     },
                     child: Text("Выйти!",),
                   ),
@@ -98,6 +97,9 @@ class _ProfilePageState extends State<ProfilePage> {
               isLoading = false;
             });
           }
+          if (state is LogoutState) {
+            Navigator.pushReplacementNamed(context, "/login");
+          }
         },
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
@@ -144,7 +146,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 width: double.infinity,
                                 child: ElevatedButton(
                                   onPressed: () async {
-                                    Logout();
+                                    Logout(context.read<ProfileBloc>());
                                   },
                                   style: ElevatedButton.styleFrom(
                                       backgroundColor: AppTheme.error),

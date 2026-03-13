@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/config.dart';
+import 'package:morzelingo/pages/practice/bloc/practice_bloc.dart';
 import 'package:morzelingo/pages/practice/context/practice_context.dart';
 import 'package:morzelingo/storage_context.dart';
 import 'dart:convert';
-import 'package:morzelingo/widgets/morse_key.dart';
+import 'package:morzelingo/widgets/view/morse_key.dart';
 
 import '../../../theme_controller.dart';
 
@@ -28,93 +30,78 @@ class _PracticeTextPageState extends State<PracticeTextPage> {
   String decoded = '';
 
   @override
-
-  void checkAnswer() async {
-    final stats = PracticeContext().calculateStats(widget.answer, decoded);
-    await PracticeContext().sendStats(stats);
-  }
-
-  Future<void> answerHandler() async {
-    if (!widget.isLetter) {
-      checkAnswer();
-    }
-    print('data: ${decoded}, ${widget.question}, ${widget.answer}');
-    if (decoded.trim() == widget.answer) {
-      if (!widget.isLetter) {
-        PracticeContext().practiceChecker(true);
-      }
-      Fluttertoast.showToast(
-          msg: "Верно!",
-          backgroundColor: AppTheme.success,
-          textColor: Colors.white
-      );
-      widget.onAnswer();
-    } else {
-      if (!widget.isLetter) {
-        PracticeContext().practiceChecker(false);
-      }
-      Fluttertoast.showToast(
-          msg: "Неправильно",
-          backgroundColor: AppTheme.error,
-          textColor: Colors.white
-      );
-    }
-  }
-
-  @override
   void initState() {
     super.initState();
-    print(widget.currentquestion);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  LinearProgressIndicator(
-                    value: widget.currentquestion,
-                    color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
-                    minHeight: 12,
-                    backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
-                    borderRadius: BorderRadiusGeometry.circular(16),
-                  ),
-                  SizedBox(height: 8,),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text("Переведите: ${widget.question}", style: Theme.of(context).textTheme.bodyLarge,),
+    return BlocProvider(
+      create: (_) => PracticeBloc(),
+      child: BlocListener<PracticeBloc, PracticeState>(
+        listener: (context, state) {
+          if (state is PracticeTextAnswerState) {
+            Fluttertoast.showToast(
+              msg: state.message,
+              backgroundColor: state.success ? AppTheme.success : AppTheme.error,
+              textColor: Colors.white
+            );
+            state.success ? widget.onAnswer() : print('Wrong');
+          }
+        },
+        child: BlocBuilder<PracticeBloc, PracticeState>(
+          builder: (context, state) {
+            return Scaffold(
+              body: SafeArea(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          LinearProgressIndicator(
+                            value: widget.currentquestion,
+                            color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
+                            minHeight: 12,
+                            backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
+                            borderRadius: BorderRadiusGeometry.circular(16),
+                          ),
+                          SizedBox(height: 8,),
+                          SizedBox(
+                            width: double.infinity,
+                            child: Card(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Text("Переведите: ${widget.question}", style: Theme.of(context).textTheme.bodyLarge,),
+                              ),
+                            ),
+                          ),
+                          MorseKeyWidget(onTextDecoded: (text) {
+                            setState(() {
+                              decoded = text;
+                            });
+                            print(decoded);
+                          }),
+                          SizedBox(height: 8,),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  context.read<PracticeBloc>().add(PracticeTextAnswerEvent(decoded: decoded, isLetter: widget.isLetter, answer: widget.answer));
+                                },
+                                child: !widget.isLast ? Text("Ответить") : Text("Закончить")
+                            ),
+                          )
+                        ],
                       ),
                     ),
-                  ),
-                  MorseKeyWidget(onTextDecoded: (text) {
-                    setState(() {
-                      decoded = text;
-                    });
-                    print(decoded);
-                  }),
-                  SizedBox(height: 8,),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                        onPressed: () {
-                          answerHandler();
-                        },
-                        child: !widget.isLast ? Text("Ответить") : Text("Закончить")
-                    ),
                   )
-                ],
               ),
-            ),
-          )
+            );
+          },
+        ),
       ),
     );
+
   }
 }
 

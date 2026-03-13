@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:morzelingo/pages/education/context/education_context.dart';
 import 'package:morzelingo/pages/loading_page.dart';
@@ -8,6 +9,7 @@ import 'package:morzelingo/pages/loading_page.dart';
 import '../../../config.dart';
 import '../../../settings_context.dart';
 import '../../../storage_context.dart';
+import '../bloc/education_bloc.dart';
 
 class LessonPage extends StatefulWidget {
   const LessonPage({super.key,});
@@ -24,90 +26,88 @@ class _LessonPageState extends State<LessonPage> {
   bool isLoading = true;
 
   @override
-
-  void getData() async {
-    var data = await EducationContext().getLessonData();
-    setState(() {
-      lesson = data["lesson"];
-      done = data["done"];
-      isLoading = false;
-    });
-  }
-
-
-
-  @override
   void initState() {
     super.initState();
-    getData();
   }
 
   @override
   Widget build(BuildContext context) {
 
-    if (isLoading) {
-      return Scaffold(
-        body: LoadingPage(),
-      );
-    }
+    return BlocProvider(
+        create: (_) => EducationBloc()..add(GetLessonDataEvent()),
+        child: BlocListener<EducationBloc, EducationState>(
+            listener: (context, state) {
+              if (state is GetLessonDataState) {
+                setState(() {
+                  lesson = state.lesson;
+                  done = state.done;
+                  isLoading = false;
+                });
+              }
+            },
+            child: BlocBuilder<EducationBloc, EducationState>(
+                builder: (context, state) {
+                  return isLoading ? LoadingPage() : Scaffold(
+                    appBar: AppBar(title: const Text("Теория")),
+                    body: SafeArea(
+                      child: Padding(
+                        padding:  EdgeInsets.all(24),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: SingleChildScrollView(
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Card(
+                                          child: Column(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.all(16),
+                                                child: Text(
+                                                  lesson["title"],
+                                                  style: Theme.of(context).textTheme.titleLarge,
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.all(16),
+                                                child: Text(
+                                                  lesson["theory"],
+                                                  style: Theme.of(context).textTheme.bodyLarge,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  )
+                              ),
+                            ),
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Теория")),
-      body: SafeArea(
-        child: Padding(
-          padding:  EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Card(
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(16),
+                            !done ? SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/practice',);
+                                },
                                 child: Text(
-                                  lesson["title"],
-                                  style: Theme.of(context).textTheme.titleLarge,
+                                  "Закрепить знания",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(color: Colors.white),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Text(
-                                  lesson["theory"],
-                                  style: Theme.of(context).textTheme.bodyLarge,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ) : Container()
+                          ],
                         ),
-                      )
-                    ],
-                  )
-                ),
-              ),
-
-              !done ? SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/practice',);
-                  },
-                  child: Text(
-                    "Закрепить знания",
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(color: Colors.white),
-                  ),
-                ),
-              ) : Container()
-            ],
-          ),
-        ),
-      ),
+                      ),
+                    ),
+                  );
+                }
+            )
+        )
     );
   }
 }

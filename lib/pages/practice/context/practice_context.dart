@@ -52,6 +52,55 @@ class PracticeContext {
       return {"question": question, "answer": answer, "type": type, "islast": isLast, "index": index};
   }
 
+  void checkAnswer(String answer, String question) async {
+    final stats = PracticeContext().calculateStats(question, answer,);
+    await PracticeContext().sendStats(stats);
+  }
+
+  Future<Map> answerPracticeTextHandler(bool isLetter, String decoded, String answer) async {
+    String message;
+    bool success;
+    if (!isLetter) {
+      checkAnswer(answer, decoded);
+    }
+    if (decoded.trim() == answer) {
+      if (!isLetter) {
+        PracticeContext().practiceChecker(true);
+      }
+      message = "Верно!";
+      success = true;
+    } else {
+      if (isLetter) {
+        PracticeContext().practiceChecker(false);
+      }
+      message = "Неправильно";
+      success = false;
+    }
+    return {"message": message, "success": success};
+  }
+
+  Future<Map> answerPracticeMorseHandler(bool isLetter, String text, String answer) async {
+    String message;
+    bool success;
+    if (!isLetter) {
+      checkAnswer(answer, text);
+    }
+    if (text.trim().toUpperCase() == answer) {
+      if (!isLetter) {
+        PracticeContext().practiceChecker(true);
+      }
+      message = "Верно!";
+      success = true;
+    } else {
+      if (!isLetter) {
+        PracticeContext().practiceChecker(false);
+      }
+      message = "Неправильно";
+      success = false;
+    }
+    return {"success": success, "message": message};
+  }
+
   void completeLesson() async {
     String? id = await StorageService.getItem("lessonid");
     String? token = await StorageService.getItem("token");
@@ -141,6 +190,35 @@ class PracticeContext {
     );
   }
 
+  final Map<String, String> morseToLetterEN = {
+    ".-": "A", "-...": "B", "-.-.": "C", "-..": "D", ".": "E",
+    "..-.": "F", "--.": "G", "....": "H", "..": "I", ".---": "J",
+    "-.-": "K", ".-..": "L", "--": "M", "-.": "N", "---": "O",
+    ".--.": "P", "--.-": "Q", ".-.": "R", "...": "S", "-": "T",
+    "..-": "U", "...-": "V", ".--": "W", "-..-": "X", "-.--": "Y",
+    "--..": "Z"
+  };
+
+  final Map<String, String> morseToLetterRU = {
+    '.-': 'А', '-...': 'Б', '-..': 'В', '--.': 'Г', '-..': 'Д', '.': 'Е', '...-': 'Ж', '--..': 'З', '..': 'И',
+    '.---': 'Й', '-.-': 'К', '.-..': 'Л', '--': 'М', '-.': 'Н', '---': 'О', '.--.': 'П', '.-.': 'Р', '...': 'С',
+    '-': 'Т', '..-': 'У', '..-.': 'Ф', '....': 'Х', '-.-.': 'Ц', '---.': 'Ч', '----': 'Ш', '--.-': 'Щ', '-.--': 'Ы',
+    '-..-': 'Ь', '..-..': 'Э', '..--': 'Ю', '.-.-': 'Я', '/': ' ',  '-----': '0', '.----': '1', '..---': '2', '...--': '3',
+    '....-': '4', '.....': '5', '-....': '6', '--...': '7', '---..': '8', '----.': '9',
+  };
+
+  Map<String, String> morseToLetter = {};
+
+  Future<String> decodeMorse(String morseCode) async {
+    String? lang = await SettingsService.getLang();
+    morseToLetter = lang == "en" ? morseToLetterEN : morseToLetterRU;
+    return morseCode.split('  ').map((word) {
+      return word.split(' ').map((char) {
+        return morseToLetter[char] ?? '';
+      }).join('');
+    }).join(' ');
+  }
+
   Future<Map> getLetterQuestion(index) async {
     var letter = await StorageService.getItem("letter");
     String? lang = await SettingsService.getLang();
@@ -156,19 +234,64 @@ class PracticeContext {
     print(res.body);
     var json = jsonDecode(res.body);
     var data = json;
+    switch (data["questions"][index]["type"]) {
+      case "text":
+        data["questions"][index]["answer"] =
+        await data["questions"][index]["question"].toString();
+        break;
+
+      case "audio":
+        data["questions"][index]["answer"] =
+            await decodeMorse(data["questions"][index]["question"].toString());
+        break;
+
+      case "morse":
+        data["questions"][index]["answer"] =
+            await decodeMorse(data["questions"][index]["question"].toString());
+        break;
+    }
+
+    print('${data["questions"][index]["answer"]}');
     return data;
   }
   Future<Map> nextLetterQuestion(data, index, isLast) async {
+      String answer;
+      String question;
+      String type;
       index++;
       if (index >= data["questions"].length) {
         isLast = true;
       } else {
         isLast = false;
       }
-      print(isLast);
       if (isLast) {
+        return {"index": 0, "islast": true, "question": "", "answer": "", "type": ""};
       }
-    return {"index": index, "islast": isLast};
+      answer = "";
+      question = data["questions"][index]["question"];
+      type = data["questions"][index]["type"];
+      print("last${isLast}");
+      switch (data["questions"][index]["type"]) {
+        case "text":
+          data["questions"][index]["answer"] =
+          await data["questions"][index]["question"].toString();
+          answer = data["questions"][index]["answer"];
+          break;
+
+        case "audio":
+          data["questions"][index]["answer"] =
+          await decodeMorse(data["questions"][index]["question"].toString());
+          answer = data["questions"][index]["answer"];
+          break;
+
+        case "morse":
+          data["questions"][index]["answer"] =
+          await decodeMorse(data["questions"][index]["question"].toString());
+          answer = data["questions"][index]["answer"];
+          break;
+      }
+
+    return {"index": index, "islast": isLast, "question": question, "answer": answer, "type": type};
   }
 
   final player = AudioPlayer();

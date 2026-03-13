@@ -18,6 +18,8 @@ class ProfileDataState extends ProfileState {
   final referral;
 }
 
+class LogoutState extends ProfileState {}
+
 class StatsState extends ProfileState {
   StatsState({required this.stats});
   final stats;
