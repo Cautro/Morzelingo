@@ -71,9 +71,12 @@ func main() {
 		auth.GET("/friendship-streaks", handlers.MakeFriendShipStreakHandler(a))
 		auth.POST("/friends/delete", handlers.MakeDeleteFriendHandler(a))
 		auth.GET("/practice/replay/:id", handlers.MakeReplayLessonHandler(a))
-		// auth.POST("/duel/create")
-		// auth.POST("/duel/join")
-		// auth.GET("/duels")
+		auth.POST("/duel/create", handlers.MakeCreateDuelHandler(a))
+		auth.POST("/duel/join", handlers.MakeJoinDuelHandler(a))
+		auth.GET("/duels", handlers.MakeListDuelHandler(a))
+		auth.GET("/duels/status/:id", handlers.MakeStatusDuelHandler(a))
+		auth.POST("/duels/finish/:id", handlers.MakeFinishDuelHandler(a))
+		auth.POST("/duels/get-tasks/:id")
 	}
 
 	addr := ":8080"

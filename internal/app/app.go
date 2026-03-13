@@ -17,6 +17,7 @@ type App struct {
 
 	mu    sync.RWMutex
 	users []models.User
+	duels []models.Duel
 }
 
 func NewApp(initial []models.User, st *storage.Storage, saver *worker.Saver, secret string) *App {
@@ -38,6 +39,14 @@ func (a *App) GetUsers() []models.User {
 	for i := range out {
 		out[i].Password = ""
 	}
+	return out
+}
+
+func (a *App) GetAllDuels() []models.Duel {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	out := make([]models.Duel, len(a.duels))
+	copy(out, a.duels)
 	return out
 }
 
