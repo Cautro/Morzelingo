@@ -29,7 +29,7 @@ type Duel struct {
 
     Winner string `json:"winner"`
 
-    CreatedAt int64 `json:"created_at"`
+    CreatedAt string `json:"created_at"`
 }
 
 type MorseTask struct {

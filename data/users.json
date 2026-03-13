@@ -15,13 +15,14 @@
     "last_streak": 0,
     "answer_streak": 0,
     "last_login": "",
-    "UnlockedAchievements": null,
+    "unlocked_achievements": null,
     "symbol_stats": null,
     "referral_code": "KWSE",
     "referred_by": "",
     "referred_count": 0,
     "friends": [],
-    "registered_date": ""
+    "registered_date": "",
+    "max_score_in_duel": 0
   },
   {
     "username": "admin",
@@ -39,7 +40,7 @@
     "last_streak": 0,
     "answer_streak": 0,
     "last_login": "2026-03-06",
-    "UnlockedAchievements": null,
+    "unlocked_achievements": null,
     "symbol_stats": null,
     "referral_code": "WICE",
     "referred_by": "",
@@ -48,7 +49,8 @@
       "test3",
       "quickfixuser"
     ],
-    "registered_date": ""
+    "registered_date": "",
+    "max_score_in_duel": 0
   },
   {
     "username": "test3",
@@ -66,7 +68,7 @@
     "last_streak": 0,
     "answer_streak": 0,
     "last_login": "",
-    "UnlockedAchievements": null,
+    "unlocked_achievements": null,
     "symbol_stats": null,
     "referral_code": "KUJTT0",
     "referred_by": "admin",
@@ -74,7 +76,8 @@
     "friends": [
       "admin"
     ],
-    "registered_date": ""
+    "registered_date": "",
+    "max_score_in_duel": 0
   },
   {
     "username": "quickfixuser",
@@ -92,7 +95,7 @@
     "last_streak": 0,
     "answer_streak": 0,
     "last_login": "2026-03-12",
-    "UnlockedAchievements": null,
+    "unlocked_achievements": null,
     "symbol_stats": null,
     "referral_code": "MSWE1B",
     "referred_by": "",
@@ -100,7 +103,8 @@
     "friends": [
       "admin"
     ],
-    "registered_date": ""
+    "registered_date": "",
+    "max_score_in_duel": 0
   },
   {
     "username": "test",
@@ -118,7 +122,7 @@
     "last_streak": 0,
     "answer_streak": 0,
     "last_login": "2026-03-13",
-    "UnlockedAchievements": null,
+    "unlocked_achievements": null,
     "symbol_stats": [
       {
         "symbol": "A",
@@ -135,6 +139,72 @@
     "referred_by": "",
     "referred_count": 0,
     "friends": [],
-    "registered_date": "2026-03-12"
+    "registered_date": "2026-03-12",
+    "max_score_in_duel": 0
+  },
+  {
+    "username": "player1",
+    "email": "p1@test.com",
+    "password": "$2a$10$Yn40dmjqugr3/xdu.VLHL.coP9tVfXj/8swROmqimMSgec6fkFvYW",
+    "xp": 24,
+    "lesson_done": 0,
+    "lesson_done_ru": 0,
+    "lesson_done_en": 1,
+    "level": 0,
+    "coins": 50,
+    "items": null,
+    "need_xp": 96,
+    "streak": 1,
+    "last_streak": 0,
+    "answer_streak": 0,
+    "last_login": "2026-03-13",
+    "unlocked_achievements": null,
+    "symbol_stats": [
+      {
+        "symbol": "A",
+        "correct": 9,
+        "wrong": 4
+      },
+      {
+        "symbol": "B",
+        "correct": 1,
+        "wrong": 2
+      }
+    ],
+    "referral_code": "7G4DOB",
+    "referred_by": "",
+    "referred_count": 0,
+    "friends": [
+      "player2"
+    ],
+    "registered_date": "2026-03-13",
+    "max_score_in_duel": 0
+  },
+  {
+    "username": "player2",
+    "email": "p2@test.com",
+    "password": "$2a$10$/3KmHvSAXrsymy0BzOKB2.ssZkQmvd8Zu9X/z2bpNvG0KPSw/G/R2",
+    "xp": 0,
+    "lesson_done": 0,
+    "lesson_done_ru": 0,
+    "lesson_done_en": 0,
+    "level": 0,
+    "coins": 0,
+    "items": null,
+    "need_xp": 0,
+    "streak": 1,
+    "last_streak": 0,
+    "answer_streak": 0,
+    "last_login": "2026-03-13",
+    "unlocked_achievements": null,
+    "symbol_stats": null,
+    "referral_code": "6HKGG1",
+    "referred_by": "",
+    "referred_count": 0,
+    "friends": [
+      "player1"
+    ],
+    "registered_date": "2026-03-13",
+    "max_score_in_duel": 0
   }
 ]

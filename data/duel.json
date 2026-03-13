@@ -1,1 +1,146 @@
-[]
+[
+  {
+    "id": "duel_ac6767a4-43a1-4687-b28d-508a5003a58d",
+    "player1": "player1",
+    "player2": "player2",
+    "status": "finished",
+    "tasks": {
+      "questions": [
+        {
+          "type": "audio",
+          "question": "—•• •"
+        },
+        {
+          "type": "morse",
+          "question": "————— ——— ———••"
+        },
+        {
+          "type": "text",
+          "question": "U"
+        },
+        {
+          "type": "text",
+          "question": "MG"
+        },
+        {
+          "type": "morse",
+          "question": "—• ——•—"
+        }
+      ]
+    },
+    "p1_score": 0,
+    "p2_score": 0,
+    "p1_time": 0,
+    "p2_time": 0,
+    "winner": "",
+    "created_at": "2026-03-13T20:16:24Z"
+  },
+  {
+    "id": "duel_42037065-5f1c-4063-83cf-03a35a83de46",
+    "player1": "player1",
+    "player2": "player2",
+    "status": "finished",
+    "tasks": {
+      "questions": [
+        {
+          "type": "audio",
+          "question": "——•••"
+        },
+        {
+          "type": "morse",
+          "question": "•— •••—— ——•••"
+        },
+        {
+          "type": "morse",
+          "question": "——•— —•"
+        },
+        {
+          "type": "text",
+          "question": "EYK"
+        },
+        {
+          "type": "text",
+          "question": "O"
+        }
+      ]
+    },
+    "p1_score": 0,
+    "p2_score": 0,
+    "p1_time": 0,
+    "p2_time": 0,
+    "winner": "",
+    "created_at": "2026-03-13T20:19:48Z"
+  },
+  {
+    "id": "duel_73c5c008-6820-4407-9f55-28ba064a7fc2",
+    "player1": "player1",
+    "player2": "player2",
+    "status": "finished",
+    "tasks": {
+      "questions": [
+        {
+          "type": "audio",
+          "question": "————— —•—— ••••—"
+        },
+        {
+          "type": "audio",
+          "question": "•••"
+        },
+        {
+          "type": "audio",
+          "question": "••••— ————•"
+        },
+        {
+          "type": "audio",
+          "question": "•——— •——•"
+        },
+        {
+          "type": "morse",
+          "question": "—•—— ••"
+        }
+      ]
+    },
+    "p1_score": 0,
+    "p2_score": 0,
+    "p1_time": 0,
+    "p2_time": 0,
+    "winner": "",
+    "created_at": "2026-03-13T20:21:21Z"
+  },
+  {
+    "id": "duel_76033556-bdf8-4a9f-a619-5e7f9eb2624d",
+    "player1": "player1",
+    "player2": "player2",
+    "status": "finished",
+    "tasks": {
+      "questions": [
+        {
+          "type": "text",
+          "question": "5"
+        },
+        {
+          "type": "audio",
+          "question": "•—• —•"
+        },
+        {
+          "type": "audio",
+          "question": "•—• ••••"
+        },
+        {
+          "type": "text",
+          "question": "G"
+        },
+        {
+          "type": "text",
+          "question": "GB"
+        }
+      ]
+    },
+    "p1_score": 0,
+    "p2_score": 0,
+    "p1_time": 0,
+    "p2_time": 0,
+    "winner": "",
+    "created_at": "2026-03-13T20:23:23Z"
+  }
+]

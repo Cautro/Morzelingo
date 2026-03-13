@@ -10,5 +10,11 @@
     "user2": "admin",
     "streak": 0,
     "last_active": "2026-03-12"
+  },
+  {
+    "user1": "player1",
+    "user2": "player2",
+    "streak": 0,
+    "last_active": "2026-03-13"
   }
 ]
