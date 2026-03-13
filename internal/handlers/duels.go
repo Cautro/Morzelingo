@@ -151,6 +151,17 @@ func MakeFinishDuelHandler(a *app.App) gin.HandlerFunc {
         }
 
         duel := duels[foundIdx]
+
+		// determine winner
+		if duel.P1Score > duel.P2Score {
+			duels[foundIdx].Winner = duel.Player1
+		} else if duel.P2Score > duel.P1Score {
+			duels[foundIdx].Winner = duel.Player2
+		} else {
+			duels[foundIdx].Winner = "draw"
+		}
+
+		duel = duels[foundIdx]
         var thatUserScore int
         if duel.Player1 == username {
             thatUserScore = duel.P1Score

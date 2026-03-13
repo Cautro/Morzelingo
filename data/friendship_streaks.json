@@ -16,5 +16,23 @@
     "user2": "player2",
     "streak": 0,
     "last_active": "2026-03-13"
+  },
+  {
+    "user1": "mega1",
+    "user2": "mega2",
+    "streak": 0,
+    "last_active": "2026-03-13"
+  },
+  {
+    "user1": "mega998",
+    "user2": "mega2",
+    "streak": 0,
+    "last_active": "2026-03-13"
+  },
+  {
+    "user1": "mega777",
+    "user2": "mega2",
+    "streak": 0,
+    "last_active": "2026-03-13"
   }
 ]
