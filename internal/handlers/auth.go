@@ -562,6 +562,7 @@ func MakeFreemodeHandler(a *app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		lang := c.DefaultQuery("lang", "en")
 		letters := c.DefaultQuery("letters", "")
+		mode := c.DefaultQuery("mode", "text")
 		countStr := c.DefaultQuery("count", "20")
 		cnt, _ := strconv.Atoi(countStr)
 		if cnt <= 0 {
@@ -596,22 +597,66 @@ func MakeFreemodeHandler(a *app.App) gin.HandlerFunc {
 
 		for i := 0; i < cnt; i++ {
 			if user.Level <= 10 {
-				n := 1 + rand.Intn(2)
-				word := generatePractice(symbolPool, n)
-				questions = append(questions, models.PracticeQuestion{Type: "text", Question: word, Answer: word})
-			} else if user.Level <= 20 {
-				n := 2 + rand.Intn(4)
-				word := generatePractice(symbolPool, n)
-				questions = append(questions, models.PracticeQuestion{Type: "text", Question: word, Answer: word})
-			} else {
-				wordsCount := 2 + rand.Intn(3)
-				parts := make([]string, 0, wordsCount)
-				for w := 0; w < wordsCount; w++ {
-					n := 2 + rand.Intn(4)
-					parts = append(parts, generatePractice(symbolPool, n))
+				switch mode {
+				case "text":
+					n := 1 + rand.Intn(2)
+					word := generatePractice(symbolPool, n)
+					questions = append(questions, models.PracticeQuestion{Type: "text", Question: word, Answer: word})
+				case "morse":
+					n := 1 + rand.Intn(2)
+					word := generatePractice(symbolPool, n)
+					questions = append(questions, models.PracticeQuestion{Type: "morse", Question: textToMorse(word, lang), Answer: word})
+				case "audio":
+					n := 1 + rand.Intn(2)
+					word := generatePractice(symbolPool, n)
+					questions = append(questions, models.PracticeQuestion{Type: "audio", Question: textToMorse(word, lang), Answer: word})
 				}
-				sentence := strings.Join(parts, " ")
-				questions = append(questions, models.PracticeQuestion{Type: "text", Question: sentence, Answer: sentence})
+			} else if user.Level <= 20 {
+				switch mode {
+				case "text":
+					n := 2 + rand.Intn(4)
+					word := generatePractice(symbolPool, n)
+					questions = append(questions, models.PracticeQuestion{Type: "text", Question: word, Answer: word})
+				case "morse":
+					n := 2 + rand.Intn(4)
+					word := generatePractice(symbolPool, n)
+					questions = append(questions, models.PracticeQuestion{Type: "morse", Question: textToMorse(word, lang), Answer: word})
+				case "audio":
+					n := 2 + rand.Intn(4)
+					word := generatePractice(symbolPool, n)
+					questions = append(questions, models.PracticeQuestion{Type: "audio", Question: textToMorse(word, lang), Answer: word})
+				}
+
+			} else {
+				switch mode {
+				case "text":
+					wordsCount := 2 + rand.Intn(3)
+					parts := make([]string, 0, wordsCount)
+					for w := 0; w < wordsCount; w++ {
+						n := 2 + rand.Intn(4)
+						parts = append(parts, generatePractice(symbolPool, n))
+					}
+					sentence := strings.Join(parts, " ")
+					questions = append(questions, models.PracticeQuestion{Type: "text", Question: sentence, Answer: sentence})
+				case "morse":
+					wordsCount := 2 + rand.Intn(3)
+					parts := make([]string, 0, wordsCount)
+					for w := 0; w < wordsCount; w++ {
+						n := 2 + rand.Intn(4)
+						parts = append(parts, generatePractice(symbolPool, n))
+					}
+					sentence := strings.Join(parts, " ")
+					questions = append(questions, models.PracticeQuestion{Type: "morse", Question: textToMorse(sentence, lang), Answer: sentence})
+				case "audio":
+					wordsCount := 2 + rand.Intn(3)
+					parts := make([]string, 0, wordsCount)
+					for w := 0; w < wordsCount; w++ {
+						n := 2 + rand.Intn(4)
+						parts = append(parts, generatePractice(symbolPool, n))
+					}
+					sentence := strings.Join(parts, " ")
+					questions = append(questions, models.PracticeQuestion{Type: "audio", Question: textToMorse(sentence, lang), Answer: sentence})
+				}
 			}
 		}
 
