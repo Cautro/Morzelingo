@@ -199,7 +199,16 @@ echo ""
 echo "✔ tasks generated"
 echo ""
 
-echo "18️⃣ Duel finish"
+echo ""
+echo "8️⃣ Score Test"
+echo ""
+
+curl -s -X POST "$BASE/duels/get-score/$DUEL_ID" \
+-H "Authorization: Bearer $TOKEN1" \
+-H "Content-Type: application/json" \
+-d '{"score":124}'
+
+echo "9️⃣ Duel finish"
 
 curl -s -X POST "$BASE/duels/finish/$DUEL_ID" \
 -H "Authorization: Bearer $TOKEN1"

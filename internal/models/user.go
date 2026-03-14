@@ -14,18 +14,15 @@ type Duel struct {
     Player1 string `json:"player1"`
     Player2 string `json:"player2"`
 
-    Status string `json:"status"` 
-    // waiting
-    // active
-    // finished
+    Status string `json:"status"`
 
     Tasks PracticeResponse `json:"tasks"`
 
     P1Score int `json:"p1_score"`
     P2Score int `json:"p2_score"`
 
-    P1Time int64 `json:"p1_time"`
-    P2Time int64 `json:"p2_time"`
+    P1Submitted bool `json:"p1_submitted"`
+    P2Submitted bool `json:"p2_submitted"`
 
     Winner string `json:"winner"`
 
@@ -37,13 +34,9 @@ type MorseTask struct {
     Answer string `json:"answer"`
 }
 
-// type DuelInputForFristPlayer struct {
-// 	Username string `json:"username"`
-// }
-
-// type DuelInputForSecondPlayer struct {
-// 	Username string `json:"username"`
-// }
+type FinishScore struct {
+	Score int `json:"score"`
+}
 
 type User struct {	
 	Username             string       `json:"username"`

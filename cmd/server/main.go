@@ -76,6 +76,7 @@ func main() {
 		auth.GET("/duels", handlers.MakeListDuelHandler(a))
 		auth.GET("/duels/status/:id", handlers.MakeStatusDuelHandler(a))
 		auth.POST("/duels/finish/:id", handlers.MakeFinishDuelHandler(a))
+		auth.POST("/duels/get-score/:id", handlers.MakeGetScoreHandler(a))
 		auth.POST("/duels/get-tasks/:id", handlers.MakeGetTasksHandler(a))
 	}
 

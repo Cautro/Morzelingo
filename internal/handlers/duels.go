@@ -15,6 +15,7 @@ import (
 )
 
 var duelMutex sync.Mutex
+var e = http.StatusInternalServerError
 
 func ReadDuel() ([]models.Duel, error) {
 	duelMutex.Lock()
@@ -74,6 +75,7 @@ func MakeCreateDuelHandler(a *app.App) gin.HandlerFunc  {
 func MakeJoinDuelHandler(a *app.App) gin.HandlerFunc {
     return func(c *gin.Context) {
         username := c.GetString("username")
+        var duelID string
 
         duels, err := ReadDuel()
         if err != nil {
@@ -87,6 +89,7 @@ func MakeJoinDuelHandler(a *app.App) gin.HandlerFunc {
                 duels[i].Player2 = username
                 duels[i].Status = "active"
                 duels[i].CreatedAt = time.Now().UTC().Format(time.RFC3339)
+                duelID = duels[i].ID
                 joined = true
                 break
             }
@@ -99,7 +102,7 @@ func MakeJoinDuelHandler(a *app.App) gin.HandlerFunc {
             c.JSON(http.StatusInternalServerError, gin.H{"error":"failed to save duel"})
             return
         }
-        c.JSON(http.StatusOK, gin.H{"ok": true})
+        c.JSON(http.StatusOK, gin.H{"ok": true, "DuelID": duelID})
     }
 }
 
@@ -348,4 +351,76 @@ func MakeGetTasksHandler(a *app.App) gin.HandlerFunc {
 
 		c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
 	}
+}
+
+func MakeGetScoreHandler(a *app.App) gin.HandlerFunc {
+    return func (c *gin.Context) {
+        id := c.Param("id")
+        var in models.FinishScore
+        if err := c.BindJSON(&in); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error":"invalid body"})
+            return
+        }
+        username := c.GetString("username")
+        duels, err := ReadDuel()
+        if err != nil {
+            c.JSON(e, gin.H{"error":"Server error"})
+            return
+        }
+
+        found := false
+        var idx int
+
+        for i := range duels {
+            if duels[i].ID == id {
+                idx = i
+                if duels[i].Player1 == username {
+                    duels[i].P1Score = in.Score
+                    duels[i].P1Submitted = true
+                } else if duels[i].Player2 == username {
+                    duels[i].P2Score = in.Score
+                    duels[i].P2Submitted = true
+                } else {
+                    c.JSON(http.StatusForbidden, gin.H{"error":"you are not a participant"})
+                    return
+                }
+                found = true
+                break
+            }
+        }
+
+        if !found {
+            c.JSON(http.StatusNotFound, gin.H{"error":"duel not found"})
+            return
+        }
+
+        if duels[idx].P1Submitted && duels[idx].P2Submitted {
+            if duels[idx].P1Score > duels[idx].P2Score {
+                duels[idx].Winner = duels[idx].Player1
+            } else if duels[idx].P2Score > duels[idx].P1Score {
+                duels[idx].Winner = duels[idx].Player2
+            } else {
+                duels[idx].Winner = "draw"
+            }
+
+            duels[idx].Status = "finished"
+        }
+
+        if err := SaveDuel(duels); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error":"failed to save"})
+            return
+        }
+
+        if duels[idx].Winner == "" {
+            c.JSON(http.StatusBadRequest, gin.H{
+                "error": "duel not finished yet",
+            })
+            return
+        }
+
+        c.JSON(http.StatusOK, gin.H{
+            "score": in.Score,
+            "ok": true,
+        })
+    }
 }
