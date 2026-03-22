@@ -72,7 +72,7 @@ func main() {
 		auth.POST("/duels/finish/:id", handlers.MakeFinishDuelHandler(a))
 		auth.POST("/duels/get-score/:id", handlers.MakeGetScoreHandler(a))
 		auth.POST("/duels/get-tasks/:id", handlers.MakeGetTasksHandler(a))
-		auth.POST("/duels/leave/:id")
+		auth.POST("/duels/leave/:id", handlers.MakeLeaveDuelsHandler(a))
 	}
 
 	addr := ":8080"

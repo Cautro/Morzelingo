@@ -54,6 +54,7 @@ func MakeCreateDuelHandler(a *app.App) gin.HandlerFunc  {
 		duels, err := ReadDuel()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error to read duels"})
+            return 
 		}
 
 		newDuel := models.Duel{
@@ -137,51 +138,70 @@ func MakeFinishDuelHandler(a *app.App) gin.HandlerFunc {
 
         duels, err := ReadDuel()
         if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error":"failed to read duels"})
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read duels"})
             return
         }
 
-        var foundIdx = -1
+        foundIdx := -1
         for i := range duels {
             if duels[i].ID == id {
                 foundIdx = i
                 break
             }
         }
+
         if foundIdx == -1 {
-            c.JSON(http.StatusNotFound, gin.H{"error":"duel not found"})
+            c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
             return
         }
 
         duel := duels[foundIdx]
 
-		// determine winner
-		if duel.P1Score > duel.P2Score {
-			duels[foundIdx].Winner = duel.Player1
-		} else if duel.P2Score > duel.P1Score {
-			duels[foundIdx].Winner = duel.Player2
-		} else {
-			duels[foundIdx].Winner = "draw"
-		}
+        if duel.Player1 != username && duel.Player2 != username {
+            c.JSON(http.StatusForbidden, gin.H{"error": "you are not a participant of this duel"})
+            return
+        }
 
-		duel = duels[foundIdx]
+        if duel.Status == "finished" {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "duel already finished"})
+            return
+        }
+
+        if !duel.P1Submitted || !duel.P2Submitted {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "duel not finished yet"})
+            return
+        }
+
+        if duel.P1Score > duel.P2Score {
+            duels[foundIdx].Winner = duel.Player1
+        } else if duel.P2Score > duel.P1Score {
+            duels[foundIdx].Winner = duel.Player2
+        } else {
+            duels[foundIdx].Winner = "draw"
+        }
+
+        duels[foundIdx].Status = "finished"
+
+        if err := SaveDuel(duels); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save duel"})
+            return
+        }
+
+        duel = duels[foundIdx]
+
         var thatUserScore int
         if duel.Player1 == username {
             thatUserScore = duel.P1Score
-        } else if duel.Player2 == username {
-            thatUserScore = duel.P2Score
         } else {
-            c.JSON(http.StatusForbidden, gin.H{"error":"you are not a participant of this duel"})
-            return
+            thatUserScore = duel.P2Score
         }
 
         user, err := a.GetUserCopy(username)
         if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error":"user not found"})
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "user not found"})
             return
         }
 
-        // update max score only if greater
         if thatUserScore > user.MaxScoreInDuel {
             toSave, err := a.UpdateUser(username, func(u *models.User) error {
                 u.MaxScoreInDuel = thatUserScore
@@ -192,47 +212,35 @@ func MakeFinishDuelHandler(a *app.App) gin.HandlerFunc {
             }
         }
 
-        // award for win
+        result := "lose"
         if duel.Winner == username {
+            result = "win"
             toSave, err := a.UpdateUser(username, func(u *models.User) error {
                 mult := 1 + u.Level/3
                 u.XP += 50 * mult
                 u.Coins += 100 * mult
-                u.NeedXp = max(0, u.NeedXp - 10*mult)
+                u.NeedXp = max(0, u.NeedXp-10*mult)
                 return nil
             })
             if err == nil {
                 a.Saver.Schedule(toSave)
             }
-            c.JSON(http.StatusOK, gin.H{"result":"win"})
-            return
-        }
-
-        // consolation
-        toSave, err := a.UpdateUser(username, func(u *models.User) error {
-            mult := 1 + u.Level/3
-            u.XP += 5 * mult
-            u.Coins += 10 * mult
-            u.NeedXp = max(0, u.NeedXp - 1*mult)
-            return nil
-        })
-        if err == nil {
-            a.Saver.Schedule(toSave)
-        }
-
-		for i := range duels {
-            if duels[i].ID == id {
-                duels[i].Status = "finished"
-                break
+        } else if duel.Winner == "draw" {
+            result = "draw"
+        } else {
+            toSave, err := a.UpdateUser(username, func(u *models.User) error {
+                mult := 1 + u.Level/3
+                u.XP += 5 * mult
+                u.Coins += 10 * mult
+                u.NeedXp = max(0, u.NeedXp-1*mult)
+                return nil
+            })
+            if err == nil {
+                a.Saver.Schedule(toSave)
             }
         }
 
-        if err := SaveDuel(duels); err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error":"failed to save duel"})
-            return
-        }
-
-        c.JSON(http.StatusOK, gin.H{"result":"finished"})
+        c.JSON(http.StatusOK, gin.H{"result": result})
     }
 }
 
@@ -426,39 +434,64 @@ func MakeGetScoreHandler(a *app.App) gin.HandlerFunc {
 }
 
 func MakeLeaveDuelsHandler(a *app.App) gin.HandlerFunc {
-    return func (c *gin.Context)  {
-        username := c.GetString("username")
-        id := c.GetString("id")
-        duels, err := ReadDuel()
-        if err != nil {
-            c.JSON(e, gin.H{"error":"Server error"})
-            return 
-        }
-        
-        for i := range duels {
-            ThatUser := username
-            if duels[i].ID == id {
-                duels[i].Status = "finished"
-                if duels[i].Player1 == ThatUser {
-                    duels[i].Winner = duels[i].Player1
-                    duels[i].Player2 = duels[i].Player2 + "_left"
-                } else if duels[i].Player2 == ThatUser {
-                    duels[i].Winner = duels[i].Player2
-                    duels[i].Player2 = duels[i].Player1 + "_left"
-                } else {
-                    c.JSON(http.StatusInternalServerError, gin.H{"error":"Server error"})
-                    return 
-                }
+	return func(c *gin.Context) {
+		username := c.GetString("username")
+		id := c.Param("id")
 
-                break
-            }
-        }
+		duels, err := ReadDuel()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read duels"})
+			return
+		}
 
-        if err := SaveDuel(duels); err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error":"failed to save duel"})
-            return
-        }
+		found := false
 
-        c.JSON(http.StatusOK, gin.H{"ok": true, "message": "You left the duel"})
-    }
+		for i := range duels {
+			if duels[i].ID != id {
+				continue
+			}
+
+			found = true
+
+			if duels[i].Player1 != username && duels[i].Player2 != username {
+				c.JSON(http.StatusForbidden, gin.H{"error": "you are not a participant of this duel"})
+				return
+			}
+
+			if duels[i].Status == "finished" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "duel already finished"})
+				return
+			}
+
+			if duels[i].Player1 == username {
+				duels[i].Player1 = duels[i].Player1 + "_left"
+
+				if duels[i].Player2 == "" {
+					duels[i].Winner = ""
+					duels[i].Status = "cancelled"
+				} else {
+					duels[i].Winner = duels[i].Player2
+					duels[i].Status = "finished"
+				}
+			} else {
+				duels[i].Player2 = duels[i].Player2 + "_left"
+				duels[i].Winner = duels[i].Player1
+				duels[i].Status = "finished"
+			}
+
+			break
+		}
+
+		if !found {
+			c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
+			return
+		}
+
+		if err := SaveDuel(duels); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save duel"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"ok": true, "message": "You left the duel"})
+	}
 }
