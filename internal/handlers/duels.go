@@ -424,3 +424,41 @@ func MakeGetScoreHandler(a *app.App) gin.HandlerFunc {
         })
     }
 }
+
+func MakeLeaveDuelsHandler(a *app.App) gin.HandlerFunc {
+    return func (c *gin.Context)  {
+        username := c.GetString("username")
+        id := c.GetString("id")
+        duels, err := ReadDuel()
+        if err != nil {
+            c.JSON(e, gin.H{"error":"Server error"})
+            return 
+        }
+        
+        for i := range duels {
+            ThatUser := username
+            if duels[i].ID == id {
+                duels[i].Status = "finished"
+                if duels[i].Player1 == ThatUser {
+                    duels[i].Winner = duels[i].Player1
+                    duels[i].Player2 = duels[i].Player2 + "_left"
+                } else if duels[i].Player2 == ThatUser {
+                    duels[i].Winner = duels[i].Player2
+                    duels[i].Player2 = duels[i].Player1 + "_left"
+                } else {
+                    c.JSON(http.StatusInternalServerError, gin.H{"error":"Server error"})
+                    return 
+                }
+
+                break
+            }
+        }
+
+        if err := SaveDuel(duels); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error":"failed to save duel"})
+            return
+        }
+
+        c.JSON(http.StatusOK, gin.H{"ok": true, "message": "You left the duel"})
+    }
+}

@@ -1,18 +1,12 @@
 package main
 
 import (
-	// "encoding/json"
-	// "fmt"
 	"log"
-	// "net/http"
 	"os"
-	// "path/filepath"
 	"sync"
-	// "time"
 
 	"github.com/cautro/morzelingo/internal/app"
 	"github.com/cautro/morzelingo/internal/handlers"
-	// "github.com/cautro/morzelingo/internal/models"
 	"github.com/cautro/morzelingo/internal/storage"
 	"github.com/cautro/morzelingo/internal/worker"
 	"github.com/gin-gonic/gin"
@@ -78,6 +72,7 @@ func main() {
 		auth.POST("/duels/finish/:id", handlers.MakeFinishDuelHandler(a))
 		auth.POST("/duels/get-score/:id", handlers.MakeGetScoreHandler(a))
 		auth.POST("/duels/get-tasks/:id", handlers.MakeGetTasksHandler(a))
+		auth.POST("/duels/leave/:id")
 	}
 
 	addr := ":8080"
