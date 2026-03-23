@@ -30,8 +30,8 @@
     },
     "p1_score": 42,
     "p2_score": 35,
-    "p1_submitted": true,
-    "p2_submitted": true,
+    "p1_done": false,
+    "p2_done": false,
     "winner": "tester1",
     "created_at": "2026-03-22T10:56:17Z"
   },
@@ -45,9 +45,82 @@
     },
     "p1_score": 0,
     "p2_score": 0,
-    "p1_submitted": false,
-    "p2_submitted": false,
+    "p1_done": false,
+    "p2_done": false,
     "winner": "",
     "created_at": "2026-03-22T10:56:17Z"
+  },
+  {
+    "id": "duel_4a471559-bd16-46bb-b6de-b955b0235690",
+    "player1": "tester1213",
+    "player2": "",
+    "status": "cancelled",
+    "tasks": {
+      "questions": [
+        {
+          "type": "morse",
+          "question": "—••"
+        },
+        {
+          "type": "morse",
+          "question": "—•••"
+        },
+        {
+          "type": "morse",
+          "question": "—————"
+        },
+        {
+          "type": "morse",
+          "question": "•• •—••"
+        },
+        {
+          "type": "morse",
+          "question": "••• —••"
+        },
+        {
+          "type": "text",
+          "question": "7NU"
+        },
+        {
+          "type": "audio",
+          "question": "•——"
+        },
+        {
+          "type": "morse",
+          "question": "•——•"
+        },
+        {
+          "type": "morse",
+          "question": "——• •——• —••••"
+        },
+        {
+          "type": "text",
+          "question": "1QR"
+        }
+      ]
+    },
+    "p1_score": 0,
+    "p2_score": 0,
+    "p1_done": false,
+    "p2_done": false,
+    "winner": "",
+    "created_at": "2026-03-23T15:00:45Z",
+    "player1_left": true
+  },
+  {
+    "id": "duel_4838c6f5-f5b5-4362-9a8c-23c1aba6906b",
+    "player1": "tester1213",
+    "player2": "",
+    "status": "cancelled",
+    "tasks": {
+      "questions": null
+    },
+    "p1_score": 0,
+    "p2_score": 0,
+    "p1_done": false,
+    "p2_done": false,
+    "winner": "",
+    "created_at": "2026-03-23T15:01:58Z",
+    "player1_left": true
   }
 ]

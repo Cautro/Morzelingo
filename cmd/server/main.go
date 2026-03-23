@@ -57,21 +57,26 @@ func main() {
 		auth.GET("/lessons", handlers.MakeLessonsHandler(a))
 		auth.GET("/lessons/:id", handlers.MakeLessonByIDHandler(a))
 		auth.GET("/practice/:id", handlers.MakePracticeByLessonHandler(a))
+		auth.GET("/practice/replay/:id", handlers.MakeReplayLessonHandler(a))
 		auth.POST("/practice/submit", handlers.MakePracticeSubmitHandler(a))
 		auth.GET("/freemode", handlers.MakeFreemodeHandler(a))
+		
+		// Friends
 		auth.GET("/friends", handlers.MakeListFriendHandler(a)) 
 		auth.POST("/friends/add", handlers.MakeAddFriendHandler(a))
 		auth.POST("/friends/update-streaks", handlers.MakeUpdateStreakHandler(a))
 		auth.GET("/friendship-streaks", handlers.MakeFriendShipStreakHandler(a))
 		auth.POST("/friends/delete", handlers.MakeDeleteFriendHandler(a))
-		auth.GET("/practice/replay/:id", handlers.MakeReplayLessonHandler(a))
+		
+
+		// Duels
 		auth.POST("/duel/matchmake", handlers.MakeMatchmakeDuelHandler(a))
 		auth.GET("/duels", handlers.MakeListDuelHandler(a))
 		auth.GET("/duels/status/:id", handlers.MakeStatusDuelHandler(a))
-		auth.POST("/duels/finish/:id", handlers.MakeFinishDuelHandler(a))
-		auth.POST("/duels/get-score/:id", handlers.MakeGetScoreHandler(a))
 		auth.POST("/duels/get-tasks/:id", handlers.MakeGetTasksHandler(a))
 		auth.POST("/duels/leave/:id", handlers.MakeLeaveDuelsHandler(a))
+		auth.POST("/duels/update-score/:id", handlers.MakeUpdateScoreHandler(a))
+		auth.POST("/duels/complete/:id",     handlers.MakeCompleteDuelHandler(a))
 	}
 
 	addr := ":8080"
