@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:morzelingo/pages/authorization/view/login_page.dart';
 import 'package:morzelingo/pages/authorization/view/register_page.dart';
+import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_page.dart';
 import 'package:morzelingo/pages/friends/view/friends_page.dart';
 import 'package:morzelingo/pages/profile/view/letters_stats_page.dart';
@@ -92,6 +93,7 @@ class _MyAppState extends State<MyApp> {
             "/settings": (context) => SettingsPage(),
             "/lettersstats": (context) => LettersStatsPage(),
             "/friends": (context) => FriendsPage(),
+            "/duels": (context) => DuelsMainPage(),
           },
           builder: (context, child) {
             return Column(

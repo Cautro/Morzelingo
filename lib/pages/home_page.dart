@@ -1,4 +1,6 @@
+import 'package:cupertino_native/components/tab_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
 import 'package:morzelingo/pages/education/view/education_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_text_page.dart';
 import 'package:morzelingo/pages/practice/view/letters_page.dart';
@@ -20,15 +22,16 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
   // Список экранов для вкладок
   final List<Widget> _screens = [
     EducationPage(),
-    FreemodePage(), // Вкладка 0
+    FreemodePage(),
+    DuelsMainPage(),
     LettersPage(),
-    ProfilePage(), // Вкладка 1
+    ProfilePage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex], // показываем выбранный экран
+      body: _screens[_currentIndex],
       bottomNavigationBar: NavigationBar(
         labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
         height: 50,
@@ -62,7 +65,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
           ),
           NavigationDestination(
             icon: Icon(
-              Icons.font_download,
+              Icons.assistant_photo,
               size: 30,
               color: _currentIndex == 2
                   ? AppTheme.primary
@@ -72,9 +75,19 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
           ),
           NavigationDestination(
             icon: Icon(
-              Icons.person,
+              Icons.font_download,
               size: 30,
               color: _currentIndex == 3
+                  ? AppTheme.primary
+                  : Colors.grey,
+            ),
+            label: '',
+          ),
+          NavigationDestination(
+            icon: Icon(
+              Icons.person,
+              size: 30,
+              color: _currentIndex == 4
                   ? AppTheme.primary
                   : Colors.grey,
             ),

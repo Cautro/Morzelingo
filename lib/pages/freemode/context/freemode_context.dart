@@ -131,7 +131,6 @@ class FreemodeContext {
   }
 
   Future<Map> playMorse(String question) async {
-    print('sdffdfs');
 
     player.stop();
 

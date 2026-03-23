@@ -70,9 +70,9 @@ class AppTheme {
         }),
         foregroundColor: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
-            return Colors.white; // цвет текста выбранного
+            return Colors.white;
           }
-          return AppTheme.textSecondary; // цвет текста обычного
+          return AppTheme.textSecondary;
         }),
       ),
     ),
