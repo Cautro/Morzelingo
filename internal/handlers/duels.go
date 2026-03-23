@@ -76,55 +76,67 @@ func determineWinner(duel *models.Duel) {
 
 // ─── Handlers ────────────────────────────────────────────────────────────────
 
-func MakeCreateDuelHandler(a *app.App) gin.HandlerFunc {
+func MakeMatchmakeDuelHandler(a *app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.GetString("username")
 
-		var newDuel models.Duel
+		type Response struct {
+			DuelID string `json:"duel_id"`
+			Status string `json:"status"`  // "waiting" | "active"
+			Role   string `json:"role"`    // "player1" | "player2"
+		}
+
+		var result Response
+
 		err := withDuels(func(duels []models.Duel) ([]models.Duel, error) {
-			newDuel = models.Duel{
+			for i := range duels {
+				d := &duels[i]
+				if d.Status != "waiting" {
+					continue
+				}
+				if d.Player1 == username {
+					result = Response{
+						DuelID: d.ID,
+						Status: "waiting",
+						Role:   "player1",
+					}
+					return nil, nil 
+				}
+				d.Player2 = username
+				d.Status = "active"
+				d.StartedAt = time.Now().UTC().Format(time.RFC3339)
+				result = Response{
+					DuelID: d.ID,
+					Status: "active",
+					Role:   "player2",
+				}
+				return duels, nil
+			}
+
+			newDuel := models.Duel{
 				ID:        "duel_" + uuid.NewString(),
 				Player1:   username,
 				Status:    "waiting",
 				CreatedAt: time.Now().UTC().Format(time.RFC3339),
 			}
+			result = Response{
+				DuelID: newDuel.ID,
+				Status: "waiting",
+				Role:   "player1",
+			}
 			return append(duels, newDuel), nil
 		})
+
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create duel"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "matchmaking failed"})
 			return
 		}
-		c.JSON(http.StatusCreated, gin.H{"id": newDuel.ID, "status": newDuel.Status})
-	}
-}
 
-func MakeJoinDuelHandler(a *app.App) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		username := c.GetString("username")
-		var duelID string
-
-		err := withDuels(func(duels []models.Duel) ([]models.Duel, error) {
-			for i := range duels {
-				if duels[i].Status == "waiting" && duels[i].Player1 != username {
-					duels[i].Player2 = username
-					duels[i].Status = "active"
-					duels[i].StartedAt = time.Now().UTC().Format(time.RFC3339) // было: CreatedAt — семантически неверно
-					duelID = duels[i].ID
-					return duels, nil
-				}
-			}
-			return nil, errNotFound
-		})
-
-		if err == errNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "no available duel to join"})
-			return
+		statusCode := http.StatusOK
+		if result.Status == "waiting" {
+			statusCode = http.StatusCreated 
 		}
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to join duel"})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"ok": true, "duel_id": duelID})
+		c.JSON(statusCode, result)
 	}
 }
 
@@ -164,8 +176,6 @@ func MakeListDuelHandler(a *app.App) gin.HandlerFunc {
 	}
 }
 
-// MakeGetScoreHandler принимает очки игрока. Когда оба отправили —
-// определяет победителя, начисляет награды и завершает дуэль.
 func MakeGetScoreHandler(a *app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -236,7 +246,6 @@ func MakeGetScoreHandler(a *app.App) gin.HandlerFunc {
 			return
 		}
 
-		// Если дуэль только что завершилась — начислить награды
 		if finalDuel.Status == "finished" {
 			applyDuelRewards(a, &finalDuel, username)
 		}
@@ -255,8 +264,6 @@ func MakeGetScoreHandler(a *app.App) gin.HandlerFunc {
 	}
 }
 
-// MakeFinishDuelHandler оставлен как явный endpoint для получения итога.
-// Теперь не дублирует логику начисления наград — только читает результат.
 func MakeFinishDuelHandler(a *app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.GetString("username")
@@ -305,8 +312,6 @@ func MakeGetTasksHandler(a *app.App) gin.HandlerFunc {
 			return
 		}
 
-		// FIX: русский язык — слова и фразы не были заполнены,
-		// что вызывало панику при Level > 10
 		var symbols []string
 		var words []string
 		var phrases []string
@@ -322,7 +327,7 @@ func MakeGetTasksHandler(a *app.App) gin.HandlerFunc {
 			for k := range models.RussianMorseDictionary {
 				symbols = append(symbols, k)
 			}
-			words = models.RussianWords     // убедитесь, что эти поля существуют в models
+			words = models.RussianWords  
 			phrases = models.RussianPhrases
 		default:
 			c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported language"})
@@ -339,10 +344,9 @@ func MakeGetTasksHandler(a *app.App) gin.HandlerFunc {
 				if duels[i].Player1 != username && duels[i].Player2 != username {
 					return nil, errForbidden
 				}
-				// Если задания уже сгенерированы — вернуть их без изменений
 				if len(duels[i].Tasks.Questions) > 0 {
 					tasks = duels[i].Tasks
-					return nil, nil // nil = не сохранять
+					return nil, nil 
 				}
 
 				types := []string{"text", "morse", "audio"}
@@ -412,7 +416,6 @@ func MakeLeaveDuelsHandler(a *app.App) gin.HandlerFunc {
 					return nil, errAlreadyFinished
 				}
 
-				// FIX: вместо мутации имени используем поле Left
 				if d.Player1 == username {
 					d.Player1Left = true
 					if d.Player2 == "" {
@@ -449,7 +452,6 @@ func MakeLeaveDuelsHandler(a *app.App) gin.HandlerFunc {
 
 // ─── Вспомогательные функции ─────────────────────────────────────────────────
 
-// Sentinel ошибки вместо строк — позволяют делать switch без strcmp
 var (
 	errNotFound       = &sentinelErr{"not found"}
 	errForbidden      = &sentinelErr{"forbidden"}
