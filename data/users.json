@@ -1,1 +1,63 @@
-[]
+[
+  {
+    "username": "tester1",
+    "email": "tester1@example.com",
+    "password": "$2a$10$MHPAz1L22iawGeQTMmNzG.jZ0JtmteBCgTmWeIxsVZGSzW08f7csq",
+    "xp": 3,
+    "lesson_done": 0,
+    "lesson_done_ru": 0,
+    "lesson_done_en": 1,
+    "level": 0,
+    "coins": 10,
+    "items": null,
+    "need_xp": 100,
+    "streak": 1,
+    "last_streak": 0,
+    "answer_streak": 0,
+    "last_login": "2026-03-22",
+    "unlocked_achievements": null,
+    "symbol_stats": [
+      {
+        "symbol": "A",
+        "correct": 9,
+        "wrong": 3
+      },
+      {
+        "symbol": "B",
+        "correct": 6,
+        "wrong": 0
+      }
+    ],
+    "referral_code": "YM80G8",
+    "referred_by": "",
+    "referred_count": 0,
+    "friends": [],
+    "registered_date": "2026-03-22",
+    "max_score_in_duel": 0
+  },
+  {
+    "username": "tester2",
+    "email": "tester2@example.com",
+    "password": "$2a$10$PnBqQ2jcxsALn5TUOCBej.NOd4yOq7q4oI8hTuxgUbws/il8AtH9S",
+    "xp": 0,
+    "lesson_done": 0,
+    "lesson_done_ru": 0,
+    "lesson_done_en": 0,
+    "level": 0,
+    "coins": 0,
+    "items": null,
+    "need_xp": 0,
+    "streak": 1,
+    "last_streak": 0,
+    "answer_streak": 0,
+    "last_login": "2026-03-22",
+    "unlocked_achievements": null,
+    "symbol_stats": null,
+    "referral_code": "MCAFZ5",
+    "referred_by": "",
+    "referred_count": 0,
+    "friends": [],
+    "registered_date": "2026-03-22",
+    "max_score_in_duel": 0
+  }
+]

@@ -1,222 +1,224 @@
-#!/bin/bash
-
-BASE="http://localhost:8080/api"
-
-echo "=============================="
-echo " MORZELINGO API TEST"
-echo "=============================="
-
-echo ""
-echo "1️⃣ Register users"
-
-curl -s -X POST "$BASE/register" \
--H "Content-Type: application/json" \
--d '{"username":"player1","email":"p1@test.com","password":"123456"}'
-
-echo ""
-
-curl -s -X POST "$BASE/register" \
--H "Content-Type: application/json" \
--d '{"username":"player2","email":"p2@test.com","password":"123456"}'
-
-echo ""
-echo "✔ register step done"
-echo ""
-
-echo "2️⃣ Login"
-
-RESP1=$(curl -s -X POST "$BASE/login" \
--H "Content-Type: application/json" \
--d '{"username":"player1","password":"123456"}')
-
-TOKEN1=$(echo $RESP1 | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
-
-RESP2=$(curl -s -X POST "$BASE/login" \
--H "Content-Type: application/json" \
--d '{"username":"player2","password":"123456"}')
-
-TOKEN2=$(echo $RESP2 | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
-
-echo "TOKEN1=$TOKEN1"
-echo "TOKEN2=$TOKEN2"
-
-if [ -z "$TOKEN1" ] || [ -z "$TOKEN2" ]; then
-  echo "❌ ERROR: login failed"
-  exit 1
-fi
-
-echo "✔ login OK"
-echo ""
-
-echo "3️⃣ Profile"
-
-curl -s "$BASE/profile" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ profile OK"
-echo ""
-
-echo "4️⃣ Users list"
-
-curl -s "$BASE/users" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ users OK"
-echo ""
-
-echo "5️⃣ Lessons"
-
-curl -s "$BASE/lessons?lang=en" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ lessons OK"
-echo ""
-
-echo "6️⃣ Lesson by id"
-
-curl -s "$BASE/lessons/1?lang=en" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ lesson OK"
-echo ""
-
-echo "7️⃣ Complete lesson"
-
-curl -s -X POST "$BASE/complete-lesson?lang=en" \
--H "Authorization: Bearer $TOKEN1" \
--H "Content-Type: application/json" \
--d '{"lesson_id":1}'
-
-echo ""
-echo "✔ complete lesson OK"
-echo ""
-
-echo "8️⃣ Practice"
-
-curl -s "$BASE/practice/1?lang=en" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ practice OK"
-echo ""
-
-echo "9️⃣ Submit practice"
-
-curl -s -X POST "$BASE/practice/submit" \
--H "Authorization: Bearer $TOKEN1" \
--H "Content-Type: application/json" \
--d '[{"symbol":"A","correct":2,"wrong":1}]'
-
-echo ""
-echo "✔ submit practice OK"
-echo ""
-
-echo "🔟 Freemode"
-
-curl -s "$BASE/freemode?lang=en&count=3" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ freemode OK"
-echo ""
-
-echo "11️⃣ Friends add"
-
-curl -s -X POST "$BASE/friends/add" \
--H "Authorization: Bearer $TOKEN1" \
--H "Content-Type: application/json" \
--d '{"friend":"player2"}'
-
-echo ""
-echo "✔ add friend OK"
-echo ""
-
-echo "12️⃣ Friends list"
-
-curl -s "$BASE/friends" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ friends OK"
-echo ""
-
-echo "13️⃣ Friendship streaks"
-
-curl -s "$BASE/friendship-streaks" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ streaks OK"
-echo ""
-
-echo "14️⃣ DUEL CREATE"
-
-CREATE=$(curl -s -X POST "$BASE/duel/create" \
--H "Authorization: Bearer $TOKEN1")
-
-echo $CREATE
-
-DUEL_ID=$(echo $CREATE | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
-
-echo "DUEL_ID=$DUEL_ID"
-
-if [ -z "$DUEL_ID" ]; then
-  echo "❌ ERROR duel create failed"
-  exit 1
-fi
-
-echo "✔ duel created"
-echo ""
-
-echo "15️⃣ Duel join"
-
-curl -s -X POST "$BASE/duel/join" \
--H "Authorization: Bearer $TOKEN2"
-
-echo ""
-echo "✔ duel joined"
-echo ""
-
-echo "16️⃣ Duel status"
-
-curl -s "$BASE/duels/status/$DUEL_ID" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ duel status OK"
-echo ""
-
-echo "17️⃣ Duel tasks"
-
-curl -s -X POST "$BASE/duels/get-tasks/$DUEL_ID?lang=en" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ tasks generated"
-echo ""
-
-echo ""
-echo "8️⃣ Score Test"
-echo ""
-
-curl -s -X POST "$BASE/duels/get-score/$DUEL_ID" \
--H "Authorization: Bearer $TOKEN1" \
--H "Content-Type: application/json" \
--d '{"score":124}'
-
-echo "9️⃣ Duel finish"
-
-curl -s -X POST "$BASE/duels/finish/$DUEL_ID" \
--H "Authorization: Bearer $TOKEN1"
-
-echo ""
-echo "✔ duel finished"
-echo ""
-
-echo "=============================="
-echo "🎉 ALL TESTS FINISHED"
-echo "=============================="
+BASE="http://localhost:8080"
+JSON="Content-Type: application/json"
+
+U1="tester1"
+U2="tester2"
+P1="pass123"
+P2="pass123"
+
+echo "=== REGISTER USER 1 ==="
+curl -s -X POST "$BASE/api/register" \
+  -H "$JSON" \
+  -d "{\"username\":\"$U1\",\"email\":\"$U1@example.com\",\"password\":\"$P1\",\"referral_code\":\"\"}"
+echo
+echo
+
+echo "=== REGISTER USER 2 ==="
+curl -s -X POST "$BASE/api/register" \
+  -H "$JSON" \
+  -d "{\"username\":\"$U2\",\"email\":\"$U2@example.com\",\"password\":\"$P2\",\"referral_code\":\"\"}"
+echo
+echo
+
+echo "=== LOGIN USER 1 ==="
+TOKEN1=$(curl -s -X POST "$BASE/api/login" \
+  -H "$JSON" \
+  -d "{\"username\":\"$U1\",\"password\":\"$P1\"}" \
+  | sed -E 's/.*"token":"([^"]+)".*/\1/')
+echo "$TOKEN1"
+echo
+
+echo "=== LOGIN USER 2 ==="
+TOKEN2=$(curl -s -X POST "$BASE/api/login" \
+  -H "$JSON" \
+  -d "{\"username\":\"$U2\",\"password\":\"$P2\"}" \
+  | sed -E 's/.*"token":"([^"]+)".*/\1/')
+echo "$TOKEN2"
+echo
+
+echo "=== PUBLIC PRACTICE ==="
+curl -s -X POST "$BASE/api/practice?letters=ABCD&lang=en"
+echo
+echo
+
+echo "=== USERS ==="
+curl -s "$BASE/api/users" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== PROFILE ==="
+curl -s "$BASE/api/profile" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== LESSONS ==="
+curl -s "$BASE/api/lessons?lang=en" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== LESSON BY ID ==="
+curl -s "$BASE/api/lessons/1?lang=en" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== PRACTICE BY LESSON ==="
+curl -s "$BASE/api/practice/1?lang=en" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== PRACTICE SUBMIT ==="
+curl -s -X POST "$BASE/api/practice/submit" \
+  -H "Authorization: Bearer $TOKEN1" \
+  -H "$JSON" \
+  -d '[{"symbol":"A","correct":3,"wrong":1},{"symbol":"B","correct":2,"wrong":0}]'
+echo
+echo
+
+echo "=== FREEMODE ==="
+curl -s "$BASE/api/freemode?lang=en&letters=ABCD&mode=text&count=5" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== COMPLETE LESSON 1 ==="
+curl -s -X POST "$BASE/api/complete-lesson?lang=en" \
+  -H "Authorization: Bearer $TOKEN1" \
+  -H "$JSON" \
+  -d '{"lesson_id":1}'
+echo
+echo
+
+echo "=== FRIENDS LIST (BEFORE ADD) ==="
+curl -s "$BASE/api/friends" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== ADD FRIEND ==="
+curl -s -X POST "$BASE/api/friends/add" \
+  -H "Authorization: Bearer $TOKEN1" \
+  -H "$JSON" \
+  -d "{\"friend\":\"$U2\"}"
+echo
+echo
+
+echo "=== FRIENDS LIST (AFTER ADD) ==="
+curl -s "$BASE/api/friends" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== UPDATE FRIENDSHIP STREAKS ==="
+curl -s -X POST "$BASE/api/friends/update-streaks" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== FRIENDSHIP STREAKS (ONLY ME) ==="
+curl -s "$BASE/api/friendship-streaks?me=true" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== DELETE FRIEND ==="
+curl -s -X POST "$BASE/api/friends/delete" \
+  -H "Authorization: Bearer $TOKEN1" \
+  -H "$JSON" \
+  -d "{\"friend\":\"$U2\"}"
+echo
+echo
+
+echo "=== REPLAY LESSON ==="
+curl -s "$BASE/api/practice/replay/1?lang=en" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== CREATE DUEL ==="
+DUEL_ID=$(curl -s -X POST "$BASE/api/duel/create" \
+  -H "Authorization: Bearer $TOKEN1" \
+  | sed -E 's/.*"id":"([^"]+)".*/\1/')
+echo "$DUEL_ID"
+echo
+
+echo "=== JOIN DUEL ==="
+curl -s -X POST "$BASE/api/duel/join" \
+  -H "Authorization: Bearer $TOKEN2"
+echo
+echo
+
+echo "=== DUELS LIST ==="
+curl -s "$BASE/api/duels" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== DUEL STATUS ==="
+curl -s "$BASE/api/duels/status/$DUEL_ID" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== DUEL TASKS ==="
+curl -s -X POST "$BASE/api/duels/get-tasks/$DUEL_ID?lang=en" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== USER 1 SUBMIT DUEL SCORE ==="
+curl -s -X POST "$BASE/api/duels/get-score/$DUEL_ID" \
+  -H "Authorization: Bearer $TOKEN1" \
+  -H "$JSON" \
+  -d '{"score":42}'
+echo
+echo
+
+echo "=== USER 2 SUBMIT DUEL SCORE ==="
+curl -s -X POST "$BASE/api/duels/get-score/$DUEL_ID" \
+  -H "Authorization: Bearer $TOKEN2" \
+  -H "$JSON" \
+  -d '{"score":35}'
+echo
+echo
+
+echo "=== DUEL STATUS AFTER SCORES ==="
+curl -s "$BASE/api/duels/status/$DUEL_ID" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== FINISH DUEL AS USER 1 ==="
+curl -s -X POST "$BASE/api/duels/finish/$DUEL_ID" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== FINISH DUEL AS USER 2 ==="
+curl -s -X POST "$BASE/api/duels/finish/$DUEL_ID" \
+  -H "Authorization: Bearer $TOKEN2"
+echo
+echo
+
+echo "=== CREATE SECOND DUEL FOR LEAVE TEST ==="
+DUEL2_ID=$(curl -s -X POST "$BASE/api/duel/create" \
+  -H "Authorization: Bearer $TOKEN1" \
+  | sed -E 's/.*"id":"([^"]+)".*/\1/')
+echo "$DUEL2_ID"
+echo
+
+echo "=== LEAVE SECOND DUEL ==="
+curl -s -X POST "$BASE/api/duels/leave/$DUEL2_ID" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo
+
+echo "=== SECOND DUEL STATUS ==="
+curl -s "$BASE/api/duels/status/$DUEL2_ID" \
+  -H "Authorization: Bearer $TOKEN1"
+echo
+echo

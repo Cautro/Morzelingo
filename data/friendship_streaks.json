@@ -34,5 +34,11 @@
     "user2": "mega2",
     "streak": 0,
     "last_active": "2026-03-13"
+  },
+  {
+    "user1": "tester1",
+    "user2": "tester2",
+    "streak": 0,
+    "last_active": "2026-03-22"
   }
 ]

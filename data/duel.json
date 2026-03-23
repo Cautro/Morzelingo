@@ -1,1 +1,53 @@
-[]
+[
+  {
+    "id": "duel_585ad593-71ee-451d-aa9e-af6b59e20758",
+    "player1": "tester1",
+    "player2": "tester2",
+    "status": "finished",
+    "tasks": {
+      "questions": [
+        {
+          "type": "text",
+          "question": "Z7D"
+        },
+        {
+          "type": "audio",
+          "question": "•——• —•—• •———"
+        },
+        {
+          "type": "morse",
+          "question": "———•• —••"
+        },
+        {
+          "type": "morse",
+          "question": "—•••• —————"
+        },
+        {
+          "type": "audio",
+          "question": "•• •—"
+        }
+      ]
+    },
+    "p1_score": 42,
+    "p2_score": 35,
+    "p1_submitted": true,
+    "p2_submitted": true,
+    "winner": "tester1",
+    "created_at": "2026-03-22T10:56:17Z"
+  },
+  {
+    "id": "duel_f3ab520d-b327-4343-9604-b854a015eca9",
+    "player1": "tester1_left",
+    "player2": "",
+    "status": "cancelled",
+    "tasks": {
+      "questions": null
+    },
+    "p1_score": 0,
+    "p2_score": 0,
+    "p1_submitted": false,
+    "p2_submitted": false,
+    "winner": "",
+    "created_at": "2026-03-22T10:56:17Z"
+  }
+]

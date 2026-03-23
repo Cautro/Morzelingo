@@ -27,6 +27,10 @@ type Duel struct {
     Winner string `json:"winner"`
 
     CreatedAt string `json:"created_at"`
+
+	StartedAt   string `json:"started_at,omitempty"`  
+    Player1Left bool   `json:"player1_left,omitempty"`
+    Player2Left bool   `json:"player2_left,omitempty"`
 }
 
 type MorseTask struct {
