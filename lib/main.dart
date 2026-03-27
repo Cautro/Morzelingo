@@ -95,22 +95,22 @@ class _MyAppState extends State<MyApp> {
             "/friends": (context) => FriendsPage(),
             "/duels": (context) => DuelsMainPage(),
           },
-          builder: (context, child) {
-            return Column(
-              children: [
-
-                Expanded(
-                  child: child!,
-                ),
-
-                if (isBannerAlreadyCreated)
-                  SizedBox(
-                    height: 60,
-                    child: AdWidget(bannerAd: banner),
-                  ),
-              ],
-            );
-          },
+          // builder: (context, child) {
+          //   return Column(
+          //     children: [
+          //
+          //       Expanded(
+          //         child: child!,
+          //       ),
+          //
+          //       if (isBannerAlreadyCreated)
+          //         SizedBox(
+          //           height: 60,
+          //           child: AdWidget(bannerAd: banner),
+          //         ),
+          //     ],
+          //   );
+          // },
         );
       },
     );

@@ -73,17 +73,10 @@ class _DuelsMainPageState extends State<DuelsMainPage> {
                                 onPressed: () {
                                   context.read<DuelsBloc>().add(CreateDuelEvent());
                                 },
-                                child: Text("Создать дуэль"),
+                                child: Text("Начать дуэль"),
                               ),
                             ),
                             SizedBox(height: 8,),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {},
-                                child: Text("Присоединиться к дуэли"),
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -94,7 +87,30 @@ class _DuelsMainPageState extends State<DuelsMainPage> {
               ),
             ),
           ) :
-            state.status == "waiting" ? DuelsWaitingPage() :
+            state.status == "waiting" ? SafeArea(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: SingleChildScrollView(
+                          child: Text("Ожидание"),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+                        child: Text("Отменить"),
+                        onPressed: () {
+                          context.read<DuelsBloc>().add(LeaveEvent());
+                        },
+                      ),
+                    ),
+                  ],
+                )
+            ) :
             state.status == "active" ? Placeholder() :
             state.status == "playing" ? DuelsPlayingPage(tasks: state.tasks, currentQuestion: state.currentQuestion, answer: state.answer,) :
             Center(child: Text("Ожидание"),);

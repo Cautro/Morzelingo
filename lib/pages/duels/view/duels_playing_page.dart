@@ -7,6 +7,8 @@ import 'package:morzelingo/pages/duels/bloc/duels_bloc.dart';
 import 'package:morzelingo/pages/duels/service/duels_service.dart';
 import 'package:morzelingo/widgets/view/morse_key.dart';
 
+import '../../../theme_controller.dart';
+
 class DuelsPlayingPage extends StatefulWidget {
   final List tasks;
   final int currentQuestion;
@@ -76,6 +78,14 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                       padding: EdgeInsets.all(16),
                       child: Column(
                         children: [
+                          LinearProgressIndicator(
+                            value: widget.currentQuestion.toDouble() / widget.tasks.length,
+                            color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
+                            minHeight: 12,
+                            backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
+                            borderRadius: BorderRadiusGeometry.circular(16),
+                          ),
+                          SizedBox(height: 8,),
                           SizedBox(
                             width: double.infinity,
                             child: Card(
@@ -91,75 +101,100 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                     ) :
                     widget.tasks[widget.currentQuestion]["type"] == "morse" ? SingleChildScrollView(
                       padding: EdgeInsets.all(16),
-                      child: Card(
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              Row(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.all(8),
-                                      child: Text("Переведите: ${widget.tasks[widget.currentQuestion]["question"]}", style: Theme.of(context).textTheme.bodyLarge,),
-                                    ),
-                                  ]
-                              ),
-                              SizedBox(height: 16,),
-                              TextField(
-                                onChanged: (value) {
-                                  setState(() {
-                                    answer = value;
-                                  });
-                                },
-                                decoration: InputDecoration(labelText: "Ответ"),
-                              ),
-                            ],
+                      child: Column(
+                        children: [
+                          LinearProgressIndicator(
+                            value: widget.currentQuestion.toDouble() / widget.tasks.length,
+                            color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
+                            minHeight: 12,
+                            backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
+                            borderRadius: BorderRadiusGeometry.circular(16),
                           ),
-                        ),
+                          SizedBox(height: 8,),
+                          Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  Row(
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.all(8),
+                                          child: Text("Переведите: ${widget.tasks[widget.currentQuestion]["question"]}", style: Theme.of(context).textTheme.bodyLarge,),
+                                        ),
+                                      ]
+                                  ),
+                                  SizedBox(height: 16,),
+                                  TextField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        answer = value;
+                                      });
+                                    },
+                                    decoration: InputDecoration(labelText: "Ответ"),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+
                     ) :
                     widget.tasks[widget.currentQuestion]["type"] == "audio" ? SingleChildScrollView(
                       padding: EdgeInsets.all(16),
-                      child: Card(
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.all(8),
-                                      child: Text("Прослушайте морзе и переведите", style: Theme.of(context).textTheme.bodyLarge,),
-                                    ),
-                                  ]
-                              ),
-                              SizedBox(height: 16,),
-                              TextField(
-                                onChanged: (value) {
-                                  setState(() {
-                                    answer = value;
-                                  });
-                                },
-                                decoration: InputDecoration(labelText: "Ответ"),
-                              ),
-                              SizedBox(height: 16,),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    await DuelsService().playMorseAudio(
-                                      widget.tasks[widget.currentQuestion]["question"],
-                                    );
-                                  },
-                                  child: Text("Прослушать"),
-                                ),
-                              ),
-                            ],
+                      child: Column(
+                        children: [
+                          LinearProgressIndicator(
+                            value: widget.currentQuestion.toDouble() / widget.tasks.length,
+                            color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
+                            minHeight: 12,
+                            backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
+                            borderRadius: BorderRadiusGeometry.circular(16),
                           ),
-                        ),
-
+                          SizedBox(height: 8,),
+                          Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.all(8),
+                                          child: Text("Прослушайте морзе и переведите", style: Theme.of(context).textTheme.bodyLarge,),
+                                        ),
+                                      ]
+                                  ),
+                                  SizedBox(height: 16,),
+                                  TextField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        answer = value;
+                                      });
+                                    },
+                                    decoration: InputDecoration(labelText: "Ответ"),
+                                  ),
+                                  SizedBox(height: 16,),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        await DuelsService().playMorseAudio(
+                                          widget.tasks[widget.currentQuestion]["question"],
+                                        );
+                                      },
+                                      child: Text("Прослушать"),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+
                     ) : Center(child: Text("Ожидание"),)
                   ),
                   Container(
@@ -177,7 +212,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                             child: Text("Ответить"),
                           ),
                         ),
-                        SizedBox(height: 8,),
+                        SizedBox(height: 16,),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(

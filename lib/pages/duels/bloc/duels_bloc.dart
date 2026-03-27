@@ -45,7 +45,7 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
       if (_success) {
         emit(state.copyWith(currentQuestion: state.currentQuestion + 1, score: state.score + _score));
         emit(state.copyWith(answer: await DuelsService().getAnswer(state.tasks[state.currentQuestion]["question"], state.tasks[state.currentQuestion]["type"])));
-        final Response _scoreData = await DuelsRepository().updateScore(state.duelId.toString(), _score);
+        final Response _scoreData = await DuelsRepository().updateScore(state.duelId.toString(), state.score);
       }
       print('score: ${state.score}');
       emit(state.copyWith(message: null, success: null));
