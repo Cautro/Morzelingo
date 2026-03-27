@@ -1,5 +1,5 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart';
 import 'package:morzelingo/pages/duels/repository/duels_repository.dart';
 import 'package:morzelingo/pages/duels/service/duels_service.dart';
 import 'package:morzelingo/settings_context.dart';
@@ -10,8 +10,8 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
   DuelsBloc() : super(DuelsInitial()) {
     on<CreateDuelEvent>((event, emit) async {
       emit(state.copyWith(isLoading: true));
-      final createData = await DuelsRepository().createDuel();
-      emit(state.copyWith(isLoading: false, duelId: createData["id"], status: createData["status"]));
+      final _createData = await DuelsRepository().createDuel();
+      emit(state.copyWith(isLoading: false, duelId: _createData["duel_id"], status: _createData["status"]));
     });
     on<GetStatusEvent>((event, emit) async {
       if (state.status == "active") {
@@ -45,9 +45,22 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
       if (_success) {
         emit(state.copyWith(currentQuestion: state.currentQuestion + 1, score: state.score + _score));
         emit(state.copyWith(answer: await DuelsService().getAnswer(state.tasks[state.currentQuestion]["question"], state.tasks[state.currentQuestion]["type"])));
+        final Response _scoreData = await DuelsRepository().updateScore(state.duelId.toString(), _score);
       }
       print('score: ${state.score}');
       emit(state.copyWith(message: null, success: null));
+      print('fdddddddddd');
+    });
+    on<LeaveEvent>((event, emit) async {
+      final _data = await DuelsRepository().leaveDuel(state.duelId.toString());
+      if (_data["ok"] == true) {
+        emit(state.copyWith(status: "cancelled"));
+      }
+    });
+    on<CompleteEvent>((event, emit) async {
+      final Map _data = await DuelsRepository().completeDuel(state.duelId.toString());
+      emit(state.copyWith(status: "finished"));
+      print('FINISHED!!!!!!!!!');
     });
   }
 }

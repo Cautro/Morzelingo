@@ -7,7 +7,7 @@ import 'package:morzelingo/storage_context.dart';
 class DuelsRepository {
   Future<Map> createDuel() async {
     String? token = await StorageService.getItem("token");
-    final res = await http.post(Uri.parse("${API}/api/duel/create"),
+    final res = await http.post(Uri.parse("${API}/api/duel/matchmake"),
       headers: {
         "Authorization": "Bearer $token"
       },
@@ -17,21 +17,6 @@ class DuelsRepository {
     print('${_json}');
     print('${_json}');
     return _json;
-  }
-
-  Future<Map> joinDuel() async {
-    String? token = await StorageService.getItem("token");
-    final res = await http.post(
-      Uri.parse('$API/api/duel/join'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    print('${res.body}');
-    return {
-      'statusCode': res.statusCode,
-      'body': jsonDecode(res.body),
-    };
   }
 
   Future<Map> getStatus(String duelId) async {
@@ -58,10 +43,10 @@ class DuelsRepository {
     return jsonDecode(res.body);
   }
 
-  Future<http.Response> submitScore(String duelId, int score) async {
+  Future<http.Response> updateScore(String duelId, int score) async {
     String? token = await StorageService.getItem("token");
     final res = await http.post(
-    Uri.parse('$API/api/duels/get-score/$duelId'),
+    Uri.parse('$API/api/duels/update-score/$duelId'),
     headers: {
     'Authorization': 'Bearer $token',
     'Content-Type': 'application/json',
@@ -72,10 +57,22 @@ class DuelsRepository {
     return res;
   }
 
-  Future<Map> finishDuel(String duelId) async {
+  Future<Map> completeDuel(String duelId) async {
     String? token = await StorageService.getItem("token");
     final res = await http.post(
-      Uri.parse('$API/api/duels/finish/$duelId'),
+      Uri.parse('$API/api/duels/complete/$duelId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    print('complete   ${res.body}');
+    return jsonDecode(res.body);
+  }
+
+  Future<Map> leaveDuel(String duelId) async {
+    String? token = await StorageService.getItem("token");
+    final res = await http.post(
+      Uri.parse('$API/api/duels/leave/$duelId'),
       headers: {
         'Authorization': 'Bearer $token',
       },

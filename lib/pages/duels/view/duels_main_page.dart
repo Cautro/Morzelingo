@@ -35,6 +35,22 @@ class _DuelsMainPageState extends State<DuelsMainPage> {
               textColor: Colors.white,
             );
           }
+          if (state.status == 'cancelled') {
+            Navigator.pushReplacementNamed(context, "/home");
+          }
+          if (state.status == "playing") {
+            if (state.currentQuestion >= state.tasks.length) {
+              context.read<DuelsBloc>().add(CompleteEvent());
+            }
+          }
+          if (state.status == "finished") {
+            Fluttertoast.showToast(
+              msg: "Дуэль завершена",
+              backgroundColor: AppTheme.success,
+              textColor: Colors.white,
+            );
+            Navigator.pushReplacementNamed(context, "/home");
+          }
         },
         builder: (context, state) {
           return
@@ -81,7 +97,7 @@ class _DuelsMainPageState extends State<DuelsMainPage> {
             state.status == "waiting" ? DuelsWaitingPage() :
             state.status == "active" ? Placeholder() :
             state.status == "playing" ? DuelsPlayingPage(tasks: state.tasks, currentQuestion: state.currentQuestion, answer: state.answer,) :
-            Placeholder();
+            Center(child: Text("Ожидание"),);
         },
       ),
     );

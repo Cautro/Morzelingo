@@ -21,6 +21,45 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
   String answer = "";
 
   @override
+  Future<void> leaveDialog() async {
+    final duelsBloc = context.read<DuelsBloc>();
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Вы уверены что хотите покинуть дуэль?"),
+          content: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.error,
+                  ),
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                    duelsBloc.add(LeaveEvent());
+                  },
+                  child: const Text("Да, покинуть!"),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: const Text("Не покидать"),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
         return Scaffold(
           appBar: AppBar(
@@ -121,7 +160,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                         ),
 
                       ),
-                    ) : Placeholder()
+                    ) : Center(child: Text("Ожидание"),)
                   ),
                   Container(
                     padding: EdgeInsets.all(16),
@@ -143,7 +182,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              Navigator.pushReplacementNamed(context, "/home");
+                              leaveDialog();
                             },
                             child: Text("Покинуть дуэль"),
                             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),

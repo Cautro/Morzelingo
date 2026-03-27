@@ -14,3 +14,7 @@ class AnswerEvent extends DuelsEvent {
   AnswerEvent(this.answer);
   String answer;
 }
+
+class LeaveEvent extends DuelsEvent {}
+
+class CompleteEvent extends DuelsEvent {}
