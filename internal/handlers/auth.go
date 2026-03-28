@@ -314,6 +314,7 @@ func MakeProfileHandler(a *app.App) gin.HandlerFunc {
 			"LastLogin":            u.LastLogin,
 			"elo":                  u.Elo,
 			"max_score":            u.MaxScoreInDuel,
+			"duelswin":             u.DuelsWin,
 		})
 	}
 }
