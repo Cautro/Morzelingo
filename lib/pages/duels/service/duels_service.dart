@@ -65,7 +65,8 @@ class DuelsService {
 
   Future<bool> answerHandler(String answer, String rightAnswer) async {
     print('${answer} ${rightAnswer}');
-    bool success = answer.toUpperCase().trim() == rightAnswer.toUpperCase().trim() ? true : false;
+    bool success = answer.toUpperCase().trim() == rightAnswer.toUpperCase().trim();
+    print('ANSWER RIGHT? ${success}');
     return success;
   }
 

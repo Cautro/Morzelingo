@@ -1,5 +1,6 @@
 import 'package:cupertino_native/components/tab_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:morzelingo/pages/duels/view/duels_flow_page.dart';
 import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
 import 'package:morzelingo/pages/education/view/education_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_text_page.dart';
@@ -23,7 +24,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
   final List<Widget> _screens = [
     EducationPage(),
     FreemodePage(),
-    DuelsMainPage(),
+    DuelsFlowPage(),
     LettersPage(),
     ProfilePage(),
   ];

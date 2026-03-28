@@ -13,6 +13,8 @@ class DuelsState {
   final String? error;
   final bool? success;
   final String? message;
+  final int? lives;
+  final String? opponent;
 
   const DuelsState({
     this.isLoading = false,
@@ -25,7 +27,9 @@ class DuelsState {
     this.winner,
     this.error,
     this.success,
-    this.message
+    this.message,
+    this.lives,
+    this.opponent,
   });
 
   DuelsState copyWith({
@@ -40,6 +44,8 @@ class DuelsState {
     String? error,
     bool? success,
     String? message,
+    int? lives,
+    String? opponent,
   }) {
     return DuelsState(
       isLoading: isLoading ?? this.isLoading,
@@ -53,6 +59,8 @@ class DuelsState {
       error: error ?? this.error,
       success: success ?? this.success,
       message: message ?? this.message,
+      lives: lives ?? this.lives,
+      opponent: opponent ?? this.opponent,
     );
   }
 }

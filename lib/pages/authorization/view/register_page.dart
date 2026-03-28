@@ -35,9 +35,9 @@ class _RegisterPageState extends State<RegisterPage> {
               if (state is RegisterState) {
                 if (state.success == true) {
                   Fluttertoast.showToast(
-                    msg: state.message,
-                    backgroundColor: AppTheme.success,
-                    textColor: Colors.white
+                      msg: state.message,
+                      backgroundColor: AppTheme.success,
+                      textColor: Colors.white
                   );
                   Navigator.pushReplacementNamed(context, "/home");
                 } else {
@@ -117,10 +117,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                     ),
                                     SizedBox(height: 8),
                                     TextButton(
-                                      onPressed: () {
-                                        Navigator.pushReplacementNamed(context, "/login");
-                                      },
-                                      child: Text("Уже есть аккаунт? Войти")
+                                        onPressed: () {
+                                          Navigator.pushReplacementNamed(context, "/login");
+                                        },
+                                        child: Text("Уже есть аккаунт? Войти")
                                     ),
                                   ],
                                 ),
@@ -138,5 +138,3 @@ class _RegisterPageState extends State<RegisterPage> {
 
   }
 }
-
-

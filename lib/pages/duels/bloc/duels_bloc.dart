@@ -11,7 +11,7 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
     on<CreateDuelEvent>((event, emit) async {
       emit(state.copyWith(isLoading: true));
       final _createData = await DuelsRepository().createDuel();
-      emit(state.copyWith(isLoading: false, duelId: _createData["duel_id"], status: _createData["status"]));
+      emit(state.copyWith(isLoading: false, duelId: _createData["duel_id"], status: _createData["status"], lives: 5));
     });
     on<GetStatusEvent>((event, emit) async {
       if (state.status == "active") {
@@ -20,7 +20,7 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
       final statusData = await DuelsRepository().getStatus(state.duelId.toString());
       print('${state.status}');
       if (statusData["status"] != "waiting") {
-        emit(state.copyWith(status: statusData["status"]));
+        emit(state.copyWith(status: statusData["status"], opponent: statusData["player2"]));
       }
       if (state.status == "waiting") {
         await Future.delayed(Duration(seconds: 1));
@@ -33,19 +33,26 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
       emit(state.copyWith(tasks: TasksData["questions"]));
       emit(state.copyWith(answer: await DuelsService().getAnswer(state.tasks[state.currentQuestion]["question"], state.tasks[state.currentQuestion]["type"])));
       emit(state.copyWith(status: "playing"));
-      print('gandony${state.tasks}');
       print('${state.currentQuestion}');
       print('${state.answer}');
     });
     on<AnswerEvent>((event, emit) async {
+      if (state.lives! <= 1) {
+        add(CompleteEvent());
+        emit(state.copyWith(success: false, message: "Все жизни израсходованы("));
+        return;
+      }
       bool _success = await DuelsService().answerHandler(event.answer, state.answer.toString());
-      int _score = await DuelsService().scoreHandler(event.answer, state.answer.toString());
       print('${_success}');
       emit(state.copyWith(message: _success ? "Правильно!" : "Неправильно!", success: _success));
       if (_success) {
+        int _score = await DuelsService().scoreHandler(event.answer, state.answer.toString());
         emit(state.copyWith(currentQuestion: state.currentQuestion + 1, score: state.score + _score));
         emit(state.copyWith(answer: await DuelsService().getAnswer(state.tasks[state.currentQuestion]["question"], state.tasks[state.currentQuestion]["type"])));
         final Response _scoreData = await DuelsRepository().updateScore(state.duelId.toString(), state.score);
+      }
+      if (!_success) {
+        emit(state.copyWith(lives: state.lives! - 1));
       }
       print('score: ${state.score}');
       emit(state.copyWith(message: null, success: null));

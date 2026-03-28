@@ -53,30 +53,30 @@ class _LettersPageState extends State<LettersPage> {
     return Scaffold(
       body: SafeArea(
         child: Container(
-          padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
-          child: GridView.count(
+            padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
+            child: GridView.count(
               crossAxisCount: 4,
               children: Letters.map((item) {
                 return SizedBox(
-                  width: double.infinity,
-                  child: GestureDetector(
-                    onTap: () {
-                      StorageService.setItem("letter", item["letter"]);
-                      Navigator.pushNamed(context, "/practiceletter");
-                    },
-                    child: Card(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Center(child: Text(item["letter"], style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 25),),),
-                            Center(child: Text(item["morse"], style: Theme.of(context).textTheme.bodyMedium,),),
-                          ],
-                        )
-                    ),
-                  )
+                    width: double.infinity,
+                    child: GestureDetector(
+                      onTap: () {
+                        StorageService.setItem("letter", item["letter"]);
+                        Navigator.pushNamed(context, "/practiceletter");
+                      },
+                      child: Card(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Center(child: Text(item["letter"], style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 25),),),
+                              Center(child: Text(item["morse"], style: Theme.of(context).textTheme.bodyMedium,),),
+                            ],
+                          )
+                      ),
+                    )
                 );
               }).toList(),
-          )
+            )
         ),
       ),
     );
