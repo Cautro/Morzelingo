@@ -48,6 +48,7 @@ type FinishScore struct {
 }
 
 type User struct {	
+	Elo                  int          `json:"elo"`
 	Username             string       `json:"username"`
 	Email                string       `json:"email"`
 	Password             string       `json:"password"`
@@ -71,6 +72,7 @@ type User struct {
 	Friends              []string     `json:"friends"`
 	RegisteredDate       string       `json:"registered_date"`
 	MaxScoreInDuel       int          `json:"max_score_in_duel"`
+	DuelsWin              int          `json:"duelswin"`
 }
 
 type FriendshipStreak struct {

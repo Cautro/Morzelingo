@@ -3,6 +3,7 @@ package handlers
 import (
     "encoding/json"
     "math/rand"
+    "math"
     "net/http"
     "os"
     "sync"
@@ -83,12 +84,22 @@ func resultFor(username string, d *models.Duel) string {
     }
 }
 
-func calcWinner(d *models.Duel) {
+func calcWinner(d *models.Duel, username string, a *app.App) {
     switch {
     case d.P1Score > d.P2Score:
         d.Winner = d.Player1
+        user, ok := a.GetUserRaw(username)
+        if !ok {
+            return
+        }
+        user.DuelsWin += 1
     case d.P2Score > d.P1Score:
         d.Winner = d.Player2
+        user, ok := a.GetUserRaw(username)
+        if !ok {
+            return
+        }
+        user.DuelsWin += 1
     default:
         d.Winner = "draw"
     }
@@ -125,20 +136,50 @@ func applyRewards(a *app.App, duel *models.Duel, username string) {
         if mult < 1 {
             mult = 1
         }
+
         switch result {
         case "win":
             u.XP += 50 * mult
             u.Coins += 100 * mult
             u.NeedXp = max(0, u.NeedXp-10*mult)
+
+            var eloGain int
+            if u.DuelsWin == 0 {
+                if myScore > 0 {
+                    eloGain = int(math.Round(float64(u.MaxScoreInDuel) / float64(myScore) * 10))
+                } else {
+                    eloGain = 10
+                }
+            } else if u.DuelsWin >= 10 {
+                if u.Level > 0 {
+                    eloGain = int(math.Round(float64(myScore) / float64(u.Level) * 10))
+                } else {
+                    eloGain = 10
+                }
+            } else {
+                eloGain = int(math.Round(float64(u.Level) / float64(u.DuelsWin) * 10))
+            }
+
+            if eloGain < 1 {
+                eloGain = 1
+            }
+            u.Elo += eloGain
+
         case "draw":
             u.XP += 15 * mult
             u.Coins += 30 * mult
             u.NeedXp = max(0, u.NeedXp-3*mult)
+            u.Elo += 5
+
         default: // lose
             u.XP += 5 * mult
             u.Coins += 10 * mult
             u.NeedXp = max(0, u.NeedXp-1*mult)
+
+            eloLose := int(math.Round(float64(u.DuelsWin*u.Level) / 3.0))
+            u.Elo = max(0, u.Elo-eloLose)
         }
+
         return nil
     })
     if err == nil {
@@ -288,9 +329,6 @@ func MakeGetTasksHandler(a *app.App) gin.HandlerFunc {
 
 // ─── Score update (after EACH answer) ────────────────────────────────────────
 
-// MakeUpdateScoreHandler вызывается фронтом после каждого ответа.
-// Тело: { "score": N } — текущий накопленный счёт игрока.
-// Возвращает текущее состояние дуэли без ожидания оппонента.
 func MakeUpdateScoreHandler(a *app.App) gin.HandlerFunc {
     return func(c *gin.Context) {
         id := c.Param("id")
@@ -370,20 +408,16 @@ func MakeUpdateScoreHandler(a *app.App) gin.HandlerFunc {
 
 // ─── Complete (player finished all questions) ─────────────────────────────────
 
-// MakeCompleteDuelHandler вызывается когда игрок ответил на ВСЕ вопросы.
-// Немедленно возвращает результат — без ожидания оппонента.
-// Если оппонент ещё не закончил, результат считается по его ТЕКУЩЕМУ счёту.
-// Когда оппонент тоже вызовет complete — он получит результат уже против финального счёта первого.
+
 func MakeCompleteDuelHandler(a *app.App) gin.HandlerFunc {
     return func(c *gin.Context) {
         id := c.Param("id")
         username := c.GetString("username")
 
-        // Последний счёт игрока (на случай если после каждого ответа не слали)
         var in struct {
             Score int `json:"score"`
         }
-        // score опционален — если не передан, используем последний сохранённый
+
         _ = c.ShouldBindJSON(&in)
 
         type Result struct {
@@ -437,12 +471,10 @@ func MakeCompleteDuelHandler(a *app.App) gin.HandlerFunc {
                     d.P2DoneAt = now
                 }
 
-                // Считаем победителя по ТЕКУЩИМ очкам (не ждём оппонента)
-                calcWinner(d)
+                calcWinner(d, username, a)
 
                 bothDone := d.P1Done && d.P2Done
                 if bothDone {
-                    // Оба закончили — дуэль полностью завершена
                     d.Status = "finished"
                     d.FinishedAt = now
                 }
@@ -489,8 +521,6 @@ func MakeCompleteDuelHandler(a *app.App) gin.HandlerFunc {
             return
         }
 
-        // Начисляем награды этому игроку немедленно
-        // Читаем дуэль ещё раз чтобы получить финальное состояние
         duelMu.Lock()
         duels, _ := readDuelLocked()
         duelMu.Unlock()

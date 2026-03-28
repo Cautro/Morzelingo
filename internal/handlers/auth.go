@@ -312,6 +312,8 @@ func MakeProfileHandler(a *app.App) gin.HandlerFunc {
 			"UnlockedAchievements": u.UnlockedAchievements,
 			"registred_date":       u.RegisteredDate,
 			"LastLogin":            u.LastLogin,
+			"elo":                  u.Elo,
+			"max_score":            u.MaxScoreInDuel,
 		})
 	}
 }
