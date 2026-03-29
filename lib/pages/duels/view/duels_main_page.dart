@@ -16,25 +16,25 @@ class _DuelsMainPageState extends State<DuelsMainPage> {
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Container(
                 child: Card(
                   child: Container(
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
                         Text("Дуэли", style: Theme.of(context).textTheme.titleLarge,),
-                        SizedBox(height: 16,),
+                        const SizedBox(height: 16,),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
                               context.read<DuelsBloc>().add(CreateDuelEvent());
                             },
-                            child: Text("Начать дуэль"),
+                            child: const Text("Начать дуэль"),
                           ),
                         ),
-                        SizedBox(height: 8,),
+                        const SizedBox(height: 8,),
                       ],
                     ),
                   ),

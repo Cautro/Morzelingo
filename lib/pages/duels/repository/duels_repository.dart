@@ -6,6 +6,10 @@ import 'package:morzelingo/storage_context.dart';
 
 class DuelsRepository {
 
+  bool isSuccessStatus(int code) {
+    return code >= 200 && code < 300;
+  }
+
   Future<Map<String, String>> _headers() async {
     final token = await StorageService.getItem('token');
     return {
@@ -22,7 +26,7 @@ class DuelsRepository {
     final _json = jsonDecode(res.body);
     print('${_json}');
     print('${_json}');
-    if (res.statusCode != 200) {
+    if (!isSuccessStatus(res.statusCode)) {
       throw Exception('Ошибка сервера: ${res.statusCode}');
     }
     return _json;
@@ -34,7 +38,7 @@ class DuelsRepository {
       headers: await _headers(),
     );
     print('${res.body}');
-    if (res.statusCode != 200) {
+    if (!isSuccessStatus(res.statusCode)) {
       throw Exception('Ошибка сервера: ${res.statusCode}');
     }
     return jsonDecode(res.body);
@@ -46,7 +50,7 @@ class DuelsRepository {
       headers: await _headers(),
     );
     print('${res.body}');
-    if (res.statusCode != 200) {
+    if (!isSuccessStatus(res.statusCode)) {
       throw Exception('Ошибка сервера: ${res.statusCode}');
     }
     return jsonDecode(res.body);
@@ -59,7 +63,7 @@ class DuelsRepository {
       body: jsonEncode({'score': score}),
     );
     print('${res.body}');
-    if (res.statusCode != 200) {
+    if (!isSuccessStatus(res.statusCode)) {
       throw Exception('Ошибка сервера: ${res.statusCode}');
     }
     return res;
@@ -71,7 +75,7 @@ class DuelsRepository {
       headers: await _headers(),
     );
     print('complete   ${res.body}');
-    if (res.statusCode != 200) {
+    if (!isSuccessStatus(res.statusCode)) {
       throw Exception('Ошибка сервера: ${res.statusCode}');
     }
     return jsonDecode(res.body);
@@ -83,7 +87,7 @@ class DuelsRepository {
       headers: await _headers(),
     );
     print('${res.body}');
-    if (res.statusCode != 200) {
+    if (!isSuccessStatus(res.statusCode)) {
       throw Exception('Ошибка сервера: ${res.statusCode}');
     }
     return jsonDecode(res.body);

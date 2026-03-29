@@ -59,15 +59,15 @@ class _DuelsFlowPageState extends State<DuelsFlowPage> {
         builder: (context, state) {
           switch (state.status) {
             case DuelsStatus.idle:
-              return DuelsMainPage();
+              return const DuelsMainPage();
             case DuelsStatus.active:
               return DuelsActivePage(opponent: state.opponent ?? "?",);
             case DuelsStatus.playing:
               return DuelsPlayingPage(tasks: state.tasks, currentQuestion: state.currentQuestion, answer: state.answer,);
             case DuelsStatus.waiting:
-              return DuelsWaitingPage();
+              return const DuelsWaitingPage();
             default:
-              return Center(child: Text("Ошибка"),);
+              return const Center(child: Text("Ошибка"),);
           }
         },
       ),

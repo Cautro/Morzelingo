@@ -58,31 +58,31 @@ class _DuelsActivePageState extends State<DuelsActivePage> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Card(
               child: Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 width: double.infinity,
                 child: Column(
                   children: [
                     Text("Ваш противник:", style: Theme.of(context).textTheme.bodyLarge,),
                     Text("${widget.opponent}", style: Theme.of(context).textTheme.titleLarge,),
-                    SizedBox(height: 8,),
+                    const SizedBox(height: 8,),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        child: Text("К заданиям!"),
+                        child: const Text("К заданиям!"),
                         onPressed: () {
                           context.read<DuelsBloc>().add(GetTasksEvent());
                         },
                       ),
                     ),
-                    SizedBox(height: 8,),
+                    const SizedBox(height: 16,),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
-                        child: Text("Покинуть дуэль"),
+                        child: const Text("Покинуть дуэль"),
                         onPressed: () {
                           leaveDialog();
                         },
