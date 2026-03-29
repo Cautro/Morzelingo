@@ -9,7 +9,7 @@ class DuelsService {
 
   Future<String> _decodeMorse(String morseCode) async {
     String? lang = await SettingsService.getLang();
-    _morseToLetter = lang == "en" ? MorseModels().morseToLetterEN : MorseModels().morseToLetterRU;
+    _morseToLetter = lang == "en" ? MorseModels.morseToLetterEN : MorseModels.morseToLetterRU;
     return morseCode.split('  ').map((word) {
       return word.split(' ').map((char) {
         return _morseToLetter[char] ?? '';

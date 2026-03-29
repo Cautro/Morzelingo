@@ -30,4 +30,7 @@ class CompleteEvent extends DuelsEvent {}
 class PlayMorseEvent extends DuelsEvent {
   PlayMorseEvent({required this.question});
   final String question;
+
+  @override
+  List<Object?> get props => [question];
 }

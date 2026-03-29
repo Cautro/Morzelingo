@@ -81,6 +81,3 @@ class DuelsState extends Equatable {
     winner, error, success, message, lives, opponent,
   ];
 }
-
-
-class DuelsInitial extends DuelsState {}

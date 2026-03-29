@@ -14,7 +14,7 @@ class DuelsRepository {
     };
   }
 
-  Future<Map> createDuel() async {
+  Future<Map<String, dynamic>> createDuel() async {
     final res = await http.post(Uri.parse("${API}/api/duel/matchmake"),
       headers: await _headers(),
       body: jsonEncode({}),
@@ -22,24 +22,33 @@ class DuelsRepository {
     final _json = jsonDecode(res.body);
     print('${_json}');
     print('${_json}');
+    if (res.statusCode != 200) {
+      throw Exception('Ошибка сервера: ${res.statusCode}');
+    }
     return _json;
   }
 
-  Future<Map> getStatus(String duelId) async {
+  Future<Map<String, dynamic>> getStatus(String duelId) async {
     final res = await http.get(
       Uri.parse('$API/api/duels/status/$duelId'),
       headers: await _headers(),
     );
     print('${res.body}');
+    if (res.statusCode != 200) {
+      throw Exception('Ошибка сервера: ${res.statusCode}');
+    }
     return jsonDecode(res.body);
   }
 
-  Future<Map> getTasks(String duelId, String lang) async {
+  Future<Map<String, dynamic>> getTasks(String duelId, String lang) async {
     final res = await http.post(
       Uri.parse('$API/api/duels/get-tasks/$duelId?lang=$lang'),
       headers: await _headers(),
     );
     print('${res.body}');
+    if (res.statusCode != 200) {
+      throw Exception('Ошибка сервера: ${res.statusCode}');
+    }
     return jsonDecode(res.body);
   }
 
@@ -50,15 +59,21 @@ class DuelsRepository {
       body: jsonEncode({'score': score}),
     );
     print('${res.body}');
+    if (res.statusCode != 200) {
+      throw Exception('Ошибка сервера: ${res.statusCode}');
+    }
     return res;
   }
 
-  Future<Map> completeDuel(String duelId) async {
+  Future<Map<String, dynamic>> completeDuel(String duelId) async {
     final res = await http.post(
       Uri.parse('$API/api/duels/complete/$duelId'),
       headers: await _headers(),
     );
     print('complete   ${res.body}');
+    if (res.statusCode != 200) {
+      throw Exception('Ошибка сервера: ${res.statusCode}');
+    }
     return jsonDecode(res.body);
   }
 
@@ -68,6 +83,9 @@ class DuelsRepository {
       headers: await _headers(),
     );
     print('${res.body}');
+    if (res.statusCode != 200) {
+      throw Exception('Ошибка сервера: ${res.statusCode}');
+    }
     return jsonDecode(res.body);
   }
 }

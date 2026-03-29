@@ -78,13 +78,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                 padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    LinearProgressIndicator(
-                      value: widget.currentQuestion.toDouble() / widget.tasks.length,
-                      color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
-                      minHeight: 12,
-                      backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
-                      borderRadius: BorderRadiusGeometry.circular(16),
-                    ),
+                    ProgressBar(value: widget.currentQuestion / widget.tasks.length),
                     SizedBox(height: 8,),
                     SizedBox(
                       width: double.infinity,
@@ -103,13 +97,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                 padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    LinearProgressIndicator(
-                      value: widget.currentQuestion.toDouble() / widget.tasks.length,
-                      color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
-                      minHeight: 12,
-                      backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
-                      borderRadius: BorderRadiusGeometry.circular(16),
-                    ),
+                    ProgressBar(value: widget.currentQuestion / widget.tasks.length),
                     SizedBox(height: 8,),
                     Card(
                       child: Padding(
@@ -145,13 +133,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                 padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    LinearProgressIndicator(
-                      value: widget.currentQuestion.toDouble() / widget.tasks.length,
-                      color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
-                      minHeight: 12,
-                      backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
-                      borderRadius: BorderRadiusGeometry.circular(16),
-                    ),
+                    ProgressBar(value: widget.currentQuestion / widget.tasks.length),
                     SizedBox(height: 8,),
                     Card(
                       child: Padding(
@@ -181,7 +163,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  context.read<DuelsBloc>().add(PlayMorseEvent(question: widget.tasks[widget.currentQuestion]["question"].toString()))
+                                  context.read<DuelsBloc>().add(PlayMorseEvent(question: widget.tasks[widget.currentQuestion]["question"].toString()));
                                 },
                                 child: Text("Прослушать"),
                               ),
@@ -228,6 +210,22 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
       )
 
       ),
+    );
+  }
+}
+
+class ProgressBar extends StatelessWidget {
+  final double value;
+  const ProgressBar({super.key, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return LinearProgressIndicator(
+      value: value,
+      color: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkprimary : AppTheme.primary,
+      minHeight: 12,
+      backgroundColor: themeController.themeMode == ThemeMode.dark ? AppTheme.Darkcard : AppTheme.card,
+      borderRadius: BorderRadiusGeometry.circular(16),
     );
   }
 }
