@@ -1,9 +1,19 @@
 part of 'duels_bloc.dart';
 
+enum DuelsStatus {
+  idle,
+  waiting,
+  active,
+  playing,
+  finished,
+  error,
+  cancelled,
+}
+
 class DuelsState {
   final bool isLoading;
   final String? duelId;
-  final String status;
+  final DuelsStatus status;
   // idle | waiting | active | playing | submitting | waitingResult | finished | error
   final List<dynamic> tasks;
   final int currentQuestion;
@@ -19,7 +29,7 @@ class DuelsState {
   const DuelsState({
     this.isLoading = false,
     this.duelId,
-    this.status = "idle",
+    this.status = DuelsStatus.idle,
     this.tasks = const [],
     this.answer = "",
     this.currentQuestion = 0,
@@ -35,7 +45,7 @@ class DuelsState {
   DuelsState copyWith({
     bool? isLoading,
     String? duelId,
-    String? status,
+    DuelsStatus? status,
     List<dynamic>? tasks,
     String? answer,
     int? currentQuestion,

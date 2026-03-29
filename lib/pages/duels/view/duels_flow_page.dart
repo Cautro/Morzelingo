@@ -23,13 +23,10 @@ class _DuelsFlowPageState extends State<DuelsFlowPage> {
       create: (_) => DuelsBloc(),
       child: BlocConsumer<DuelsBloc, DuelsState>(
         listener: (context, state) {
-          if (state.status == "waiting") {
+          if (state.status == DuelsStatus.waiting) {
             context.read<DuelsBloc>().add(GetStatusEvent());
           }
-          // if (state.status == "active") {
-          //   context.read<DuelsBloc>().add(GetTasksEvent());
-          // }
-          if (state.status == 'cancelled') {
+          if (state.status == DuelsStatus.cancelled) {
             Fluttertoast.showToast(
               msg: "Дуэль отменена",
               backgroundColor: AppTheme.error,
@@ -37,7 +34,7 @@ class _DuelsFlowPageState extends State<DuelsFlowPage> {
             );
             Navigator.pushReplacementNamed(context, "/home");
           }
-          if (state.status == "playing") {
+          if (state.status == DuelsStatus.playing) {
             if (state.currentQuestion >= state.tasks.length) {
               context.read<DuelsBloc>().add(CompleteEvent());
             }
@@ -50,7 +47,7 @@ class _DuelsFlowPageState extends State<DuelsFlowPage> {
               textColor: Colors.white,
             );
           }
-          if (state.status == "finished") {
+          if (state.status == DuelsStatus.finished) {
             Fluttertoast.showToast(
               msg: "Дуэль завершена",
               backgroundColor: AppTheme.success,
@@ -61,13 +58,13 @@ class _DuelsFlowPageState extends State<DuelsFlowPage> {
         },
         builder: (context, state) {
           switch (state.status) {
-            case "idle":
+            case DuelsStatus.idle:
               return DuelsMainPage();
-            case "active":
-              return DuelsActivePage(opponent: state.opponent!,);
-            case "playing":
+            case DuelsStatus.active:
+              return DuelsActivePage(opponent: state.opponent ?? "?",);
+            case DuelsStatus.playing:
               return DuelsPlayingPage(tasks: state.tasks, currentQuestion: state.currentQuestion, answer: state.answer,);
-            case "waiting":
+            case DuelsStatus.waiting:
               return DuelsWaitingPage();
             default:
               return Center(child: Text("Ошибка"),);

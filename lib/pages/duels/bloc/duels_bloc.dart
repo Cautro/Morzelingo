@@ -11,18 +11,36 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
     on<CreateDuelEvent>((event, emit) async {
       emit(state.copyWith(isLoading: true));
       final _createData = await DuelsRepository().createDuel();
-      emit(state.copyWith(isLoading: false, duelId: _createData["duel_id"], status: _createData["status"], lives: 5));
+      DuelsStatus? _status;
+      switch (_createData["status"].toString()) {
+        case "waiting":
+          _status = DuelsStatus.waiting;
+        case "active":
+          _status = DuelsStatus.active;
+        case "playing":
+          _status = DuelsStatus.playing;
+      }
+      emit(state.copyWith(isLoading: false, duelId: _createData["duel_id"], status: _status, lives: 5));
+      print('status: ${state.status}');
     });
     on<GetStatusEvent>((event, emit) async {
-      if (state.status == "active") {
-        return;
-      }
       final statusData = await DuelsRepository().getStatus(state.duelId.toString());
       print('${state.status}');
-      if (statusData["status"] != "waiting") {
-        emit(state.copyWith(status: statusData["status"], opponent: statusData["player2"]));
+      DuelsStatus? _status;
+      switch (statusData["status"].toString()) {
+        case "waiting":
+          _status = DuelsStatus.waiting;
+        case "active":
+          _status = DuelsStatus.active;
+        case "playing":
+          _status = DuelsStatus.playing;
+        case "finished":
+          _status = DuelsStatus.finished;
       }
-      if (state.status == "waiting") {
+      if (_status != DuelsStatus.waiting) {
+        emit(state.copyWith(status: _status, opponent: statusData["player2"] ?? statusData["player1"],));
+      }
+      if (state.status == DuelsStatus.waiting) {
         await Future.delayed(Duration(seconds: 1));
         add(GetStatusEvent());
       }
@@ -32,7 +50,7 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
       final TasksData = await DuelsRepository().getTasks(state.duelId.toString(), lang);
       emit(state.copyWith(tasks: TasksData["questions"]));
       emit(state.copyWith(answer: await DuelsService().getAnswer(state.tasks[state.currentQuestion]["question"], state.tasks[state.currentQuestion]["type"])));
-      emit(state.copyWith(status: "playing"));
+      emit(state.copyWith(status: DuelsStatus.playing));
       print('${state.currentQuestion}');
       print('${state.answer}');
     });
@@ -56,17 +74,16 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
       }
       print('score: ${state.score}');
       emit(state.copyWith(message: null, success: null));
-      print('fdddddddddd');
     });
     on<LeaveEvent>((event, emit) async {
       final _data = await DuelsRepository().leaveDuel(state.duelId.toString());
       if (_data["ok"] == true) {
-        emit(state.copyWith(status: "cancelled"));
+        emit(state.copyWith(status: DuelsStatus.cancelled));
       }
     });
     on<CompleteEvent>((event, emit) async {
       final Map _data = await DuelsRepository().completeDuel(state.duelId.toString());
-      emit(state.copyWith(status: "finished"));
+      emit(state.copyWith(status: DuelsStatus.finished));
       print('FINISHED!!!!!!!!!');
     });
   }
