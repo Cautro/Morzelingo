@@ -7,7 +7,9 @@ import (
 
 	"github.com/cautro/morzelingo/internal/app"
 	"github.com/cautro/morzelingo/internal/handlers"
+	"github.com/cautro/morzelingo/internal/services"
 	"github.com/cautro/morzelingo/internal/storage"
+	"github.com/cautro/morzelingo/internal/utils"
 	"github.com/cautro/morzelingo/internal/worker"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -39,6 +41,7 @@ func main() {
 
 	saver := worker.NewSaver(st, worker.DefaultDebounce)
 	a := app.NewApp(users, st, saver, jwtSecret)
+	s := services.NewDuelService(a)
 	saver.Start()
 	defer saver.Stop()
 
@@ -49,7 +52,7 @@ func main() {
 	r.POST("/api/login", handlers.MakeLoginHandler(a))
 	r.POST("/api/practice", handlers.MakeLettersPracticeHandler(a)) 
 
-	auth := r.Group("/api", handlers.AuthMiddleware(a))
+	auth := r.Group("/api", utils.AuthMiddleware(a))
 	{
 		// User
 		auth.GET("/users", handlers.MakeListUsersHandler(a))
@@ -77,7 +80,7 @@ func main() {
 		
 
 		// Duels
-		auth.POST("/duel/matchmake", handlers.MakeMatchmakeDuelHandler(a))
+		auth.POST("/duel/matchmake", handlers.MakeMatchmakeDuelHandler(s))
 		auth.GET("/duels", handlers.MakeListDuelHandler(a))
 		auth.GET("/duels/status/:id", handlers.MakeStatusDuelHandler(a))
 		auth.POST("/duels/get-tasks/:id", handlers.MakeGetTasksHandler(a))

@@ -9,6 +9,7 @@ import (
     "github.com/cautro/morzelingo/internal/models"
     "github.com/gin-gonic/gin"
 	"github.com/cautro/morzelingo/internal/services"
+    
 )
 
 type sentinelErr struct{ msg string }
@@ -105,7 +106,7 @@ func MakeGetTasksHandler(a *app.App) gin.HandlerFunc {
                     case "text":
                         questions = append(questions, models.PracticeQuestion{Type: "text", Question: correct})
                     default:
-                        questions = append(questions, models.PracticeQuestion{Type: t, Question: textToMorse(correct, lang)})
+                        questions = append(questions, models.PracticeQuestion{Type: t, Question: utils.textToMorse(correct, lang)})
                     }
                 }
                 duels[i].Tasks = models.PracticeResponse{Questions: questions}

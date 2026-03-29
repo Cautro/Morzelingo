@@ -5,7 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/cautro/morzelingo/internal/app"
-    "github.com/cautro/morzelingo/internal/handlers"
+    // "github.com/cautro/morzelingo/internal/handlers"
 	"github.com/cautro/morzelingo/internal/models"
 )
 

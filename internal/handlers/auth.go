@@ -21,9 +21,6 @@ import (
 )
 
 
-
-
-
 func MakeRegisterHandler(a *app.App) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var in models.RegisterInput

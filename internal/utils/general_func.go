@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"encoding/json"
-	"github.com/cautro/morzelingo/internal/app"
+	// "github.com/cautro/morzelingo/internal/app"
 	"github.com/cautro/morzelingo/internal/models"
 	"time"
 	"math/rand"
@@ -20,7 +20,7 @@ var fsMu sync.Mutex
 
 const friendshipFile = "data/friendship_streaks.json"
 
-func removeFriend(slice []string, name string) []string {
+func RemoveFriend(slice []string, name string) []string {
 	for i, v := range slice {
 		if v == name {
 			return append(slice[:i], slice[i+1:]...)
@@ -29,7 +29,7 @@ func removeFriend(slice []string, name string) []string {
 	return slice
 }
 
-func readFriendshipStreaks() ([]models.FriendshipStreak, error) {
+func ReadFriendshipStreaks() ([]models.FriendshipStreak, error) {
 	fsMu.Lock()
 	defer fsMu.Unlock()
 
@@ -49,7 +49,7 @@ func readFriendshipStreaks() ([]models.FriendshipStreak, error) {
 	return s, nil
 }
 
-func saveFriendshipStreaks(streaks []models.FriendshipStreak) error {
+func SaveFriendshipStreaks(streaks []models.FriendshipStreak) error {
 	fsMu.Lock()
 	defer fsMu.Unlock()
 
@@ -66,8 +66,8 @@ func saveFriendshipStreaks(streaks []models.FriendshipStreak) error {
 	return os.WriteFile(friendshipFile, b, 0o644)
 }
 
-func touchFriendshipStreak(aUser, bUser string) error {
-	streaks, err := readFriendshipStreaks()
+func TouchFriendshipStreak(aUser, bUser string) error {
+	streaks, err := ReadFriendshipStreaks()
 	if err != nil {
 		return err
 	}
@@ -86,92 +86,79 @@ func touchFriendshipStreak(aUser, bUser string) error {
 		LastActive: today,
 	})
 
-	return saveFriendshipStreaks(streaks)
+	return SaveFriendshipStreaks(streaks)
 }
 
-func updateAllFriendshipStreaks(a *app.App, username string) error {
-	u, err := a.GetUserCopy(username)
-	if err != nil {
-		return err
-	}
-	if len(u.Friends) == 0 {
-		return nil
-	}
+func UpdateAllFriendshipStreaks(currentUser models.User, allUsers []models.User) ([]models.FriendshipStreak, bool, error) {
+    if len(currentUser.Friends) == 0 {
+        return nil, false, nil
+    }
 
-	users := a.ListUser()
+    streaks, err := ReadFriendshipStreaks()
+    if err != nil {
+        return nil, false, err
+    }
 
-	streaks, err := readFriendshipStreaks()
-	if err != nil {
-		return err
-	}
+    today := time.Now().UTC().Format("2006-01-02")
+    changed := false
 
-	today := time.Now().UTC().Format("2006-01-02")
-	changed := false
+    for _, friendName := range currentUser.Friends {
+        var foundFriend models.User
+        var isFound bool
 
-	for _, friend := range u.Friends {
-		var friendUser *models.User
+        for i := range allUsers {
+            if allUsers[i].Username == friendName {
+                foundFriend = allUsers[i]
+                isFound = true
+                break
+            }
+        }
 
-		for _, friend := range u.Friends {
-			for i := range users {
-				if users[i].Username == friend {
-					foundFriend = users[i]
-					isFound = true
-					break
-				}
-			}
+        if !isFound {
+            continue
+        }
 
-			if !isFound {
-				continue
-			}
+        if foundFriend.LastLogin == today {
+            updated := false
+            for i := range streaks {
+                if (streaks[i].User1 == currentUser.Username && streaks[i].User2 == friendName) ||
+                    (streaks[i].User1 == friendName && streaks[i].User2 == currentUser.Username) {
 
-		if friendUser.LastLogin == today {
-			updated := false
+                    if streaks[i].LastActive == today {
+                        updated = true
+                        break
+                    }
 
-			for i := range streaks {
-				if (streaks[i].User1 == username && streaks[i].User2 == friend) ||
-					(streaks[i].User1 == friend && streaks[i].User2 == username) {
+                    yesterday := time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02")
+                    if streaks[i].LastActive == yesterday {
+                        streaks[i].Streak++
+                    } else {
+                        streaks[i].Streak = 1
+                    }
 
-					if streaks[i].LastActive == today {
-						updated = true
-						break
-					}
+                    streaks[i].LastActive = today
+                    updated = true
+                    changed = true
+                    break
+                }
+            }
 
-					yesterday := time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02")
-					if streaks[i].LastActive == yesterday {
-						streaks[i].Streak++
-					} else {
-						streaks[i].Streak = 1
-					}
+            if !updated {
+                streaks = append(streaks, models.FriendshipStreak{
+                    User1:      currentUser.Username,
+                    User2:      friendName,
+                    Streak:     1,
+                    LastActive: today,
+                })
+                changed = true
+            }
+        }
+    }
 
-					streaks[i].LastActive = today
-					updated = true
-					changed = true
-					break
-				}
-			}
-
-			if !updated {
-				streaks = append(streaks, models.FriendshipStreak{
-					User1:      username,
-					User2:      friend,
-					Streak:     1,
-					LastActive: today,
-				})
-				changed = true
-			}
-		}
-	}
-
-	if changed {
-		if err := saveFriendshipStreaks(streaks); err != nil {
-			return err
-		}
-	}
-
-	return nil
+    return streaks, changed, nil
 }
 
-func generateReferralCode(users []models.User) string {
+func GenerateReferralCode(users []models.User) (string) {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 	for {
@@ -196,13 +183,13 @@ func generateReferralCode(users []models.User) string {
 	}
 }
 
-func readLessons(lang string) ([]models.Lesson, error) {
+func ReadLessons(lang string) ([]models.Lesson, error) {
 	filename := "data/lessons-EN.json"
 	if lang == "ru" {
 		filename = "data/lessons-RU.json"
 	}
 
-	b, err := osReadFile(filename)
+	b, err := OsReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +202,7 @@ func readLessons(lang string) ([]models.Lesson, error) {
 	return lessons, nil
 }
 
-func osReadFile(path string) ([]byte, error) {
+func OsReadFile(path string) ([]byte, error) {
 	return os.ReadFile(path)
 }
 
@@ -251,7 +238,7 @@ func GeneratePractice(symbols []string, length int) string {
 	return strings.Join(sb, "")
 }
 
-func getHardSymbols(stats []models.SymbolStat) []string {
+func GetHardSymbols(stats []models.SymbolStat) []string {
 	hard := make([]string, 0)
 	for _, s := range stats {
 		if s.Wrong >= 2 {
@@ -261,7 +248,7 @@ func getHardSymbols(stats []models.SymbolStat) []string {
 	return hard
 }
 
-func weightedRandom(symbols []string, stats []models.SymbolStat) string {
+func WeightedRandom(symbols []string, stats []models.SymbolStat) string {
 	if len(symbols) == 0 {
 		return ""
 	}
@@ -296,7 +283,7 @@ func weightedRandom(symbols []string, stats []models.SymbolStat) string {
 	return symbols[rand.Intn(len(symbols))]
 }
 
-func AuthMiddleware(a *app.App) gin.HandlerFunc {
+func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.GetHeader("Authorization")
 		if auth == "" {
