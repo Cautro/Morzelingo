@@ -23,9 +23,7 @@ class _DuelsFlowPageState extends State<DuelsFlowPage> {
       create: (_) => DuelsBloc(),
       child: BlocConsumer<DuelsBloc, DuelsState>(
         listener: (context, state) {
-          if (state.status == DuelsStatus.waiting) {
-            context.read<DuelsBloc>().add(GetStatusEvent());
-          }
+
           if (state.status == DuelsStatus.cancelled) {
             Fluttertoast.showToast(
               msg: "Дуэль отменена",
