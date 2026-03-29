@@ -2,6 +2,8 @@ import "package:flutter/material.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:morzelingo/pages/duels/bloc/duels_bloc.dart';
+import 'package:morzelingo/pages/duels/repository/duels_repository.dart';
+import 'package:morzelingo/pages/duels/service/duels_service.dart';
 import 'package:morzelingo/pages/duels/view/duels_active_page.dart';
 import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
 import 'package:morzelingo/pages/duels/view/duels_playing_page.dart';
@@ -20,7 +22,7 @@ class _DuelsFlowPageState extends State<DuelsFlowPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => DuelsBloc(),
+      create: (_) => DuelsBloc(repository: DuelsRepository(), service: DuelsService()),
       child: BlocConsumer<DuelsBloc, DuelsState>(
         listener: (context, state) {
 

@@ -36,9 +36,9 @@ class DuelsService {
     return answer;
   }
 
-  final player = AudioPlayer();
 
   Future<void> playMorseAudio(String question) async {
+    final player = AudioPlayer();
     player.stop();
 
     final wpm = await SettingsService.getWpm();
@@ -61,6 +61,7 @@ class DuelsService {
         await Future.delayed(Duration(milliseconds: timing.symbolPause));
       }
     }
+    player.dispose();
   }
 
   Future<bool> answerHandler(String answer, String rightAnswer) async {
@@ -76,10 +77,9 @@ class DuelsService {
     rightAnswer = rightAnswer.trim().toUpperCase().toString();
 
     for (int i = 0; i < rightAnswer.length; i++) {
-      if (answer[i] == rightAnswer[i]) {
+      if (i < answer.length && answer[i] == rightAnswer[i]) {
         score++;
       }
-      print('${score}');
     }
     return score;
   }

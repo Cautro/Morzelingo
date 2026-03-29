@@ -181,9 +181,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  await DuelsService().playMorseAudio(
-                                    widget.tasks[widget.currentQuestion]["question"],
-                                  );
+                                  context.read<DuelsBloc>().add(PlayMorseEvent(question: widget.tasks[widget.currentQuestion]["question"].toString()))
                                 },
                                 child: Text("Прослушать"),
                               ),

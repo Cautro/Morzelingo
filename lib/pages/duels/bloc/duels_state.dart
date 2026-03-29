@@ -10,7 +10,7 @@ enum DuelsStatus {
   cancelled,
 }
 
-class DuelsState {
+class DuelsState extends Equatable {
   final bool isLoading;
   final String? duelId;
   final DuelsStatus status;
@@ -73,6 +73,13 @@ class DuelsState {
       opponent: opponent ?? this.opponent,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    isLoading, duelId, status, tasks,
+    currentQuestion, answer, score,
+    winner, error, success, message, lives, opponent,
+  ];
 }
 
 
