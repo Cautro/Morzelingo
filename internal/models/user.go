@@ -1,8 +1,10 @@
 package models
 
-import ("github.com/golang-jwt/jwt/v5")
+import (
+	"github.com/golang-jwt/jwt/v5"
+)
 
-type User struct {	
+type User struct {
 	Elo                  int          `json:"elo"`
 	Username             string       `json:"username"`
 	Email                string       `json:"email"`
@@ -27,7 +29,7 @@ type User struct {
 	Friends              []string     `json:"friends"`
 	RegisteredDate       string       `json:"registered_date"`
 	MaxScoreInDuel       int          `json:"max_score_in_duel"`
-	DuelsWin              int          `json:"duelswin"`
+	DuelsWin             int          `json:"duelswin"`
 }
 
 type Claims struct {

@@ -1,36 +1,16 @@
 package handlers
 
 import (
-    "math/rand"
-    "net/http"
-    "time"
+	"errors"
+	"net/http"
 
-    "github.com/cautro/morzelingo/internal/app"
-    "github.com/cautro/morzelingo/internal/models"
-    "github.com/gin-gonic/gin"
 	"github.com/cautro/morzelingo/internal/services"
-    
+	"github.com/gin-gonic/gin"
 )
 
-type sentinelErr struct{ msg string }
-
-func (e *sentinelErr) Error() string { return e.msg }
-
-var (
-    errNotFound        = &sentinelErr{"not found"}
-    errForbidden       = &sentinelErr{"forbidden"}
-    errAlreadyFinished = &sentinelErr{"already finished"}
-    errAlreadyDone     = &sentinelErr{"already done"}
-    errNotActive       = &sentinelErr{"duel not active"}
-)
-
-// ─── Matchmaking ─────────────────────────────────────────────────────────────
-
-func MakeMatchmakeDuelHandler(s *services.DuelService) gin.HandlerFunc {
+func MakeMatchmakeDuelHandler(duelService *services.DuelService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		username := c.GetString("username")
-
-		result, err := s.MatchmakeDuel(username)
+		result, err := duelService.MatchmakeDuel(c.GetString("username"))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "matchmaking failed"})
 			return
@@ -45,410 +25,121 @@ func MakeMatchmakeDuelHandler(s *services.DuelService) gin.HandlerFunc {
 	}
 }
 
-// ─── Tasks ───────────────────────────────────────────────────────────────────
-
-func MakeGetTasksHandler(a *app.App) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        username := c.GetString("username")
-        lang := c.DefaultQuery("lang", "en")
-        id := c.Param("id")
-
-        user, ok := a.GetUserRaw(username)
-        if !ok {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "user not found"})
-            return
-        }
-
-        var symbols, words, phrases []string
-        switch lang {
-        case "en":
-            for k := range models.EnglishMorseDictionary {
-                symbols = append(symbols, k)
-            }
-            words = models.EnglishWords
-            phrases = models.EnglishPhrases
-        case "ru":
-            for k := range models.RussianMorseDictionary {
-                symbols = append(symbols, k)
-            }
-            words = models.RussianWords
-            phrases = models.RussianPhrases
-        default:
-            c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported language"})
-            return
-        }
-
-        var tasks models.PracticeResponse
-
-        err := withDuels(func(duels []models.Duel) ([]models.Duel, error) {
-            for i := range duels {
-                if duels[i].ID != id {
-                    continue
-                }
-                if duels[i].Player1 != username && duels[i].Player2 != username {
-                    return nil, errForbidden
-                }
-                // Задания уже есть — отдаём кеш
-                if len(duels[i].Tasks.Questions) > 0 {
-                    tasks = duels[i].Tasks
-                    return nil, nil
-                }
-                // Генерируем
-                types := []string{"text", "morse", "audio"}
-                questions := make([]models.PracticeQuestion, 0, 10)
-                for j := 0; j < 10; j++ { // 10 вопросов вместо 5
-                    correct := pickContent(user.Level, symbols, words, phrases)
-                    if correct == "" {
-                        continue
-                    }
-                    t := types[rand.Intn(len(types))]
-                    switch t {
-                    case "text":
-                        questions = append(questions, models.PracticeQuestion{Type: "text", Question: correct})
-                    default:
-                        questions = append(questions, models.PracticeQuestion{Type: t, Question: utils.textToMorse(correct, lang)})
-                    }
-                }
-                duels[i].Tasks = models.PracticeResponse{Questions: questions}
-                tasks = duels[i].Tasks
-                return duels, nil
-            }
-            return nil, errNotFound
-        })
-
-        switch err {
-        case nil:
-            c.JSON(http.StatusOK, tasks)
-        case errNotFound:
-            c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
-        case errForbidden:
-            c.JSON(http.StatusForbidden, gin.H{"error": "not your duel"})
-        default:
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
-        }
-    }
+func MakeGetTasksHandler(duelService *services.DuelService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		result, err := duelService.GetTasks(c.GetString("username"), c.DefaultQuery("lang", "en"), c.Param("id"))
+		switch {
+		case err == nil:
+			c.JSON(http.StatusOK, result)
+		case errors.Is(err, services.ErrUnsupportedLanguage):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrDuelNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
+		case errors.Is(err, services.ErrNotYourDuel):
+			c.JSON(http.StatusForbidden, gin.H{"error": "not your duel"})
+		case errors.Is(err, services.ErrUserNotFound):
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "user not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
+		}
+	}
 }
 
-// ─── Score update (after EACH answer) ────────────────────────────────────────
+func MakeUpdateScoreHandler(duelService *services.DuelService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var in struct {
+			Score int `json:"score"`
+		}
+		if err := c.BindJSON(&in); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+			return
+		}
 
-func MakeUpdateScoreHandler(a *app.App) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        id := c.Param("id")
-        username := c.GetString("username")
-
-        var in struct {
-            Score int `json:"score"`
-        }
-        if err := c.BindJSON(&in); err != nil {
-            c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
-            return
-        }
-
-        type ScoreState struct {
-            MyScore       int    `json:"my_score"`
-            OpponentScore int    `json:"opponent_score"`
-            OpponentDone  bool   `json:"opponent_done"`
-            DuelStatus    string `json:"duel_status"`
-        }
-        var state ScoreState
-
-        err := withDuels(func(duels []models.Duel) ([]models.Duel, error) {
-            for i := range duels {
-                d := &duels[i]
-                if d.ID != id {
-                    continue
-                }
-                if d.Status == "finished" || d.Status == "cancelled" {
-                    return nil, errAlreadyFinished
-                }
-                if d.Status != "active" {
-                    return nil, errNotActive
-                }
-
-                switch username {
-                case d.Player1:
-                    d.P1Score = in.Score
-                    state = ScoreState{
-                        MyScore:       d.P1Score,
-                        OpponentScore: d.P2Score,
-                        OpponentDone:  d.P2Done,
-                        DuelStatus:    d.Status,
-                    }
-                case d.Player2:
-                    d.P2Score = in.Score
-                    state = ScoreState{
-                        MyScore:       d.P2Score,
-                        OpponentScore: d.P1Score,
-                        OpponentDone:  d.P1Done,
-                        DuelStatus:    d.Status,
-                    }
-                default:
-                    return nil, errForbidden
-                }
-
-                return duels, nil
-            }
-            return nil, errNotFound
-        })
-
-        switch err {
-        case nil:
-            c.JSON(http.StatusOK, state)
-        case errNotFound:
-            c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
-        case errForbidden:
-            c.JSON(http.StatusForbidden, gin.H{"error": "not your duel"})
-        case errAlreadyFinished:
-            c.JSON(http.StatusBadRequest, gin.H{"error": "duel already finished"})
-        case errNotActive:
-            c.JSON(http.StatusBadRequest, gin.H{"error": "duel not active yet"})
-        default:
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
-        }
-    }
+		result, err := duelService.UpdateScore(c.GetString("username"), c.Param("id"), in.Score)
+		switch {
+		case err == nil:
+			c.JSON(http.StatusOK, result)
+		case errors.Is(err, services.ErrDuelNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
+		case errors.Is(err, services.ErrNotYourDuel):
+			c.JSON(http.StatusForbidden, gin.H{"error": "not your duel"})
+		case errors.Is(err, services.ErrDuelAlreadyFinished):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "duel already finished"})
+		case errors.Is(err, services.ErrDuelNotActive):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "duel not active yet"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
+		}
+	}
 }
 
-// ─── Complete (player finished all questions) ─────────────────────────────────
+func MakeCompleteDuelHandler(duelService *services.DuelService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var in struct {
+			Score int `json:"score"`
+		}
+		_ = c.ShouldBindJSON(&in)
 
-
-func MakeCompleteDuelHandler(a *app.App) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        id := c.Param("id")
-        username := c.GetString("username")
-
-        var in struct {
-            Score int `json:"score"`
-        }
-
-        _ = c.ShouldBindJSON(&in)
-
-        type Result struct {
-            Result        string `json:"result"`          // win | lose | draw
-            MyScore       int    `json:"my_score"`
-            OpponentScore int    `json:"opponent_score"`
-            Winner        string `json:"winner"`
-            BothDone      bool   `json:"both_done"`       // оба закончили?
-        }
-        var result Result
-
-        err := withDuels(func(duels []models.Duel) ([]models.Duel, error) {
-            for i := range duels {
-                d := &duels[i]
-                if d.ID != id {
-                    continue
-                }
-
-                // 1. Сначала проверяем участника
-                isPlayer1 := d.Player1 == username
-                isPlayer2 := d.Player2 == username
-                if !isPlayer1 && !isPlayer2 {
-                    return nil, errForbidden  // "not your duel"
-                }
-
-                // 2. Потом уже статус
-                if d.Status == "cancelled" {
-                    return nil, errAlreadyFinished
-                }
-                if d.Status == "finished" {
-                    // дуэль завершена — значит игрок уже сдал
-                    return nil, errAlreadyDone  // "already completed"
-                }
-                if d.Status != "active" {
-                    return nil, errNotActive
-                }
-
-                // 3. Флаг done
-                now := time.Now().UTC().Format(time.RFC3339)
-                if isPlayer1 {
-                    if d.P1Done {
-                        return nil, errAlreadyDone
-                    }
-                    if in.Score > 0 {
-                        d.P1Score = in.Score
-                    }
-                    d.P1Done = true
-                    d.P1DoneAt = now
-                } else {
-                    if d.P2Done {
-                        return nil, errAlreadyDone
-                    }
-                    if in.Score > 0 {
-                        d.P2Score = in.Score
-                    }
-                    d.P2Done = true
-                    d.P2DoneAt = now
-                }
-
-
-                
-                bothDone := d.P1Done && d.P2Done
-                if bothDone {
-                    d.Status = "finished"
-                    d.FinishedAt = now
-                    calcWinner(d) 
-                }
-
-                var myScore, oppScore int
-                if isPlayer1 {
-                    myScore, oppScore = d.P1Score, d.P2Score
-                } else {
-                    myScore, oppScore = d.P2Score, d.P1Score
-                }
-
-                result = Result{
-                    Result:        resultFor(username, d),
-                    MyScore:       myScore,
-                    OpponentScore: oppScore,
-                    Winner:        d.Winner,
-                    BothDone:      bothDone,
-                }
-
-                return duels, nil
-            }
-            return nil, errNotFound
-        })
-
-        switch err {
-        case nil:
-        case errNotFound:
-            c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
-            return
-        case errForbidden:
-            c.JSON(http.StatusForbidden, gin.H{"error": "not your duel"})
-            return
-        case errAlreadyFinished:
-            c.JSON(http.StatusBadRequest, gin.H{"error": "duel cancelled"})
-            return
-        case errAlreadyDone:
-            c.JSON(http.StatusBadRequest, gin.H{"error": "already completed"})
-            return
-        case errNotActive:
-            c.JSON(http.StatusBadRequest, gin.H{"error": "duel not active yet"})
-            return
-        default:
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
-            return
-        }
-
-        if result.BothDone {
-            duelMu.Lock()
-            duels, _ := readDuelLocked()
-            duelMu.Unlock()
-            for _, d := range duels {
-                if d.ID == id {
-                    applyRewards(a, &d, d.Player1)
-                    applyRewards(a, &d, d.Player2)
-                    break
-                }
-            }
-        }
-        c.JSON(http.StatusOK, result)
-    }
+		result, err := duelService.CompleteDuel(c.GetString("username"), c.Param("id"), in.Score)
+		switch {
+		case err == nil:
+			c.JSON(http.StatusOK, result)
+		case errors.Is(err, services.ErrDuelNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
+		case errors.Is(err, services.ErrNotYourDuel):
+			c.JSON(http.StatusForbidden, gin.H{"error": "not your duel"})
+		case errors.Is(err, services.ErrDuelCancelled):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "duel cancelled"})
+		case errors.Is(err, services.ErrAlreadyCompleted):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "already completed"})
+		case errors.Is(err, services.ErrDuelNotActive):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "duel not active yet"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
+		}
+	}
 }
 
-// ─── Status / List ───────────────────────────────────────────────────────────
-
-func MakeStatusDuelHandler(a *app.App) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        id := c.Param("id")
-        duelMu.Lock()
-        defer duelMu.Unlock()
-        duels, err := readDuelLocked()
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read duels"})
-            return
-        }
-        for i := range duels {
-            if duels[i].ID == id {
-                c.JSON(http.StatusOK, duels[i])
-                return
-            }
-        }
-        c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
-    }
+func MakeStatusDuelHandler(duelService *services.DuelService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		result, err := duelService.Status(c.Param("id"))
+		switch {
+		case err == nil:
+			c.JSON(http.StatusOK, result)
+		case errors.Is(err, services.ErrDuelNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read duels"})
+		}
+	}
 }
 
-func MakeListDuelHandler(a *app.App) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        duelMu.Lock()
-        defer duelMu.Unlock()
-        duels, err := readDuelLocked()
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read duels"})
-            return
-        }
-        c.JSON(http.StatusOK, duels)
-    }
+func MakeListDuelHandler(duelService *services.DuelService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		result, err := duelService.List()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read duels"})
+			return
+		}
+
+		c.JSON(http.StatusOK, result)
+	}
 }
 
-// ─── Leave ───────────────────────────────────────────────────────────────────
-
-func MakeLeaveDuelsHandler(a *app.App) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        username := c.GetString("username")
-        id := c.Param("id")
-
-        err := withDuels(func(duels []models.Duel) ([]models.Duel, error) {
-            for i := range duels {
-                d := &duels[i]
-                if d.ID != id {
-                    continue
-                }
-                if d.Player1 != username && d.Player2 != username {
-                    return nil, errForbidden
-                }
-                if d.Status == "finished" || d.Status == "cancelled" {
-                    return nil, errAlreadyFinished
-                }
-
-                now := time.Now().UTC().Format(time.RFC3339)
-                if d.Player1 == username {
-                    d.Player1Left = true
-                    if d.Player2 == "" {
-                        d.Status = "cancelled"
-                    } else {
-                        d.Winner = d.Player2
-                        d.Status = "finished"
-                        d.FinishedAt = now
-                    }
-                } else {
-                    d.Player2Left = true
-                    d.Winner = d.Player1
-                    d.Status = "finished"
-                    d.FinishedAt = now
-                }
-                return duels, nil
-            }
-            return nil, errNotFound
-        })
-
-        switch err {
-        case nil:
-            c.JSON(http.StatusOK, gin.H{"ok": true, "message": "you left the duel"})
-        case errNotFound:
-            c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
-        case errForbidden:
-            c.JSON(http.StatusForbidden, gin.H{"error": "you are not a participant"})
-        case errAlreadyFinished:
-            c.JSON(http.StatusBadRequest, gin.H{"error": "duel already finished"})
-        default:
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save"})
-        }
-    }
-}
-
-// ─── Content helpers ─────────────────────────────────────────────────────────
-
-func pickContent(level int, symbols, words, phrases []string) string {
-    switch {
-    case level <= 10 || len(words) == 0:
-        if len(symbols) == 0 {
-            return ""
-        }
-        return generatePractice(symbols, rand.Intn(3)+1)
-    case level <= 20 || len(phrases) == 0:
-        return words[rand.Intn(len(words))]
-    default:
-        return phrases[rand.Intn(len(phrases))]
-    }
+func MakeLeaveDuelsHandler(duelService *services.DuelService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		result, err := duelService.LeaveDuel(c.GetString("username"), c.Param("id"))
+		switch {
+		case err == nil:
+			c.JSON(http.StatusOK, result)
+		case errors.Is(err, services.ErrDuelNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "duel not found"})
+		case errors.Is(err, services.ErrNotParticipant):
+			c.JSON(http.StatusForbidden, gin.H{"error": "you are not a participant"})
+		case errors.Is(err, services.ErrDuelAlreadyFinished):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "duel already finished"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save"})
+		}
+	}
 }

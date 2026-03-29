@@ -1,13 +1,15 @@
 package services
 
 import (
-    "encoding/json"
-    "os"
-    "sync"
-    "github.com/cautro/morzelingo/internal/models"
+	"errors"
+	"sync"
+
+	"github.com/cautro/morzelingo/internal/models"
+	"github.com/cautro/morzelingo/internal/storage"
 )
 
 var duelMu sync.Mutex
+var duelStorage *storage.Storage
 
 type MatchmakeResult struct {
 	DuelID string `json:"duel_id"`
@@ -15,11 +17,7 @@ type MatchmakeResult struct {
 	Role   string `json:"role"`
 }
 
-type TasksResult struct {
-    Type     string `json:"type"`
-	Question string `json:"question"`
-	Answer   string `json:"answer,omitempty"`
-}
+type TasksResult = models.PracticeResponse
 
 type ScoreState struct {
 	MyScore       int    `json:"my_score"`
@@ -36,46 +34,59 @@ type CompleteDuelResult struct {
 	BothDone      bool   `json:"both_done"`
 }
 
+type LeaveDuelResult struct {
+	OK      bool   `json:"ok"`
+	Message string `json:"message"`
+}
+
 type DuelListResult []models.Duel
 
+func SetDuelStorage(st *storage.Storage) {
+	duelStorage = st
+}
 
 func readDuelLocked() ([]models.Duel, error) {
-    b, err := os.ReadFile("data/duel.json")
-    if err != nil {
-        if os.IsNotExist(err) {
-            return []models.Duel{}, nil
-        }
-        return nil, err
-    }
-    var duels []models.Duel
-    if err := json.Unmarshal(b, &duels); err != nil {
-        return nil, err
-    }
-    return duels, nil
+	if duelStorage == nil {
+		return nil, errors.New("duel storage is not initialized")
+	}
+
+	return duelStorage.ReadDuels()
 }
 
 func saveDuelLocked(duels []models.Duel) error {
-    data, err := json.MarshalIndent(duels, "", "  ")
-    if err != nil {
-        return err
-    }
-    return os.WriteFile("data/duel.json", data, 0o644)
+	if duelStorage == nil {
+		return errors.New("duel storage is not initialized")
+	}
+
+	return duelStorage.SaveDuels(duels)
 }
 
 func withDuels(fn func(duels []models.Duel) ([]models.Duel, error)) error {
-    duelMu.Lock()
-    defer duelMu.Unlock()
-    duels, err := readDuelLocked()
-    if err != nil {
-        return err
-    }
-    updated, err := fn(duels)
-    if err != nil {
-        return err
-    }
-    if updated != nil {
-        return saveDuelLocked(updated)
-    }
-    return nil
+	duelMu.Lock()
+	defer duelMu.Unlock()
+
+	duels, err := readDuelLocked()
+	if err != nil {
+		return err
+	}
+
+	updated, err := fn(duels)
+	if err != nil {
+		return err
+	}
+	if updated != nil {
+		return saveDuelLocked(updated)
+	}
+	return nil
 }
 
+func ReadDuels() ([]models.Duel, error) {
+	duelMu.Lock()
+	defer duelMu.Unlock()
+
+	return readDuelLocked()
+}
+
+func WithDuels(fn func(duels []models.Duel) ([]models.Duel, error)) error {
+	return withDuels(fn)
+}
