@@ -15,9 +15,10 @@ type App struct {
 	Saver   *worker.Saver
 	Secret  string
 
-	mu    sync.RWMutex
-	users []models.User
-	duels []models.Duel
+	mu      sync.RWMutex
+	users   []models.User
+	duels   []models.Duel
+	lessons []models.Lesson
 }
 
 func NewApp(initial []models.User, st *storage.Storage, saver *worker.Saver, secret string) *App {
@@ -31,32 +32,78 @@ func NewApp(initial []models.User, st *storage.Storage, saver *worker.Saver, sec
 	}
 }
 
-func (a *App) GetUsers() []models.User {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
-	out := make([]models.User, len(a.users))
-	copy(out, a.users)
-	for i := range out {
-		out[i].Password = ""
-	}
-	return out
+func (a *App) ListUser() ([]models.User) {
+    a.mu.RLock()
+    defer a.mu.RUnlock()
+
+    out := make([]models.User, len(a.users))
+    copy(out, a.users)
+    return out
 }
 
-func (a *App) GetAllDuels() []models.Duel {
+func (a *App) ListDuel() ([]models.Duel, error) {
 	a.mu.RLock()
-	defer a.mu.RUnlock()
-	out := make([]models.Duel, len(a.duels))
-	copy(out, a.duels)
-	return out
+    defer a.mu.RUnlock()
+
+    out := make([]models.Duel, len(a.duels))
+    copy(out, a.duels)
+    return out, nil
 }
 
-func (a *App) AddUser(u models.User) []models.User {
-	a.mu.Lock()
+func (a *App) ListLesson() ([]models.Lesson, error) {
+	a.mu.RLock()
+    defer a.mu.RUnlock()
+
+    out := make([]models.Lesson, len(a.lessons))
+    copy(out, a.lessons)
+    return out, nil
+}
+
+func (a *App) GetByIDDuel(duelID string) (*models.Duel, error) {
+	a.mu.RLock()
+    defer a.mu.RUnlock()
+
+    for i := range a.duels {
+        if a.duels[i].ID == duelID {
+            d := a.duels[i]
+            return &d, nil
+        }
+    }
+
+    return nil, errors.New("duel not found")
+}
+
+func (a *App) GetByIDLesson(id int) (*models.Lesson, error) {
+	a.mu.RLock()
+    defer a.mu.RUnlock()
+
+    for i := range a.lessons {
+        if a.lessons[i].ID == id {
+            l := a.lessons[i]
+            return &l, nil
+        }
+    }
+
+    return nil, errors.New("lesson not found")
+}
+
+func (a *App) CreateUser(user models.User) []models.User {
+    a.mu.Lock()
 	defer a.mu.Unlock()
-	a.users = append(a.users, u)
+
+	a.users = append(a.users, user)
 	cop := make([]models.User, len(a.users))
 	copy(cop, a.users)
+	
 	return cop
+}
+
+func (a *App) CreateDuel(duel models.Duel) error {
+	a.mu.Lock()
+    defer a.mu.Unlock()
+
+    a.duels = append(a.duels, duel)
+    return nil
 }
 
 func (a *App) GetUserRaw(username string) (models.User, bool) { 
@@ -64,36 +111,57 @@ func (a *App) GetUserRaw(username string) (models.User, bool) {
 	defer a.mu.RUnlock() 
 	for i := range a.users { 
 		if a.users[i].Username == username { 
-			return a.users[i], true } 
+			return a.users[i], true 
 		} 
-		return models.User{}, false
-	}
+	} 
+	return models.User{}, false
+}
 
-func (a *App) FindUserByUsername(username string) (int, bool) {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
-	for i := range a.users {
-		if a.users[i].Username == username {
-			return i, true
-		}
-	}
-	return -1, false
+func (a *App) GetByUsername(username string) (*models.User, error) {
+    a.mu.RLock()
+    defer a.mu.RUnlock()
+
+    for i := range a.users {
+        if a.users[i].Username == username {
+            u := a.users[i]
+            return &u, nil
+        }
+    }
+
+    return nil, errors.New("user not found")
 }
 
 func (a *App) UpdateUser(username string, fn func(u *models.User) error) ([]models.User, error) {
+    a.mu.Lock()
+    defer a.mu.Unlock()
+
+    for i := range a.users {
+        if a.users[i].Username == username {
+            err := fn(&a.users[i]) 
+            if err != nil {
+                return nil, err
+            }
+            out := make([]models.User, len(a.users))
+            copy(out, a.users)
+            
+            return out, nil
+        }
+    }
+
+    return nil, errors.New("user not found")
+}
+
+func (a *App) UpdateDuel(duelID string, fn func(d *models.Duel) error) error {
 	a.mu.Lock()
-	defer a.mu.Unlock()
-	for i := range a.users {
-		if a.users[i].Username == username {
-			if err := fn(&a.users[i]); err != nil {
-				return nil, err
-			}
-			cop := make([]models.User, len(a.users))
-			copy(cop, a.users)
-			return cop, nil
-		}
-	}
-	return nil, errors.New("user not found")
+    defer a.mu.Unlock()
+
+    for i := range a.duels {
+        if a.duels[i].ID == duelID {
+            return fn(&a.duels[i])
+        }
+    }
+
+    return errors.New("duel not found")
 }
 
 func (a *App) GetUserCopy(username string) (models.User, error) {
@@ -108,3 +176,4 @@ func (a *App) GetUserCopy(username string) (models.User, error) {
 	}
 	return models.User{}, fmt.Errorf("user %s not found", username)
 }
+

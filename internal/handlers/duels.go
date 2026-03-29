@@ -1,63 +1,19 @@
 package handlers
 
 import (
-    "encoding/json"
     "math/rand"
-    "math"
     "net/http"
-    "os"
-    "sync"
     "time"
 
     "github.com/cautro/morzelingo/internal/app"
     "github.com/cautro/morzelingo/internal/models"
     "github.com/gin-gonic/gin"
-    "github.com/google/uuid"
+	"github.com/cautro/morzelingo/internal/services"
 )
 
-var duelMu sync.Mutex
+type sentinelErr struct{ msg string }
 
-func readDuelLocked() ([]models.Duel, error) {
-    b, err := os.ReadFile("data/duel.json")
-    if err != nil {
-        if os.IsNotExist(err) {
-            return []models.Duel{}, nil
-        }
-        return nil, err
-    }
-    var duels []models.Duel
-    if err := json.Unmarshal(b, &duels); err != nil {
-        return nil, err
-    }
-    return duels, nil
-}
-
-func saveDuelLocked(duels []models.Duel) error {
-    data, err := json.MarshalIndent(duels, "", "  ")
-    if err != nil {
-        return err
-    }
-    return os.WriteFile("data/duel.json", data, 0o644)
-}
-
-func withDuels(fn func(duels []models.Duel) ([]models.Duel, error)) error {
-    duelMu.Lock()
-    defer duelMu.Unlock()
-    duels, err := readDuelLocked()
-    if err != nil {
-        return err
-    }
-    updated, err := fn(duels)
-    if err != nil {
-        return err
-    }
-    if updated != nil {
-        return saveDuelLocked(updated)
-    }
-    return nil
-}
-
-// ─── Sentinel errors ─────────────────────────────────────────────────────────
+func (e *sentinelErr) Error() string { return e.msg }
 
 var (
     errNotFound        = &sentinelErr{"not found"}
@@ -67,183 +23,25 @@ var (
     errNotActive       = &sentinelErr{"duel not active"}
 )
 
-type sentinelErr struct{ msg string }
-
-func (e *sentinelErr) Error() string { return e.msg }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-func resultFor(username string, d *models.Duel) string {
-    switch {
-    case d.Winner == username:
-        return "win"
-    case d.Winner == "draw":
-        return "draw"
-    default:
-        return "lose"
-    }
-}
-
-func calcWinner(d *models.Duel) { 
-    switch {
-    case d.P1Score > d.P2Score:
-        d.Winner = d.Player1
-    case d.P2Score > d.P1Score:
-        d.Winner = d.Player2
-    default:
-        d.Winner = "draw"
-    }
-}
-
-func calcEloChange(myElo, opponentElo int, result string, myScore, oppScore int) int {
-
-    expected := 1.0 / (1.0 + math.Pow(10, float64(opponentElo-myElo)/400.0))
-
-    var actual float64
-    switch result {
-    case "win":
-        actual = 1.0
-    case "draw":
-        actual = 0.5
-    default: // lose
-        actual = 0.0
-    }
-
-    K := 500.0
-
-    scoreMult := 1.0
-    total := myScore + oppScore
-    if total > 0 && result == "win" {
-        ratio := float64(myScore) / float64(total) // 0.5 .. 1.0
-        scoreMult = 1.0 + ratio                     // 1.5 .. 2.0
-    }
-
-    change := K * (actual - expected) * scoreMult
-    return int(math.Round(change))
-}
-
-// Обновлённый applyRewards
-func applyRewards(a *app.App, duel *models.Duel, username string) {
-    var myScore, oppScore int
-    var opponentUsername string
-
-    if duel.Player1 == username {
-        myScore = duel.P1Score
-        oppScore = duel.P2Score
-        opponentUsername = duel.Player2
-    } else {
-        myScore = duel.P2Score
-        oppScore = duel.P1Score
-        opponentUsername = duel.Player1
-    }
-
-    opponent, err := a.GetUserCopy(opponentUsername)
-    if err != nil {
-        return
-    }
-    opponentElo := opponent.Elo
-
-    // Обновляем рекорд
-    user, err := a.GetUserCopy(username)
-    if err != nil {
-        return
-    }
-    if myScore > user.MaxScoreInDuel {
-        toSave, err := a.UpdateUser(username, func(u *models.User) error {
-            u.MaxScoreInDuel = myScore
-            return nil
-        })
-        if err == nil {
-            a.Saver.Schedule(toSave)
-        }
-        user.MaxScoreInDuel = myScore
-    }
-
-    result := resultFor(username, duel)
-    eloChange := calcEloChange(user.Elo, opponentElo, result, myScore, oppScore)
-
-    toSave, err := a.UpdateUser(username, func(u *models.User) error {
-        mult := 1 + u.Level/3
-        if mult < 1 {
-            mult = 1
-        }
-
-        switch result {
-        case "win":
-            u.DuelsWin++
-            u.XP += 50 * mult
-            u.Coins += 100 * mult
-            u.Elo = max(0, u.Elo+eloChange)
-        case "draw":
-            u.XP += 15 * mult
-            u.Coins += 30 * mult
-        default: // lose
-            u.XP += 5 * mult
-            u.Coins += 10 * mult
-        }
-
-        u.Elo = max(0, u.Elo+eloChange)
-        return nil
-    })
-    if err == nil {
-        a.Saver.Schedule(toSave)
-    }
-}
-
 // ─── Matchmaking ─────────────────────────────────────────────────────────────
 
-func MakeMatchmakeDuelHandler(a *app.App) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        username := c.GetString("username")
+func MakeMatchmakeDuelHandler(s *services.DuelService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		username := c.GetString("username")
 
-        type Response struct {
-            DuelID string `json:"duel_id"`
-            Status string `json:"status"` // waiting | active
-            Role   string `json:"role"`   // player1 | player2
-        }
+		result, err := s.MatchmakeDuel(username)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "matchmaking failed"})
+			return
+		}
 
-        var result Response
+		code := http.StatusOK
+		if result.Status == "waiting" {
+			code = http.StatusCreated
+		}
 
-        err := withDuels(func(duels []models.Duel) ([]models.Duel, error) {
-            for i := range duels {
-                d := &duels[i]
-                if d.Status != "waiting" {
-                    continue
-                }
-                // Уже стоим в очереди — возвращаем свою же дуэль
-                if d.Player1 == username {
-                    result = Response{DuelID: d.ID, Status: "waiting", Role: "player1"}
-                    return nil, nil
-                }
-                // Есть чужая — присоединяемся
-                d.Player2 = username
-                d.Status = "active"
-                d.StartedAt = time.Now().UTC().Format(time.RFC3339)
-                result = Response{DuelID: d.ID, Status: "active", Role: "player2"}
-                return duels, nil
-            }
-            // Свободных нет — создаём
-            nd := models.Duel{
-                ID:        "duel_" + uuid.NewString(),
-                Player1:   username,
-                Status:    "waiting",
-                CreatedAt: time.Now().UTC().Format(time.RFC3339),
-            }
-            result = Response{DuelID: nd.ID, Status: "waiting", Role: "player1"}
-            return append(duels, nd), nil
-        })
-
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "matchmaking failed"})
-            return
-        }
-
-        code := http.StatusOK
-        if result.Status == "waiting" {
-            code = http.StatusCreated
-        }
-        c.JSON(code, result)
-    }
+		c.JSON(code, result)
+	}
 }
 
 // ─── Tasks ───────────────────────────────────────────────────────────────────

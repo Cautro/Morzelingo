@@ -44,21 +44,28 @@ func main() {
 
 	r := gin.Default()
 
+	// Without middleware
 	r.POST("/api/register", handlers.MakeRegisterHandler(a))
 	r.POST("/api/login", handlers.MakeLoginHandler(a))
 	r.POST("/api/practice", handlers.MakeLettersPracticeHandler(a)) 
 
 	auth := r.Group("/api", handlers.AuthMiddleware(a))
 	{
+		// User
 		auth.GET("/users", handlers.MakeListUsersHandler(a))
 		auth.GET("/profile", handlers.MakeProfileHandler(a))
 
-		auth.POST("/complete-lesson", handlers.MakeCompleteLessonHandler(a))
+		// Lesson
 		auth.GET("/lessons", handlers.MakeLessonsHandler(a))
 		auth.GET("/lessons/:id", handlers.MakeLessonByIDHandler(a))
+		auth.POST("/complete-lesson", handlers.MakeCompleteLessonHandler(a))
+
+		// Practice
 		auth.GET("/practice/:id", handlers.MakePracticeByLessonHandler(a))
 		auth.GET("/practice/replay/:id", handlers.MakeReplayLessonHandler(a))
 		auth.POST("/practice/submit", handlers.MakePracticeSubmitHandler(a))
+	
+		// Freemode
 		auth.GET("/freemode", handlers.MakeFreemodeHandler(a))
 		
 		// Friends
