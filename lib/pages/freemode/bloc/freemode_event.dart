@@ -1,6 +1,6 @@
 part of 'freemode_bloc.dart';
 
-class FreemodeEvent extends Equatable {
+abstract class FreemodeEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
@@ -10,7 +10,7 @@ class GetEvent extends FreemodeEvent {
   GetEvent({required this.mode});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [mode];
 }
 
 

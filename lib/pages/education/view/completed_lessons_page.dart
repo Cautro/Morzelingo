@@ -1,12 +1,8 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
-import 'package:morzelingo/pages/education/context/education_context.dart';
 import 'package:morzelingo/pages/loading_page.dart';
 
-import '../../../config.dart';
 import '../../../storage_context.dart';
 import '../bloc/education_bloc.dart';
 
@@ -51,7 +47,7 @@ class _CompletedLessonsPageState extends State<CompletedLessonsPage> {
                             width: double.infinity,
                             child: completed.isNotEmpty ? Column(
                               children: completed.map((item) {
-                                return Container(
+                                return SizedBox(
                                     width: double.infinity,
                                     child: GestureDetector(
                                       onTap: () {

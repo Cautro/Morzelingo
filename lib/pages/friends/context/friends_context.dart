@@ -11,22 +11,22 @@ class FriendsContext {
 
   Future<List> getData() async {
     String? token = await StorageService.getItem("token");
-    final res = await http.get(Uri.parse("${API}/api/friends"),
+    final res = await http.get(Uri.parse("$API/api/friends"),
         headers: {
           "Authorization": "Bearer $token"
         });
     final data = await jsonDecode(res.body);
-    List _friends = data["friends"];
-    print(_friends);
+    List friends = data["friends"];
+    print(friends);
 
-    return _friends;
+    return friends;
   }
 
   Future<Map> addHandler(code) async {
     bool success;
     String message;
     String? token = await StorageService.getItem("token");
-    final res = await http.post(Uri.parse("${API}/api/add-to-friend"),
+    final res = await http.post(Uri.parse("$API/api/add-to-friend"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
@@ -46,11 +46,11 @@ class FriendsContext {
   }
 
   Future<Map> deleteHandler(username) async {
-    print('${username}');
+    print('$username');
     String message;
     bool success;
     String? token = await StorageService.getItem("token");
-    final res = await http.post(Uri.parse("${API}/api/delete-friend"),
+    final res = await http.post(Uri.parse("$API/api/delete-friend"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",

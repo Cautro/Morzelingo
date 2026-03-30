@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:morzelingo/settings_context.dart';
-import 'package:morzelingo/storage_context.dart';
 import 'package:morzelingo/theme_controller.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -42,7 +41,7 @@ class _SettingsPageState extends State<SettingsPage> {
 }
 
 class _wpmSlider extends StatefulWidget {
-  const _wpmSlider({super.key});
+  const _wpmSlider();
 
   @override
   State<_wpmSlider> createState() => _wpmSliderState();
@@ -75,7 +74,7 @@ class _wpmSliderState extends State<_wpmSlider> {
           padding: EdgeInsets.all(16),
           child: Column(
             children: [
-              Text("${wpm} WPM - кол-во слов в минуту "),
+              Text("$wpm WPM - кол-во слов в минуту "),
               Slider(
                 value: wpm,
                 min: 5,
@@ -98,7 +97,7 @@ class _wpmSliderState extends State<_wpmSlider> {
 }
 
 class _themeController extends StatefulWidget {
-  const _themeController({super.key});
+  const _themeController();
 
   @override
   State<_themeController> createState() => _themeControllerState();
@@ -123,7 +122,7 @@ class _themeControllerState extends State<_themeController> {
 }
 
 class _langController extends StatefulWidget {
-  const _langController({super.key});
+  const _langController();
 
   @override
   State<_langController> createState() => _langControllerState();
@@ -170,7 +169,7 @@ class _langControllerState extends State<_langController> {
                   ),
                 ],
                 style: ButtonStyle(
-                    side: MaterialStatePropertyAll(BorderSide.none)
+                    side: WidgetStatePropertyAll(BorderSide.none)
                 ),
                 selected: {selected},
                 onSelectionChanged: (Set<String> newselect) {

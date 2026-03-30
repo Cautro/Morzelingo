@@ -1,12 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart' as http;
-import 'package:morzelingo/config.dart';
 import 'package:morzelingo/pages/friends/bloc/friends_bloc.dart';
 import 'package:morzelingo/pages/loading_page.dart';
-import 'package:morzelingo/storage_context.dart';
 import 'package:morzelingo/theme_controller.dart';
 
 import '../../../app_theme.dart';

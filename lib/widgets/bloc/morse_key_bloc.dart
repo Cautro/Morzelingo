@@ -87,7 +87,7 @@ class MorseKeyBloc extends Bloc<MorseKeyEvent, MorseKeyState> {
 
   Future<void> _onAddSpace(AddSpace event, Emitter<MorseKeyState> emit) async {
     if (state.decodedText.isNotEmpty && !state.decodedText.endsWith(' ')) {
-      final updated = state.decodedText + ' ';
+      final updated = '${state.decodedText} ';
       emit(state.copyWith(decodedText: updated));
     }
   }

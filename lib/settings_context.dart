@@ -14,7 +14,7 @@ class SettingsService {
       return 10;
     }
 
-    return int.parse(wpm!);
+    return int.parse(wpm);
   }
 
   static Future<void> setWpm(int value) async {

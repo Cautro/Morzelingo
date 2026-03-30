@@ -16,11 +16,6 @@ class _FreemodeTextPageState extends State<FreemodeTextPage> {
   String decoded = '';
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

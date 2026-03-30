@@ -15,9 +15,9 @@ class PracticeContext {
   Future<Map> getPracticeQuestion() async {
     String? id = await StorageService.getItem("lessonid");
     String? token = await StorageService.getItem("token");
-    print('id: ${id}, token ${token}');
+    print('id: $id, token $token');
     final lang = await SettingsService.getLang();
-    final res = await http.get(Uri.parse("${API}/api/practice/${id}?lang=${lang.trim()}"),
+    final res = await http.get(Uri.parse("$API/api/practice/$id?lang=${lang.trim()}"),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -34,7 +34,7 @@ class PracticeContext {
       var question = data["questions"][index]["question"].toString().trim();
       var answer = data["questions"][index]["answer"].toString().trim();
       var type = data["questions"][index]["type"];
-      print('eeeeee${index}, ${data["questions"].length}');
+      print('eeeeee$index, ${data["questions"].length}');
       if (index >= data["questions"].length - 1) {
         isLast = true;
       } else {
@@ -104,8 +104,8 @@ class PracticeContext {
   void completeLesson() async {
     String? id = await StorageService.getItem("lessonid");
     String? token = await StorageService.getItem("token");
-    print('token: ${token}, id: ${id}');
-    final res = await http.post(Uri.parse("${API}/api/complete-lesson"),
+    print('token: $token, id: $id');
+    final res = await http.post(Uri.parse("$API/api/complete-lesson"),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ class PracticeContext {
   Future<void> sendStats(List<SymbolUpdate> updates) async {
     String? token = await StorageService.getItem("token");
     final response = await http.post(
-      Uri.parse("${API}/api/practice/submit"),
+      Uri.parse("$API/api/practice/submit"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token",
@@ -179,7 +179,7 @@ class PracticeContext {
   void practiceChecker(bool correct) async {
     String? token = await StorageService.getItem("token");
     final res = await http.post(
-      Uri.parse("${API}/api/checker-practice"),
+      Uri.parse("$API/api/checker-practice"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token",
@@ -224,7 +224,7 @@ class PracticeContext {
     String? lang = await SettingsService.getLang();
     String? token = await StorageService.getItem("token");
     String encodedLetter = Uri.encodeQueryComponent(letter!);
-    final res = await http.post(Uri.parse("${API}/api/practice?letters=${encodedLetter}&lang=${lang}"),
+    final res = await http.post(Uri.parse("$API/api/practice?letters=$encodedLetter&lang=$lang"),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -237,7 +237,7 @@ class PracticeContext {
     switch (data["questions"][index]["type"]) {
       case "text":
         data["questions"][index]["answer"] =
-        await data["questions"][index]["question"].toString();
+        data["questions"][index]["question"].toString();
         break;
 
       case "audio":
@@ -270,11 +270,11 @@ class PracticeContext {
       answer = "";
       question = data["questions"][index]["question"];
       type = data["questions"][index]["type"];
-      print("last${isLast}");
+      print("last$isLast");
       switch (data["questions"][index]["type"]) {
         case "text":
           data["questions"][index]["answer"] =
-          await data["questions"][index]["question"].toString();
+          data["questions"][index]["question"].toString();
           answer = data["questions"][index]["answer"];
           break;
 

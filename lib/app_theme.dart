@@ -56,20 +56,20 @@ class AppTheme {
 
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
-        side: MaterialStatePropertyAll(BorderSide.none),
-        shape: MaterialStatePropertyAll(
+        side: WidgetStatePropertyAll(BorderSide.none),
+        shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        backgroundColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return primary;
           }
           return card;
         }),
-        foregroundColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        foregroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return Colors.white;
           }
           return AppTheme.textSecondary;
@@ -143,20 +143,20 @@ class AppTheme {
 
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
-        side: const MaterialStatePropertyAll(BorderSide.none),
-        shape: MaterialStatePropertyAll(
+        side: const WidgetStatePropertyAll(BorderSide.none),
+        shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        backgroundColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return Darkprimary;
           }
           return Darkcard;
         }),
-        foregroundColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        foregroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return Colors.white; // цвет текста выбранного
           }
           return AppTheme.DarktextSecondary; // цвет текста обычного

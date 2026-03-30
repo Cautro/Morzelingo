@@ -1,13 +1,6 @@
-import 'dart:convert';
-import 'dart:math';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:morzelingo/app_theme.dart';
-import 'package:morzelingo/config.dart';
-import 'package:morzelingo/settings_context.dart';
-import 'package:morzelingo/storage_context.dart';
 import '../bloc/authorization_bloc.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -83,14 +76,14 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             const SizedBox(height: 24),
                             SizedBox(
+                              width: double.infinity,
                               child: ElevatedButton(
                                   onPressed: () {
                                     context.read<AuthorizationBloc>().add(RegisterEvent(login: login, password: password, confirmpassword: confirmpassword, code: code, email: email));
                                   },
-                                  child: const Text("Зарегистрироваться", style: TextStyle(),),
-                                  style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 16))
+                                  style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 16)),
+                                  child: const Text("Зарегистрироваться", style: TextStyle(),)
                               ),
-                              width: double.infinity,
                             ),
                             const SizedBox(height: 8),
                             TextButton(

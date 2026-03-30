@@ -1,12 +1,8 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
 import 'package:morzelingo/pages/profile/bloc/profile_bloc.dart';
 
-import '../../../config.dart';
-import '../../../storage_context.dart';
 
 class LettersStatsPage extends StatefulWidget {
   const LettersStatsPage({super.key});

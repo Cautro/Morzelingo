@@ -27,8 +27,8 @@ class FreemodeRepository {
     String question;
     String answer;
     String? lang = await SettingsService.getLang();
-    final res = await http.get(Uri.parse("${API}/api/freemode?"
-        "mode=${mode}&lang=${lang}&count=1"),
+    final res = await http.get(Uri.parse("$API/api/freemode?"
+        "mode=$mode&lang=$lang&count=1"),
       headers: await _headers(),
     );
     final data = jsonDecode(res.body);
@@ -45,7 +45,7 @@ class FreemodeRepository {
 
   Future<void> checkerPractice(bool correct) async {
     final res = await http.post(
-      Uri.parse("${API}/api/checker-practice"),
+      Uri.parse("$API/api/checker-practice"),
       headers: await _headers(),
       body: jsonEncode(
         {"correct": correct},
@@ -57,7 +57,7 @@ class FreemodeRepository {
   }
 
   Future<void> completeFreemode() async {
-    final res = await http.post(Uri.parse("${API}/api/freemode/complete"),
+    final res = await http.post(Uri.parse("$API/api/freemode/complete"),
       headers: await _headers(),
     );
     if (!_checkRes(res.statusCode)) {

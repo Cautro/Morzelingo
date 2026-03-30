@@ -1,10 +1,7 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/pages/duels/bloc/duels_bloc.dart';
-import 'package:morzelingo/pages/duels/service/duels_service.dart';
 import 'package:morzelingo/widgets/view/morse_key.dart';
 
 import '../../../theme_controller.dart';
@@ -111,7 +108,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      print("${widget.answer}");
+                      print(widget.answer);
                       context.read<DuelsBloc>().add(AnswerEvent(answer));
                     },
                     child: Text("Ответить"),
@@ -124,8 +121,8 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                     onPressed: () {
                       leaveDialog();
                     },
-                    child: Text("Покинуть дуэль"),
                     style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+                    child: Text("Покинуть дуэль"),
                   ),
                 ),
               ],

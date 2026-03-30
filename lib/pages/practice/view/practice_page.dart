@@ -1,17 +1,11 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
 import 'package:morzelingo/pages/loading_page.dart';
-import 'package:morzelingo/pages/practice/context/practice_context.dart';
 import 'package:morzelingo/pages/practice/view/practice_audio_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_morse_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_text_page.dart';
 
-import '../../../config.dart';
-import '../../../settings_context.dart';
-import '../../../storage_context.dart';
 import '../bloc/practice_bloc.dart';
 
 class PracticePage extends StatefulWidget {

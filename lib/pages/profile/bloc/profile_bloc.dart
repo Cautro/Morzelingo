@@ -9,12 +9,12 @@ part 'profile_state.dart';
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState>{
   ProfileBloc() : super(ProfileInitial()) {
     on<GetProfileDataEvent>((event, emit) async {
-      var _data = await ProfileContext().getProfileData();
-      emit(ProfileDataState(username: _data["username"], email: _data["email"], coins: _data["coins"], lessondone_en: _data["lessondone_en"], lessondone_ru: _data["lessondone_ru"], level: _data["level"], needxp: _data["needxp"], referral: _data["referral"], streak: _data["streak"], xp: _data["xp"]));
+      var data = await ProfileContext().getProfileData();
+      emit(ProfileDataState(username: data["username"], email: data["email"], coins: data["coins"], lessondone_en: data["lessondone_en"], lessondone_ru: data["lessondone_ru"], level: data["level"], needxp: data["needxp"], referral: data["referral"], streak: data["streak"], xp: data["xp"]));
     });
     on<GetStatsEvent>((event, emit) async {
-      var _data = await ProfileContext().getStats();
-      emit(StatsState(stats: _data));
+      var data = await ProfileContext().getStats();
+      emit(StatsState(stats: data));
     });
     on<LogoutEvent>((event, emit) async {
       await StorageService.clearAll();

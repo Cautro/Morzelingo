@@ -1,16 +1,8 @@
-import 'dart:ffi';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
-import 'package:morzelingo/app_theme.dart';
-import 'package:morzelingo/config.dart';
 import 'package:morzelingo/pages/education/bloc/education_bloc.dart';
-import 'package:morzelingo/pages/education/context/education_context.dart';
 import 'package:morzelingo/pages/loading_page.dart';
-import 'package:morzelingo/settings_context.dart';
-import 'dart:convert';
 
 import 'package:morzelingo/storage_context.dart';
 
@@ -52,7 +44,7 @@ class _EducationPageState extends State<EducationPage> {
                         child: SingleChildScrollView(
                             padding: EdgeInsets.all(24),
                             child: Center(
-                              child: Container(
+                              child: SizedBox(
                                   width: double.infinity,
                                   child: Column(
                                     children: [

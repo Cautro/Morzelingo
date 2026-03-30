@@ -1,6 +1,6 @@
 part of "authorization_bloc.dart";
 
-class AuthorizationEvent extends Equatable {
+abstract class AuthorizationEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }

@@ -1,15 +1,10 @@
-import 'package:cupertino_native/components/tab_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:morzelingo/pages/duels/view/duels_flow_page.dart';
-import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
 import 'package:morzelingo/pages/education/view/education_page.dart';
-import 'package:morzelingo/pages/freemode/view/freemode_text_page.dart';
 import 'package:morzelingo/pages/practice/view/letters_page.dart';
-import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
 import 'package:morzelingo/pages/profile/view/profile_page.dart';
 import '../app_theme.dart';
 import 'freemode/view/freemode_flow_page.dart';
-import 'freemode/view/freemode_page.dart';
 
 class HomeTabsPage extends StatefulWidget {
   const HomeTabsPage({super.key});

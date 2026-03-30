@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:morzelingo/pages/authorization/view/authorization_flow_page.dart';
-import 'package:morzelingo/pages/authorization/view/login_page.dart';
-import 'package:morzelingo/pages/authorization/view/register_page.dart';
 import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_flow_page.dart';
-import 'package:morzelingo/pages/freemode/view/freemode_page.dart';
 import 'package:morzelingo/pages/friends/view/friends_page.dart';
 import 'package:morzelingo/pages/profile/view/letters_stats_page.dart';
 import 'package:morzelingo/pages/profile/view/profile_page.dart';
@@ -13,8 +10,6 @@ import 'package:yandex_mobileads/mobile_ads.dart';
 import 'app_theme.dart';
 import 'pages/home_page.dart';
 import 'package:morzelingo/pages/education/view/completed_lessons_page.dart';
-import 'package:morzelingo/pages/freemode/view/freemode_audio_page.dart';
-import 'package:morzelingo/pages/freemode/view/freemode_text_page.dart';
 import 'package:morzelingo/pages/education/view/lesson_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_page.dart';
@@ -33,6 +28,8 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -58,7 +55,7 @@ class _MyAppState extends State<MyApp> {
   late BannerAd banner;
   var isBannerAlreadyCreated = false;
 
-  _loadAd() {
+  void _loadAd() {
     banner = _createBanner();
     banner.loadAd(adRequest: AdRequest());
     setState(() {
@@ -66,7 +63,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  _createBanner() {
+  BannerAd _createBanner() {
     return BannerAd(
         adUnitId: 'R-M-18875854-1', // or 'demo-banner-yandex'
         adSize: _getAdSize(),

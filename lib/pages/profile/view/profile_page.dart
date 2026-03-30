@@ -1,14 +1,9 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import 'package:http/http.dart' as http;
 import "package:morzelingo/app_theme.dart";
 import "package:morzelingo/pages/loading_page.dart";
 import "package:morzelingo/pages/profile/bloc/profile_bloc.dart";
 import "package:morzelingo/settings_context.dart";
-import "package:morzelingo/storage_context.dart";
-import "dart:convert";
-import "package:shared_preferences/shared_preferences.dart";
-import "package:morzelingo/config.dart";
 
 import "../../../theme_controller.dart";
 
@@ -132,15 +127,15 @@ class _ProfilePageState extends State<ProfilePage> {
                             SizedBox(height: 8,),
                             Text(username!, style: Theme.of(context).textTheme.titleLarge,),
                             _ProfileCard(
-                              username: "${username}" ?? "",
-                              email: "${email}" ?? "",
-                              xp: "${xp}" ?? "",
+                              username: "$username" ?? "",
+                              email: "$email" ?? "",
+                              xp: "$xp" ?? "",
                               lessondone: "${SettingsService.getLang() == "en" ? lessondone_en : lessondone_ru}" ?? "",
-                              coins: "${coins}" ?? "",
-                              level: "${level}" ?? "",
-                              streak: "${streak}" ?? "",
-                              needxp: "${needxp}" ?? "",
-                              refferal: "${referral}" ?? "",
+                              coins: "$coins" ?? "",
+                              level: "$level" ?? "",
+                              streak: "$streak" ?? "",
+                              needxp: "$needxp" ?? "",
+                              refferal: "$referral" ?? "",
                             ),
                             SizedBox(
                                 width: double.infinity,
@@ -182,7 +177,6 @@ class _ProfileCard extends StatelessWidget {
   final String refferal;
 
   const _ProfileCard({
-    super.key,
     required this.username,
     required this.email,
     required this.xp,
@@ -215,12 +209,12 @@ class _ProfileCard extends StatelessWidget {
           ),
           Row(
             children: [
-              _ProfileItem(text: "Опыта до повышения: ${needxp}", icon: Icon(Icons.upgrade, color: Colors.amber ,)),
+              _ProfileItem(text: "Опыта до повышения: $needxp", icon: Icon(Icons.upgrade, color: Colors.amber ,)),
             ],
           ),
           Row(
             children: [
-              _ProfileItem(text: "Реферальный код: ${refferal}", icon: Icon(Icons.link, color: Colors.blue,))
+              _ProfileItem(text: "Реферальный код: $refferal", icon: Icon(Icons.link, color: Colors.blue,))
             ],
           ),
           SizedBox(height: 8,),
@@ -255,7 +249,6 @@ class _ProfileItem extends StatelessWidget {
   final String text;
   final Icon icon;
   const _ProfileItem({
-    super.key,
     required this.text,
     required this.icon,
   });

@@ -15,8 +15,8 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
     on<LoginEvent>((event, emit) async {
       print('datas: ${event.login} ${event.password}');
       try {
-        final Map<String, dynamic> _loginData = await _repository.LoginHandler(event.login, event.password);
-        emit(state.copyWith(status: AuthorizationStatus.success, message: _loginData["message"]));
+        final Map<String, dynamic> loginData = await _repository.LoginHandler(event.login, event.password);
+        emit(state.copyWith(status: AuthorizationStatus.success, message: loginData["message"]));
       } catch (e) {
         emit(state.copyWith(status: AuthorizationStatus.error, message: e.toString()));
       }
@@ -24,13 +24,13 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
     on<RegisterEvent>((event, emit) async {
       try {
         await _service.checkRegister(event.login, event.password, event.confirmpassword, event.email);
-        final Map<String, dynamic> _registerData = await _repository.RegisterHandler(event.login, event.password, event.email, event.code);
-        emit(state.copyWith(status: AuthorizationStatus.success, message: _registerData["message"]));
+        final Map<String, dynamic> registerData = await _repository.RegisterHandler(event.login, event.password, event.email, event.code);
+        emit(state.copyWith(status: AuthorizationStatus.success, message: registerData["message"]));
       } catch (e) {
         emit(state.copyWith(status: AuthorizationStatus.error, message: e.toString()));
       }
     });
-    on<ChangeModeEvent>((event, emit) async {
+    on<ChangeModeEvent>((event, emit) {
       if (state.mode == AuthorizationMode.login) {
         emit(state.copyWith(mode: AuthorizationMode.register));
       } else {
@@ -39,8 +39,8 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
     });
     on<CheckLoginedEvent>((event, emit) async {
       try {
-        final bool _checkData = await _repository.checkLogined();
-        if (_checkData) {
+        final bool checkData = await _repository.checkLogined();
+        if (checkData) {
           emit(state.copyWith(status: AuthorizationStatus.success, message: "Вход успешен"));
         }
       } catch (e) {}

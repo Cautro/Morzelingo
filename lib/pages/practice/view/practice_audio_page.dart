@@ -1,14 +1,10 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart' as http;
 
 import '../../../app_theme.dart';
-import '../../../config.dart';
-import '../../../storage_context.dart';
 import '../../../theme_controller.dart';
 import '../bloc/practice_bloc.dart';
 import '../context/practice_context.dart';
@@ -30,7 +26,7 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
   final player = AudioPlayer();
 
   String text = "";
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -38,6 +34,7 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
     print(widget.question);
   }
 
+  @override
   void dispose() {
     player.stop();
     player.dispose();
@@ -76,7 +73,7 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
                               borderRadius: BorderRadiusGeometry.circular(16),
                             ),
                             SizedBox(height: 8,),
-                            Container(
+                            SizedBox(
                                 width: double.infinity,
                                 child: Card(
                                   child: Padding(

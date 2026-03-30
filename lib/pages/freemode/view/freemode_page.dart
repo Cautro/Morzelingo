@@ -12,7 +12,7 @@ class FreemodePage extends StatelessWidget {
           child: Padding(
               padding: EdgeInsetsGeometry.all(24),
               child: Center(
-                child: Container(
+                child: SizedBox(
                     width: double.infinity,
                     child: Card(
                         child: Padding(

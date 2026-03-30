@@ -66,7 +66,7 @@ class _DuelsActivePageState extends State<DuelsActivePage> {
                 child: Column(
                   children: [
                     Text("Ваш противник:", style: Theme.of(context).textTheme.bodyLarge,),
-                    Text("${widget.opponent}", style: Theme.of(context).textTheme.titleLarge,),
+                    Text(widget.opponent, style: Theme.of(context).textTheme.titleLarge,),
                     const SizedBox(height: 8,),
                     SizedBox(
                       width: double.infinity,

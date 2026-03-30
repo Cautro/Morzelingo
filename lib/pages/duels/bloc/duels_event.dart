@@ -16,7 +16,7 @@ class GetStatusEvent extends DuelsEvent {}
 class GetTasksEvent extends DuelsEvent {}
 
 class AnswerEvent extends DuelsEvent {
-  AnswerEvent(this.answer);
+  const AnswerEvent(this.answer);
   final String answer;
 
   @override
@@ -28,7 +28,7 @@ class LeaveEvent extends DuelsEvent {}
 class CompleteEvent extends DuelsEvent {}
 
 class PlayMorseEvent extends DuelsEvent {
-  PlayMorseEvent({required this.question});
+  const PlayMorseEvent({required this.question});
   final String question;
 
   @override

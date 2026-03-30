@@ -1,14 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart' as http;
-import 'package:morzelingo/pages/practice/context/practice_context.dart';
 
 import '../../../app_theme.dart';
-import '../../../config.dart';
-import '../../../storage_context.dart';
 import '../../../theme_controller.dart';
 import '../bloc/practice_bloc.dart';
 
@@ -27,7 +21,7 @@ class PracticeMorsePage extends StatefulWidget {
 
 class _PracticeMorsePageState extends State<PracticeMorsePage> {
   String text = "";
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -66,7 +60,7 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
                               borderRadius: BorderRadiusGeometry.circular(16),
                             ),
                             SizedBox(height: 8,),
-                            Container(
+                            SizedBox(
                                 width: double.infinity,
                                 child: Card(
                                   child: Padding(

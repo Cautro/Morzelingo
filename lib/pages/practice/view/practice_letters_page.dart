@@ -1,17 +1,11 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
 import 'package:morzelingo/pages/practice/bloc/practice_bloc.dart';
-import 'package:morzelingo/pages/practice/context/practice_context.dart';
 import 'package:morzelingo/pages/practice/view/practice_audio_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_morse_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_text_page.dart';
-import 'package:morzelingo/settings_context.dart';
 
-import '../../../config.dart';
-import '../../../storage_context.dart';
 
 class PracticeLettersPage extends StatefulWidget {
   const PracticeLettersPage({super.key});
@@ -70,7 +64,7 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
               case "text":
                 return Scaffold(
                   appBar: AppBar(
-                      title: Text("Отработайте букву ${letter}")
+                      title: Text("Отработайте букву $letter")
                   ),
                   body: PracticeTextPage(answer: answer, question: question, isLast: isLast, isLetter: true, currentquestion: (1 / data["questions"].length * (index + 1)),
                     onAnswer: () {
@@ -81,7 +75,7 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
               case "audio":
                 return Scaffold(
                     appBar: AppBar(
-                        title: Text("Отработайте букву ${letter}")
+                        title: Text("Отработайте букву $letter")
                     ),
                     body: PracticeAudioPage(answer: answer, question: question, isLetter: true, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
                       onAnswer: () {
@@ -91,7 +85,7 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
               case "morse":
                 return Scaffold(
                     appBar: AppBar(
-                        title: Text("Отработайте букву ${letter}")
+                        title: Text("Отработайте букву $letter")
                     ),
                     body: PracticeMorsePage(answer: answer, question: question, isLetter: true, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
                       onAnswer: () {
@@ -99,7 +93,7 @@ class _PracticeLettersPageState extends State<PracticeLettersPage> {
                       } ,)
                 );
               default: return Scaffold(body: Text("Error"),);
-            };
+            }
           },
         ),
       ),

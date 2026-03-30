@@ -13,7 +13,7 @@ class FreemodeAudioPage extends StatefulWidget {
 
 class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
   String text = "";
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -37,7 +37,7 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
           padding: EdgeInsetsGeometry.all(24),
           child: Column(
             children: [
-              Container(
+              SizedBox(
                   width: double.infinity,
                   child: Card(
                     child: Padding(

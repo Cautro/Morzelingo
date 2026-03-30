@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart' as http;
 import 'package:morzelingo/app_theme.dart';
-import 'package:morzelingo/config.dart';
 import 'package:morzelingo/pages/practice/bloc/practice_bloc.dart';
-import 'package:morzelingo/pages/practice/context/practice_context.dart';
-import 'package:morzelingo/storage_context.dart';
-import 'dart:convert';
 import 'package:morzelingo/widgets/view/morse_key.dart';
 
 import '../../../theme_controller.dart';

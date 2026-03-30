@@ -7,22 +7,22 @@ part 'friends_state.dart';
 class FriendsBloc extends Bloc<FriendsEvent, FriendsState>{
   FriendsBloc() : super(FriendsInitial()) {
     on<GetFriendsEvent>((event, emit) async {
-      List _friends = await FriendsContext().getData();
-      emit(FriendsListState(friends: _friends));
+      List friends = await FriendsContext().getData();
+      emit(FriendsListState(friends: friends));
     });
     on<AddFriendEvent>((event, emit) async {
-      Map _data = await FriendsContext().addHandler(event.code);
-      emit(AddFriendState(message: _data["message"], success: _data["success"]));
+      Map data = await FriendsContext().addHandler(event.code);
+      emit(AddFriendState(message: data["message"], success: data["success"]));
 
-      List _friends = await FriendsContext().getData();
-      emit(FriendsListState(friends: _friends));
+      List friends = await FriendsContext().getData();
+      emit(FriendsListState(friends: friends));
     });
     on<DeleteFriendEvent>((event, emit) async {
-      Map _data = await FriendsContext().deleteHandler(event.username);
-      emit(DeleteFriendState(message: _data["message"], success: _data["success"]));
+      Map data = await FriendsContext().deleteHandler(event.username);
+      emit(DeleteFriendState(message: data["message"], success: data["success"]));
 
-      List _friends = await FriendsContext().getData();
-      emit(FriendsListState(friends: _friends));
+      List friends = await FriendsContext().getData();
+      emit(FriendsListState(friends: friends));
     });
   }
 }

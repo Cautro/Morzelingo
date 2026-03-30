@@ -1,14 +1,5 @@
-import 'dart:convert';
-import 'dart:math';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:morzelingo/app_theme.dart';
-import 'package:morzelingo/config.dart';
-import 'package:morzelingo/pages/duels/bloc/duels_bloc.dart';
-import 'package:morzelingo/settings_context.dart';
-import 'package:morzelingo/storage_context.dart';
 import '../bloc/authorization_bloc.dart';
 
 class LoginPage extends StatefulWidget {
@@ -56,17 +47,17 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 24),
                             SizedBox(
+                              width: double.infinity,
                               child: ElevatedButton(
                                   onPressed: () {
-                                    print("logi ${login}");
+                                    print("logi $login");
                                     context.read<AuthorizationBloc>().add(
                                       LoginEvent(login: login, password: password),
                                     );
                                   },
-                                  child: const Text("Войти", style: TextStyle(),),
-                                  style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 16))
+                                  style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 16)),
+                                  child: const Text("Войти", style: TextStyle(),)
                               ),
-                              width: double.infinity,
                             ),
                             const SizedBox(height: 8),
                             TextButton(

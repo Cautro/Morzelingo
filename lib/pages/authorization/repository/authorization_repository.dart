@@ -19,25 +19,25 @@ class AuthorizationRepository {
   }
 
   Future<Map<String, dynamic>> LoginHandler(String login, String password) async {
-    final res = await http.post(Uri.parse("${API}/api/login"),
+    final res = await http.post(Uri.parse("$API/api/login"),
         headers: _headers(),
         body: jsonEncode({
           "username": login,
           "password": password
         })
     );
-    final _json = jsonDecode(res.body);
-    print('${_json}');
+    final json = jsonDecode(res.body);
+    print('$json');
     if (_checkRes(res.statusCode)) {
-      await StorageService.setItem("token", _json["token"]);
+      await StorageService.setItem("token", json["token"]);
       return {"success": true, "message": "Вход успешен"};
     } else {
-      throw Except(_json["error"].toString());
+      throw Except(json["error"].toString());
     }
   }
 
   Future<Map<String, dynamic>> RegisterHandler(String login, String password, String email, String code) async {
-    final res = await http.post(Uri.parse("${API}/api/register"),
+    final res = await http.post(Uri.parse("$API/api/register"),
         headers: _headers(),
         body: jsonEncode({
           "username": login,
@@ -46,24 +46,24 @@ class AuthorizationRepository {
           "referral_code": code,
         })
     );
-    final _json = jsonDecode(res.body);
-    print('${_json}');
+    final json = jsonDecode(res.body);
+    print('$json');
     if (_checkRes(res.statusCode)) {
-      await StorageService.setItem("token", _json["token"]);
+      await StorageService.setItem("token", json["token"]);
       return {"success": true, "message": "Регистрация успешна"};
     } else {
-      throw Except(_json["error"].toString());
+      throw Except(json["error"].toString());
     }
   }
 
   Future<bool> checkLogined() async {
     String? token = await StorageService.getItem("token");
-    final res = await http.get(Uri.parse("${API}/api/profile"),
+    final res = await http.get(Uri.parse("$API/api/profile"),
       headers: {
         'Authorization': 'Bearer $token',
       },
     );
-    final data = await jsonDecode(res.body);
+    final data = jsonDecode(res.body);
     print(data);
     if (!_checkRes(res.statusCode)) {
       throw Except("Ваши данные для авторизации недействительны");

@@ -32,7 +32,7 @@ class FreemodeFlowPage extends StatelessWidget {
               case FreemodeStatus.idle:
                 return FreemodePage();
               case FreemodeStatus.error:
-                return Center(child: Text('${state.message ?? "Непредвиденная ошибка"}'),);
+                return Center(child: Text(state.message ?? "Непредвиденная ошибка"),);
               case FreemodeStatus.active:
                 switch (state.mode) {
                   case FreemodeMode.audio:
@@ -40,7 +40,7 @@ class FreemodeFlowPage extends StatelessWidget {
                   case FreemodeMode.text:
                     return FreemodeTextPage(question: state.question, answer: state.answer,);
                   default:
-                    return Center(child: Text("${state.message ?? "Непредвиденная ошибка"}"),);
+                    return Center(child: Text(state.message ?? "Непредвиденная ошибка"),);
                 }
             }
           },
