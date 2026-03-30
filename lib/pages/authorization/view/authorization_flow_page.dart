@@ -12,12 +12,14 @@ import '../../../app_theme.dart';
 class AuthorizationFlowPage extends StatelessWidget {
   const AuthorizationFlowPage({super.key});
 
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AuthorizationBloc(repository: AuthorizationRepository(), service: AuthorizationService()),
+      create: (_) => AuthorizationBloc(repository: AuthorizationRepository(), service: AuthorizationService())..add(CheckLoginedEvent()),
       child: BlocConsumer<AuthorizationBloc, AuthorizationState>(
         listener: (context, state) {
+          print('cheeeeeeck');
           if (state.status != AuthorizationStatus.idle) {
             Fluttertoast.showToast(
               msg: state.message.toString(),

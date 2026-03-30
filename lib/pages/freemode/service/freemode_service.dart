@@ -1,5 +1,4 @@
 import 'package:audioplayers/audioplayers.dart';
-
 import '../../../settings_context.dart';
 
 class FreemodeService {

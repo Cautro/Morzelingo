@@ -55,4 +55,19 @@ class AuthorizationRepository {
       throw Except(_json["error"].toString());
     }
   }
+
+  Future<bool> checkLogined() async {
+    String? token = await StorageService.getItem("token");
+    final res = await http.get(Uri.parse("${API}/api/profile"),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    final data = await jsonDecode(res.body);
+    print(data);
+    if (!_checkRes(res.statusCode)) {
+      throw Except("Ваши данные для авторизации недействительны");
+    }
+    return true;
+  }
 }

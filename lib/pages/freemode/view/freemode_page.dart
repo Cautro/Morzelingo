@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:morzelingo/pages/freemode/bloc/freemode_bloc.dart';
 
-
 class FreemodePage extends StatelessWidget {
   const FreemodePage({super.key});
 

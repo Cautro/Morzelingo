@@ -22,12 +22,6 @@ class _LoginPageState extends State<LoginPage> {
   String login = '';
   String password = '';
 
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

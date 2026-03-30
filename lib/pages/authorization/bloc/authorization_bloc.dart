@@ -37,5 +37,13 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
         emit(state.copyWith(mode: AuthorizationMode.login));
       }
     });
+    on<CheckLoginedEvent>((event, emit) async {
+      try {
+        final bool _checkData = await _repository.checkLogined();
+        if (_checkData) {
+          emit(state.copyWith(status: AuthorizationStatus.success, message: "Вход успешен"));
+        }
+      } catch (e) {}
+    });
   }
 }
