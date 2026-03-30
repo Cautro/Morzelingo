@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart';
-import 'package:morzelingo/pages/duels/bloc/duels_bloc.dart';
 import 'package:morzelingo/pages/freemode/repository/freemode_repository.dart';
 import 'package:morzelingo/pages/freemode/service/freemode_service.dart';
 part 'freemode_event.dart';
@@ -22,7 +20,7 @@ class FreemodeBloc extends Bloc<FreemodeEvent, FreemodeState> {
         final Map<String, String> getQuestion = await _repository.getQuestion(mode);
         emit(state.copyWith(question: getQuestion["question"], answer: getQuestion["answer"],  mode: event.mode, status: FreemodeStatus.active));
       } catch (e) {
-        emit(state.copyWith(success: false, status: FreemodeStatus.error, message: '${e}'));
+        emit(state.copyWith(success: false, status: FreemodeStatus.error, message: e.toString()));
       }
     });
     on<AnswerEvent>((event, emit) async {
@@ -31,24 +29,18 @@ class FreemodeBloc extends Bloc<FreemodeEvent, FreemodeState> {
         final bool isRight = await _service.answerHandler(event.text, event.answer);
         await _repository.checkerPractice(isRight);
         await _repository.completeFreemode();
-        if (isRight) {
-          add(GetEvent(mode: state.mode!));
-          emit(state.copyWith(success: true, message: "Правильно"));
-          emit(state.copyWith(success: null, message: null));
-        } else {
-          emit(state.copyWith(success: false, message: "Неправильно"));
-          emit(state.copyWith(success: null, message: null));
-        }
-        emit(state.copyWith(isLoading: false));
+          emit(state.copyWith(success: isRight, message: isRight ? "Правильно" : "Неправильно",));
+          emit(state.copyWith(success: null, message: null, isLoading: false));
+          if (isRight) { add(GetEvent(mode: state.mode!)); }
       } catch (e) {
-        emit(state.copyWith(success: false, status: FreemodeStatus.error, message: '${e}'));
+        emit(state.copyWith(success: false, status: FreemodeStatus.error, message: e.toString()));
       }
     });
     on<AudioPlayEvent>((event, emit) async {
       try {
         await _service.playMorse(event.question);
       } catch (e) {
-        emit(state.copyWith(success: false, status: FreemodeStatus.error, message: '${e}'));
+        emit(state.copyWith(success: false, status: FreemodeStatus.error, message: e.toString()));
       }
     });
   }

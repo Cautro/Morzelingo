@@ -1,16 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart' as http;
 import 'package:morzelingo/pages/freemode/bloc/freemode_bloc.dart';
-
-import '../../../app_theme.dart';
-import '../../../config.dart';
-import '../../../settings_context.dart';
-import '../../../storage_context.dart';
 
 class FreemodeAudioPage extends StatefulWidget {
   final String question;
@@ -28,6 +18,12 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

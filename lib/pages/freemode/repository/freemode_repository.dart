@@ -6,7 +6,15 @@ import '../../../storage_context.dart';
 
 class FreemodeRepository {
 
-  Future<Map<String, String>> headers() async {
+  bool _checkRes(int code) {
+    if (code <= 299 && code >= 200) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<Map<String, String>> _headers() async {
     String? token = await StorageService.getItem("token");
     return {
       "Content-Type": "application/json",
@@ -20,11 +28,11 @@ class FreemodeRepository {
     String? lang = await SettingsService.getLang();
     final res = await http.get(Uri.parse("${API}/api/freemode?"
         "mode=${mode}&lang=${lang}&count=1"),
-      headers: await headers(),
+      headers: await _headers(),
     );
     final data = jsonDecode(res.body);
     print(data);
-    if (res.statusCode == 200) {
+    if (_checkRes(res.statusCode)) {
       question = data["questions"][0]["question"];
       answer = data["questions"][0]["answer"];
       print(question);
@@ -37,17 +45,23 @@ class FreemodeRepository {
   Future<void> checkerPractice(bool correct) async {
     final res = await http.post(
       Uri.parse("${API}/api/checker-practice"),
-      headers: await headers(),
+      headers: await _headers(),
       body: jsonEncode(
         {"correct": correct},
       ),
     );
+    if (!_checkRes(res.statusCode)) {
+      throw Exception("Произошла ошибка");
+    }
   }
 
   Future<void> completeFreemode() async {
     final res = await http.post(Uri.parse("${API}/api/freemode/complete"),
-      headers: await headers(),
+      headers: await _headers(),
     );
+    if (!_checkRes(res.statusCode)) {
+      throw Exception("Произошла ошибка");
+    }
   }
 
 }

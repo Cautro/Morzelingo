@@ -6,7 +6,7 @@ class FreemodeService {
 
   Future<void> playMorse(String question) async {
 
-    if (question.length < 1) {
+    if (question.isEmpty) {
       throw Exception("Воспроизводимый текст - пуст");
     }
 
