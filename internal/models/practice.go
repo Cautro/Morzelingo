@@ -21,3 +21,7 @@ type SymbolStat struct {
 	Correct int    `json:"correct"`
 	Wrong   int    `json:"wrong"`
 }
+
+type Ok struct {
+	Status bool `json:"status"`
+}

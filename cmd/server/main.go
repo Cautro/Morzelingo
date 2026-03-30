@@ -74,6 +74,7 @@ func main() {
 
 		// Freemode
 		auth.GET("/freemode", handlers.MakeFreemodeHandler(practiceService))
+		auth.POST("/freemode/complite")
 
 		// Friends
 		auth.GET("/friends", handlers.MakeListFriendHandler(userService))
