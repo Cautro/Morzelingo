@@ -2,24 +2,19 @@ part of 'freemode_bloc.dart';
 
 class FreemodeEvent {}
 
-class TextGetEvent extends FreemodeEvent {}
-
-class TextAnswerEvent extends FreemodeEvent {
-  TextAnswerEvent({required this.answer, required this.decoded});
-  final decoded;
-  final answer;
+class GetEvent extends FreemodeEvent {
+  final FreemodeMode mode;
+  GetEvent({required this.mode});
 }
 
-class AudioGetEvent extends FreemodeEvent {}
 
-class AudioAnswerEvent extends FreemodeEvent {
-  AudioAnswerEvent({required this.answer, required this.decoded});
-  final decoded;
+class AnswerEvent extends FreemodeEvent {
+  AnswerEvent({required this.answer, required this.text});
+  final text;
   final answer;
 }
 
 class AudioPlayEvent extends FreemodeEvent {
-  AudioPlayEvent({required this.isPlaying, required this.question});
-  final isPlaying;
+  AudioPlayEvent({required this.question});
   final question;
 }

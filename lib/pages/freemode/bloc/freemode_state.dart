@@ -1,37 +1,61 @@
 part of 'freemode_bloc.dart';
 
-class FreemodeState {}
-
-class FreemodeInitial extends FreemodeState {}
-
-class TextGetState extends FreemodeState {
-  TextGetState({this.question, this.answer, this.success});
-  final question;
-  final answer;
-  final success;
+enum FreemodeStatus {
+  idle,
+  error,
+  active,
 }
 
-class TextAnswerState extends FreemodeState {
-  TextAnswerState({required this.success, required this.message});
-  final message;
-  final success;
+enum FreemodeMode {
+  text,
+  audio,
 }
 
-class AudioGetState extends FreemodeState {
-  AudioGetState({this.question, this.answer, this.success});
-  final question;
-  final answer;
-  final success;
+class FreemodeState extends Equatable {
+
+  final bool isLoading;
+  final String question;
+  final String answer;
+  final String? message;
+  final bool? success;
+  final FreemodeStatus status;
+  final FreemodeMode? mode;
+
+  const FreemodeState({
+    this.isLoading = false,
+    this.question = "",
+    this.answer = "",
+    this.message,
+    this.success,
+    this.status = FreemodeStatus.idle,
+    this.mode,
+  });
+
+  FreemodeState copyWith({
+    bool? isLoading,
+    String? question,
+    String? answer,
+    String? message,
+    bool? success,
+    FreemodeStatus? status,
+    FreemodeMode? mode
+  }) {
+    return FreemodeState(
+      message: message ?? this.message,
+      success: success ?? this.success,
+      status: status ?? this.status,
+      isLoading: isLoading ?? this.isLoading,
+      answer: answer ?? this.answer,
+      question: question ?? this.question,
+      mode: mode ?? this.mode
+    );
+  }
+
+
+  @override
+  List<Object?> get props => [
+    isLoading, question, answer, message, success, status, mode
+  ];
+
 }
 
-class AudioAnswerState extends FreemodeState {
-  AudioAnswerState({required this.success, required this.message});
-  final message;
-  final success;
-}
-
-class AudioPlayState extends FreemodeState {
-  AudioPlayState({required this.isPlaying, required this.success});
-  final isPlaying;
-  final success;
-}

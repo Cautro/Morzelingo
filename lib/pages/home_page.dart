@@ -8,6 +8,7 @@ import 'package:morzelingo/pages/practice/view/letters_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
 import 'package:morzelingo/pages/profile/view/profile_page.dart';
 import '../app_theme.dart';
+import 'freemode/view/freemode_flow_page.dart';
 import 'freemode/view/freemode_page.dart';
 
 class HomeTabsPage extends StatefulWidget {
@@ -23,7 +24,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
   // Список экранов для вкладок
   final List<Widget> _screens = [
     EducationPage(),
-    FreemodePage(),
+    FreemodeFlowPage(),
     DuelsFlowPage(),
     LettersPage(),
     ProfilePage(),

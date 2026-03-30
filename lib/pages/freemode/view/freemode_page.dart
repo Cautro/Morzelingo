@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:morzelingo/pages/freemode/bloc/freemode_bloc.dart';
+
 
 class FreemodePage extends StatefulWidget {
   const FreemodePage({super.key});
@@ -35,7 +38,7 @@ class _FreemodePageState extends State<FreemodePage> {
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  Navigator.pushNamed(context, "/freemodeaudio");
+                                  context.read<FreemodeBloc>().add(GetEvent(mode: FreemodeMode.audio));
                                 },
                                 child: Text("Играть в режиме аудио", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),),
                               ),
@@ -45,7 +48,7 @@ class _FreemodePageState extends State<FreemodePage> {
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  Navigator.pushNamed(context, "/freemodetext");
+                                  context.read<FreemodeBloc>().add(GetEvent(mode: FreemodeMode.text));
                                 },
                                 child: Text("Играть в режиме текста", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),),
                               ),

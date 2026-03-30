@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:morzelingo/pages/authorization/view/login_page.dart';
 import 'package:morzelingo/pages/authorization/view/register_page.dart';
 import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
+import 'package:morzelingo/pages/freemode/view/freemode_flow_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_page.dart';
 import 'package:morzelingo/pages/friends/view/friends_page.dart';
 import 'package:morzelingo/pages/profile/view/letters_stats_page.dart';
@@ -82,9 +83,7 @@ class _MyAppState extends State<MyApp> {
             "/home": (context) => HomeTabsPage(),
             "/register": (context) => RegisterPage(),
             "/login": (context) => LoginPage(),
-            "/freemode": (context) => FreemodePage(),
-            "/freemodetext": (context) => FreemodeTextPage(),
-            "/freemodeaudio": (context) => FreemodeAudioPage(),
+            "/freemode": (context) => FreemodeFlowPage(),
             "/profile": (context) => ProfilePage(),
             "/lesson": (context) => LessonPage(),
             "/completedlessons": (context) => CompletedLessonsPage(),
