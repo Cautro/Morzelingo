@@ -14,7 +14,7 @@ func (a *App) ListLesson() ([]models.Lesson, error) {
 	return out, nil
 }
 
-func (a *App) GetByIDLesson(id int) (*models.Lesson, error) {
+func (a *App) GetByIDLesson(id int, lang string) (*models.Lesson, error) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 

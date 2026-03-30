@@ -4,13 +4,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/cautro/morzelingo/internal/app"
 	"github.com/cautro/morzelingo/internal/models"
+	"github.com/cautro/morzelingo/internal/repo"
 	"github.com/cautro/morzelingo/internal/utils"
 )
 
 type UserService struct {
-	app *app.App
+	users   repo.UserRepository
+	streaks repo.FriendshipStreakRepository
 }
 
 type ProfileResult struct {
@@ -48,16 +49,19 @@ type FriendMutationResult struct {
 	Message   string   `json:"message,omitempty"`
 }
 
-func NewUserService(a *app.App) *UserService {
-	return &UserService{app: a}
+func NewUserService(users repo.UserRepository, streaks repo.FriendshipStreakRepository) *UserService {
+	return &UserService{
+		users:   users,
+		streaks: streaks,
+	}
 }
 
 func (s *UserService) ListUsers() []models.User {
-	return s.app.ListUser()
+	return s.users.ListUser()
 }
 
 func (s *UserService) Profile(username string) (ProfileResult, error) {
-	u, err := s.app.GetUserCopy(username)
+	u, err := s.users.GetUserCopy(username)
 	if err != nil {
 		return ProfileResult{}, ErrUserNotFound
 	}
@@ -88,7 +92,7 @@ func (s *UserService) Profile(username string) (ProfileResult, error) {
 }
 
 func (s *UserService) ListFriends(username string) (FriendsListResult, error) {
-	u, err := s.app.GetUserCopy(username)
+	u, err := s.users.GetUserCopy(username)
 	if err != nil {
 		return FriendsListResult{}, ErrUserNotFound
 	}
@@ -101,11 +105,11 @@ func (s *UserService) AddFriend(username, friend string) (FriendMutationResult, 
 		return FriendMutationResult{}, ErrCannotAddYourself
 	}
 
-	if _, err := s.app.GetByUsername(friend); err != nil {
+	if _, err := s.users.GetByUsername(friend); err != nil {
 		return FriendMutationResult{}, ErrFriendNotFound
 	}
 
-	toSave, err := s.app.UpdateUser(username, func(u *models.User) error {
+	updated, err := s.users.UpdateUser(username, func(u *models.User) error {
 		for _, f := range u.Friends {
 			if f == friend {
 				return nil
@@ -118,7 +122,7 @@ func (s *UserService) AddFriend(username, friend string) (FriendMutationResult, 
 		return FriendMutationResult{}, ErrUserNotFound
 	}
 
-	toSave, err = s.app.UpdateUser(friend, func(u *models.User) error {
+	_, err = s.users.UpdateUser(friend, func(u *models.User) error {
 		for _, f := range u.Friends {
 			if f == username {
 				return nil
@@ -131,15 +135,8 @@ func (s *UserService) AddFriend(username, friend string) (FriendMutationResult, 
 		return FriendMutationResult{}, ErrFriendNotFound
 	}
 
-	s.app.Saver.Schedule(toSave)
-
 	if err := s.touchFriendshipStreak(username, friend); err != nil {
 		log.Printf("warning: friendship streak update failed: %v", err)
-	}
-
-	updated, ok := findUserSnapshot(toSave, username)
-	if !ok {
-		return FriendMutationResult{}, ErrUserNotFound
 	}
 
 	return FriendMutationResult{
@@ -150,26 +147,26 @@ func (s *UserService) AddFriend(username, friend string) (FriendMutationResult, 
 }
 
 func (s *UserService) UpdateFriendshipStreaks(username string) error {
-	currentUser, err := s.app.GetUserCopy(username)
+	currentUser, err := s.users.GetUserCopy(username)
 	if err != nil {
 		return ErrUserNotFound
 	}
 
-	streaks, err := s.app.Storage.ReadFriendshipStreaks()
+	streaks, err := s.streaks.List()
 	if err != nil {
 		return err
 	}
 
-	updated, changed := utils.UpdateAllFriendshipStreaks(currentUser, s.app.ListUser(), streaks)
+	updated, changed := utils.UpdateAllFriendshipStreaks(currentUser, s.users.ListUser(), streaks)
 	if !changed {
 		return nil
 	}
 
-	return s.app.Storage.SaveFriendshipStreaks(updated)
+	return s.streaks.SaveAll(updated)
 }
 
 func (s *UserService) FriendshipStreaks(username string, meOnly bool) ([]models.FriendshipStreak, error) {
-	streaks, err := s.app.Storage.ReadFriendshipStreaks()
+	streaks, err := s.streaks.List()
 	if err != nil {
 		return nil, err
 	}
@@ -193,11 +190,11 @@ func (s *UserService) DeleteFriend(username, friend string) (FriendMutationResul
 		return FriendMutationResult{}, ErrCannotDeleteYourself
 	}
 
-	if _, err := s.app.GetByUsername(friend); err != nil {
+	if _, err := s.users.GetByUsername(friend); err != nil {
 		return FriendMutationResult{}, ErrFriendNotFound
 	}
 
-	toSave, err := s.app.UpdateUser(username, func(u *models.User) error {
+	updated, err := s.users.UpdateUser(username, func(u *models.User) error {
 		u.Friends = utils.RemoveFriend(u.Friends, friend)
 		return nil
 	})
@@ -205,19 +202,12 @@ func (s *UserService) DeleteFriend(username, friend string) (FriendMutationResul
 		return FriendMutationResult{}, ErrUserNotFound
 	}
 
-	toSave, err = s.app.UpdateUser(friend, func(u *models.User) error {
+	_, err = s.users.UpdateUser(friend, func(u *models.User) error {
 		u.Friends = utils.RemoveFriend(u.Friends, username)
 		return nil
 	})
 	if err != nil {
 		return FriendMutationResult{}, ErrFriendNotFound
-	}
-
-	s.app.Saver.Schedule(toSave)
-
-	updated, ok := findUserSnapshot(toSave, username)
-	if !ok {
-		return FriendMutationResult{}, ErrUserNotFound
 	}
 
 	return FriendMutationResult{
@@ -228,18 +218,8 @@ func (s *UserService) DeleteFriend(username, friend string) (FriendMutationResul
 	}, nil
 }
 
-func findUserSnapshot(users []models.User, username string) (models.User, bool) {
-	for _, user := range users {
-		if user.Username == username {
-			return user, true
-		}
-	}
-
-	return models.User{}, false
-}
-
 func (s *UserService) touchFriendshipStreak(aUser, bUser string) error {
-	streaks, err := s.app.Storage.ReadFriendshipStreaks()
+	streaks, err := s.streaks.List()
 	if err != nil {
 		return err
 	}
@@ -257,5 +237,5 @@ func (s *UserService) touchFriendshipStreak(aUser, bUser string) error {
 		LastActive: time.Now().UTC().Format("2006-01-02"),
 	})
 
-	return s.app.Storage.SaveFriendshipStreaks(streaks)
+	return s.streaks.SaveAll(streaks)
 }

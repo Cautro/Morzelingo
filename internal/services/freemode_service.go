@@ -1,16 +1,9 @@
 package services
 
-import (
-	// "strconv"
-	// "strings"
-
-	// "github.com/cautro/morzelingo/internal/app"
-	"github.com/cautro/morzelingo/internal/models"
-	// "github.com/cautro/morzelingo/internal/utils"
-)
+import "github.com/cautro/morzelingo/internal/models"
 
 func (s *PracticeService) Freemode(username, lang, letters, mode string, count int) (models.PracticeResponse, error) {
-	user, err := s.app.GetUserCopy(username)
+	user, err := s.users.GetUserCopy(username)
 	if err != nil {
 		return models.PracticeResponse{}, ErrUserNotFound
 	}
@@ -47,18 +40,15 @@ func (s *PracticeService) Freemode(username, lang, letters, mode string, count i
 }
 
 func (s *PracticeService) FreemodeComplite(username string) error {
-	
-	toSave, err := s.app.UpdateUser(username, func(u *models.User) error {
+	_, err := s.users.UpdateUser(username, func(u *models.User) error {
 		mult := 1 + float64(u.Level)/100
-		u.XP += int(10*mult)
-		u.Coins += int(50*mult)
+		u.XP += int(10 * mult)
+		u.Coins += int(50 * mult)
 		return nil
 	})
 	if err != nil {
 		return err
 	}
-
-	s.app.Saver.Schedule(toSave)
 
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/cautro/morzelingo/internal/app"
 	"github.com/cautro/morzelingo/internal/handlers"
+	"github.com/cautro/morzelingo/internal/repo"
 	"github.com/cautro/morzelingo/internal/services"
 	"github.com/cautro/morzelingo/internal/storage"
 	"github.com/cautro/morzelingo/internal/utils"
@@ -41,49 +42,47 @@ func main() {
 
 	saver := worker.NewSaver(st, worker.DefaultDebounce)
 	a := app.NewApp(users, st, saver, jwtSecret)
-	authService := services.NewAuthService(a)
-	userService := services.NewUserService(a)
-	lessonService := services.NewLessonService(a)
-	practiceService := services.NewPracticeService(a)
+
+	userRepo := repo.NewAppUserRepo(a)
+	lessonRepo := repo.NewStorageLessonRepo(st)
+	streakRepo := repo.NewStorageFriendshipStreakRepo(st)
+
+	authService := services.NewAuthService(userRepo, jwtSecret)
+	userService := services.NewUserService(userRepo, streakRepo)
+	lessonService := services.NewLessonService(userRepo, lessonRepo)
+	practiceService := services.NewPracticeService(userRepo, lessonRepo)
 	duelService := services.NewDuelService(a)
 	saver.Start()
 	defer saver.Stop()
 
 	r := gin.Default()
 
-	// Without middleware
 	r.POST("/api/register", handlers.MakeRegisterHandler(authService))
 	r.POST("/api/login", handlers.MakeLoginHandler(authService))
 	r.POST("/api/practice", handlers.MakeLettersPracticeHandler(practiceService))
 
 	auth := r.Group("/api", utils.AuthMiddleware(a))
 	{
-		// User
 		auth.GET("/users", handlers.MakeListUsersHandler(userService))
 		auth.GET("/profile", handlers.MakeProfileHandler(userService))
 
-		// Lesson
 		auth.GET("/lessons", handlers.MakeLessonsHandler(lessonService))
 		auth.GET("/lessons/:id", handlers.MakeLessonByIDHandler(lessonService))
 		auth.POST("/complete-lesson", handlers.MakeCompleteLessonHandler(lessonService))
 
-		// Practice
 		auth.GET("/practice/:id", handlers.MakePracticeByLessonHandler(practiceService))
 		auth.GET("/practice/replay/:id", handlers.MakeReplayLessonHandler(practiceService))
 		auth.POST("/practice/submit", handlers.MakePracticeSubmitHandler(practiceService))
 
-		// Freemode
 		auth.GET("/freemode", handlers.MakeFreemodeHandler(practiceService))
-		auth.POST("/freemode/complite")
+		auth.POST("/freemode/complite", handlers.MakeFreemodeCompliteHandler(practiceService))
 
-		// Friends
 		auth.GET("/friends", handlers.MakeListFriendHandler(userService))
 		auth.POST("/friends/add", handlers.MakeAddFriendHandler(userService))
 		auth.POST("/friends/update-streaks", handlers.MakeUpdateStreakHandler(userService))
 		auth.GET("/friendship-streaks", handlers.MakeFriendShipStreakHandler(userService))
 		auth.POST("/friends/delete", handlers.MakeDeleteFriendHandler(userService))
 
-		// Duels
 		auth.POST("/duel/matchmake", handlers.MakeMatchmakeDuelHandler(duelService))
 		auth.GET("/duels", handlers.MakeListDuelHandler(duelService))
 		auth.GET("/duels/status/:id", handlers.MakeStatusDuelHandler(duelService))

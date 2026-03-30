@@ -4,15 +4,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cautro/morzelingo/internal/app"
 	"github.com/cautro/morzelingo/internal/models"
+	"github.com/cautro/morzelingo/internal/repo"
 	"github.com/cautro/morzelingo/internal/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
-	app *app.App
+	users     repo.UserRepository
+	jwtSecret string
 }
 
 type RegisterResult struct {
@@ -24,8 +25,11 @@ type LoginResult struct {
 	Token string `json:"token"`
 }
 
-func NewAuthService(a *app.App) *AuthService {
-	return &AuthService{app: a}
+func NewAuthService(users repo.UserRepository, jwtSecret string) *AuthService {
+	return &AuthService{
+		users:     users,
+		jwtSecret: jwtSecret,
+	}
 }
 
 func (s *AuthService) Register(in models.RegisterInput) (RegisterResult, error) {
@@ -37,11 +41,11 @@ func (s *AuthService) Register(in models.RegisterInput) (RegisterResult, error) 
 		return RegisterResult{}, ErrUsernamePasswordRequired
 	}
 
-	if _, err := s.app.GetByUsername(in.Username); err == nil {
+	if _, err := s.users.GetByUsername(in.Username); err == nil {
 		return RegisterResult{}, ErrUsernameExists
 	}
 
-	users := s.app.ListUser()
+	users := s.users.ListUser()
 	if in.Email != "" {
 		for _, u := range users {
 			if u.Email == in.Email {
@@ -68,9 +72,9 @@ func (s *AuthService) Register(in models.RegisterInput) (RegisterResult, error) 
 	}
 
 	if in.ReferralInput != "" {
-		for _, u := range s.app.ListUser() {
+		for _, u := range s.users.ListUser() {
 			if u.ReferralCode == in.ReferralInput {
-				_, _ = s.app.UpdateUser(u.Username, func(x *models.User) error {
+				_, _ = s.users.UpdateUser(u.Username, func(x *models.User) error {
 					x.ReferralCount++
 					x.Coins += 50
 
@@ -94,8 +98,9 @@ func (s *AuthService) Register(in models.RegisterInput) (RegisterResult, error) 
 		}
 	}
 
-	toSave := s.app.CreateUser(newUser)
-	s.app.Saver.Schedule(toSave)
+	if err := s.users.CreateUser(newUser); err != nil {
+		return RegisterResult{}, err
+	}
 
 	token, err := s.signToken(in.Username, 24*time.Hour)
 	if err != nil {
@@ -106,7 +111,7 @@ func (s *AuthService) Register(in models.RegisterInput) (RegisterResult, error) 
 }
 
 func (s *AuthService) Login(in models.LoginInput) (LoginResult, error) {
-	user, ok := s.app.GetUserRaw(in.Username)
+	user, ok := s.users.GetUserRaw(in.Username)
 	if !ok {
 		return LoginResult{}, ErrInvalidCredentials
 	}
@@ -115,12 +120,11 @@ func (s *AuthService) Login(in models.LoginInput) (LoginResult, error) {
 		return LoginResult{}, ErrInvalidCredentials
 	}
 
-	toSave, err := s.app.UpdateUser(user.Username, func(u *models.User) error {
+	_, err := s.users.UpdateUser(user.Username, func(u *models.User) error {
 		today := time.Now().UTC().Format("2006-01-02")
 		yesterday := time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02")
 
 		if u.LastLogin == today {
-			// no-op when user already logged in today
 		} else if u.LastLogin == yesterday {
 			u.Streak++
 			u.LastLogin = today
@@ -130,7 +134,7 @@ func (s *AuthService) Login(in models.LoginInput) (LoginResult, error) {
 		}
 
 		if u.ReferralCode == "" {
-			u.ReferralCode = utils.GenerateReferralCode(s.app.ListUser())
+			u.ReferralCode = utils.GenerateReferralCode(s.users.ListUser())
 		}
 
 		return nil
@@ -138,8 +142,6 @@ func (s *AuthService) Login(in models.LoginInput) (LoginResult, error) {
 	if err != nil {
 		return LoginResult{}, err
 	}
-
-	s.app.Saver.Schedule(toSave)
 
 	token, err := s.signToken(in.Username, 168*time.Hour)
 	if err != nil {
@@ -159,5 +161,5 @@ func (s *AuthService) signToken(username string, ttl time.Duration) (string, err
 	}
 
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return tok.SignedString([]byte(s.app.Secret))
+	return tok.SignedString([]byte(s.jwtSecret))
 }

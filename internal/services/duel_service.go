@@ -112,7 +112,7 @@ func (s *DuelService) GetTasks(username, lang, id string) (TasksResult, error) {
 			}
 			types := []string{"text", "morse", "audio"}
 			questions := make([]models.PracticeQuestion, 0, 10)
-			for j := 0; j < 10; j++ { // 10 вопросов вместо 5
+			for j := 0; j < 10; j++ {
 				correct := pickContent(user.Level, symbols, words, phrases)
 				if correct == "" {
 					continue
@@ -132,12 +132,11 @@ func (s *DuelService) GetTasks(username, lang, id string) (TasksResult, error) {
 		return nil, ErrDuelNotFound
 	})
 
-	switch err {
-	case nil:
-		return tasks, nil
-	default:
+	if err != nil {
 		return TasksResult{}, err
 	}
+
+	return tasks, nil
 }
 
 func (s *DuelService) UpdateScore(username, id string, score int) (ScoreState, error) {

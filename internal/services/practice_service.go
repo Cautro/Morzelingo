@@ -4,21 +4,25 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cautro/morzelingo/internal/app"
 	"github.com/cautro/morzelingo/internal/models"
+	"github.com/cautro/morzelingo/internal/repo"
 	"github.com/cautro/morzelingo/internal/utils"
 )
 
 type PracticeService struct {
-	app *app.App
+	users   repo.UserRepository
+	lessons repo.LessonRepository
 }
 
 type PracticeSubmitResult struct {
 	Message string `json:"message"`
 }
 
-func NewPracticeService(a *app.App) *PracticeService {
-	return &PracticeService{app: a}
+func NewPracticeService(users repo.UserRepository, lessons repo.LessonRepository) *PracticeService {
+	return &PracticeService{
+		users:   users,
+		lessons: lessons,
+	}
 }
 
 func (s *PracticeService) PracticeByLesson(username, lang, lessonID string) (models.PracticeResponse, error) {
@@ -27,7 +31,7 @@ func (s *PracticeService) PracticeByLesson(username, lang, lessonID string) (mod
 		return models.PracticeResponse{}, err
 	}
 
-	userCopy, err := s.app.GetUserCopy(username)
+	userCopy, err := s.users.GetUserCopy(username)
 	if err != nil {
 		return models.PracticeResponse{}, ErrUserNotFound
 	}
@@ -118,7 +122,7 @@ func (s *PracticeService) LettersPractice(letters, lang string) (models.Practice
 }
 
 func (s *PracticeService) Submit(username string, updates []models.SymbolUpdate) (PracticeSubmitResult, error) {
-	toSave, err := s.app.UpdateUser(username, func(u *models.User) error {
+	_, err := s.users.UpdateUser(username, func(u *models.User) error {
 		for _, upd := range updates {
 			found := false
 
@@ -147,7 +151,6 @@ func (s *PracticeService) Submit(username string, updates []models.SymbolUpdate)
 		return PracticeSubmitResult{}, ErrUserNotFound
 	}
 
-	s.app.Saver.Schedule(toSave)
 	return PracticeSubmitResult{Message: "statistics updated"}, nil
 }
 
@@ -183,18 +186,17 @@ func (s *PracticeService) ReplayLesson(lang, lessonID string) (models.PracticeRe
 }
 
 func (s *PracticeService) lessonByID(lang, lessonID string) (models.Lesson, error) {
-	lessons, err := s.app.Storage.ReadLessons(lang)
+	id, err := strconv.Atoi(lessonID)
 	if err != nil {
-		return models.Lesson{}, err
+		return models.Lesson{}, ErrLessonNotFound
 	}
 
-	for _, lesson := range lessons {
-		if strconv.Itoa(lesson.ID) == lessonID {
-			return lesson, nil
-		}
+	lesson, err := s.lessons.GetByID(lang, id)
+	if err != nil {
+		return models.Lesson{}, ErrLessonNotFound
 	}
 
-	return models.Lesson{}, ErrLessonNotFound
+	return lesson, nil
 }
 
 func (s *PracticeService) buildFreemodeQuestion(level int, symbolPool []string, mode, lang string) models.PracticeQuestion {

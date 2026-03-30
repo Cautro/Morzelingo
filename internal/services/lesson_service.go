@@ -1,13 +1,11 @@
 package services
 
 import (
-	"github.com/cautro/morzelingo/internal/app"
-	"github.com/cautro/morzelingo/internal/models"
-)
+	"errors"
 
-type LessonService struct {
-	app *app.App
-}
+	"github.com/cautro/morzelingo/internal/models"
+	"github.com/cautro/morzelingo/internal/repo"
+)
 
 type CompleteLessonResult struct {
 	Message      string `json:"message"`
@@ -20,16 +18,24 @@ type CompleteLessonResult struct {
 	Coins        int    `json:"coins"`
 }
 
-func NewLessonService(a *app.App) *LessonService {
-	return &LessonService{app: a}
+type LessonService struct {
+	users   repo.UserRepository
+	lessons repo.LessonRepository
+}
+
+func NewLessonService(users repo.UserRepository, lessons repo.LessonRepository) *LessonService {
+	return &LessonService{
+		users:   users,
+		lessons: lessons,
+	}
 }
 
 func (s *LessonService) ListLessons(lang string) ([]models.Lesson, error) {
-	return s.app.Storage.ReadLessons(lang)
+	return s.lessons.ListByLang(lang)
 }
 
 func (s *LessonService) LessonByID(lang, id string) (models.Lesson, error) {
-	lessons, err := s.app.Storage.ReadLessons(lang)
+	lessons, err := s.lessons.ListByLang(lang)
 	if err != nil {
 		return models.Lesson{}, err
 	}
@@ -44,7 +50,7 @@ func (s *LessonService) LessonByID(lang, id string) (models.Lesson, error) {
 }
 
 func (s *LessonService) CompleteLesson(username, lang string, lessonID int) (CompleteLessonResult, error) {
-	lessons, err := s.app.Storage.ReadLessons(lang)
+	lessons, err := s.lessons.ListByLang(lang)
 	if err != nil {
 		return CompleteLessonResult{}, err
 	}
@@ -53,7 +59,7 @@ func (s *LessonService) CompleteLesson(username, lang string, lessonID int) (Com
 		return CompleteLessonResult{}, ErrInvalidLessonID
 	}
 
-	toSave, err := s.app.UpdateUser(username, func(u *models.User) error {
+	updated, err := s.users.UpdateUser(username, func(u *models.User) error {
 		var done int
 		if lang == "ru" {
 			done = u.LessonDone_RU
@@ -91,16 +97,9 @@ func (s *LessonService) CompleteLesson(username, lang string, lessonID int) (Com
 		return nil
 	})
 	if err != nil {
-		if err == ErrInvalidLessonOrder {
+		if errors.Is(err, ErrInvalidLessonOrder) {
 			return CompleteLessonResult{}, err
 		}
-		return CompleteLessonResult{}, ErrUserNotFound
-	}
-
-	s.app.Saver.Schedule(toSave)
-
-	updated, ok := findUserSnapshot(toSave, username)
-	if !ok {
 		return CompleteLessonResult{}, ErrUserNotFound
 	}
 
