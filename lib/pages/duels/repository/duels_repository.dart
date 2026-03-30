@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:morzelingo/config.dart';
 import 'package:morzelingo/storage_context.dart';
 
+import '../../../main.dart';
+
 class DuelsRepository {
 
   bool isSuccessStatus(int code) {
@@ -39,7 +41,7 @@ class DuelsRepository {
     );
     print('${res.body}');
     if (!isSuccessStatus(res.statusCode)) {
-      throw Exception('Ошибка сервера: ${res.statusCode}');
+      throw Except('Ошибка сервера: ${res.statusCode}');
     }
     return jsonDecode(res.body);
   }
@@ -51,7 +53,7 @@ class DuelsRepository {
     );
     print('${res.body}');
     if (!isSuccessStatus(res.statusCode)) {
-      throw Exception('Ошибка сервера: ${res.statusCode}');
+      throw Except('Ошибка сервера: ${res.statusCode}');
     }
     return jsonDecode(res.body);
   }
@@ -64,7 +66,7 @@ class DuelsRepository {
     );
     print('${res.body}');
     if (!isSuccessStatus(res.statusCode)) {
-      throw Exception('Ошибка сервера: ${res.statusCode}');
+      throw Except('Ошибка сервера: ${res.statusCode}');
     }
     return res;
   }
@@ -76,7 +78,7 @@ class DuelsRepository {
     );
     print('complete   ${res.body}');
     if (!isSuccessStatus(res.statusCode)) {
-      throw Exception('Ошибка сервера: ${res.statusCode}');
+      throw Except('Ошибка сервера: ${res.statusCode}');
     }
     return jsonDecode(res.body);
   }
@@ -88,7 +90,7 @@ class DuelsRepository {
     );
     print('${res.body}');
     if (!isSuccessStatus(res.statusCode)) {
-      throw Exception('Ошибка сервера: ${res.statusCode}');
+      throw Except('Ошибка сервера: ${res.statusCode}');
     }
     return jsonDecode(res.body);
   }

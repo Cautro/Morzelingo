@@ -1,24 +1,41 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../context/authorization_context.dart';
+import 'package:morzelingo/pages/authorization/repository/authorization_repository.dart';
+import 'package:morzelingo/pages/authorization/service/authorization_service.dart';
 part 'authorization_event.dart';
 part 'authorization_state.dart';
 
 class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
-  AuthorizationBloc() : super(AuthorizationInitial()) {
+  final AuthorizationRepository _repository;
+  final AuthorizationService _service;
+  AuthorizationBloc({
+    required AuthorizationRepository repository,
+    required AuthorizationService service,
+  }) : _repository = repository, _service = service, super(const AuthorizationState()) {
     on<LoginEvent>((event, emit) async {
-      final _data = await AuthorizationContext().loginHandler(event.login, event.password);
-      print('${_data}');
-      emit(LoginState(success: _data["success"], message: _data["message"]));
+      print('datas: ${event.login} ${event.password}');
+      try {
+        final Map<String, dynamic> _loginData = await _repository.LoginHandler(event.login, event.password);
+        emit(state.copyWith(status: AuthorizationStatus.success, message: _loginData["message"]));
+      } catch (e) {
+        emit(state.copyWith(status: AuthorizationStatus.error, message: e.toString()));
+      }
     });
     on<RegisterEvent>((event, emit) async {
-      final _data = await AuthorizationContext().registerHandler(event.login, event.password, event.email, event.confirmpassword, event.code);
-      print('${_data}');
-      emit(RegisterState(success: _data["success"], message: _data["message"]));
+      try {
+        await _service.checkRegister(event.login, event.password, event.confirmpassword, event.email);
+        final Map<String, dynamic> _registerData = await _repository.RegisterHandler(event.login, event.password, event.email, event.code);
+        emit(state.copyWith(status: AuthorizationStatus.success, message: _registerData["message"]));
+      } catch (e) {
+        emit(state.copyWith(status: AuthorizationStatus.error, message: e.toString()));
+      }
     });
-    on<CheckLoginedEvent>((event, emit) async {
-      final _data = await AuthorizationContext().checkLogined();
-      print("${_data}");
-      emit(CheckLoginedState(success: _data));
+    on<ChangeModeEvent>((event, emit) async {
+      if (state.mode == AuthorizationMode.login) {
+        emit(state.copyWith(mode: AuthorizationMode.register));
+      } else {
+        emit(state.copyWith(mode: AuthorizationMode.login));
+      }
     });
   }
 }

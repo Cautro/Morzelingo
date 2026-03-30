@@ -27,7 +27,7 @@ class FreemodeBloc extends Bloc<FreemodeEvent, FreemodeState> {
       emit(state.copyWith(isLoading: true));
       try {
         final bool isRight = await _service.answerHandler(event.text, event.answer);
-        await _repository.checkerPractice(isRight);
+        // await _repository.checkerPractice(isRight);
         await _repository.completeFreemode();
           emit(state.copyWith(success: isRight, message: isRight ? "Правильно" : "Неправильно",));
           emit(state.copyWith(success: null, message: null, isLoading: false));

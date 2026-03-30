@@ -26,113 +26,86 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => AuthorizationBloc(),
-      child: BlocBuilder<AuthorizationBloc, AuthorizationState>(
-        builder: (context, state) {
-          return BlocListener<AuthorizationBloc, AuthorizationState>(
-            listener: (context, state) {
-              if (state is RegisterState) {
-                if (state.success == true) {
-                  Fluttertoast.showToast(
-                      msg: state.message,
-                      backgroundColor: AppTheme.success,
-                      textColor: Colors.white
-                  );
-                  Navigator.pushReplacementNamed(context, "/home");
-                } else {
-                  Fluttertoast.showToast(
-                      msg: state.message,
-                      backgroundColor: AppTheme.error,
-                      textColor: Colors.white
-                  );
-                }
-              }
-            },
-            child: Scaffold(
-              body: SafeArea(
-                  child: Center(
-                      child: SingleChildScrollView(
-                          padding: EdgeInsetsGeometry.all(16),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(maxWidth: 400),
-                            child: Card(
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(20)),
-                              child: Padding(
-                                padding: EdgeInsetsGeometry.all(24),
-                                child: Column(
-                                  children: [
-                                    TextField(
-                                      onChanged: (value) => login = value,
-                                      decoration: InputDecoration(
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
-                                          labelText: "Имя пользователя"
-                                      ),
-                                    ),
-                                    SizedBox(height: 16),
-                                    TextField(
-                                      onChanged: (value) => email = value,
-                                      decoration: InputDecoration(
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
-                                          labelText: "Email"
-                                      ),
-                                    ),
-                                    SizedBox(height: 16),
-                                    TextField(
-                                      onChanged: (value) => password = value,
-                                      obscureText: true,
-                                      decoration: InputDecoration(
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
-                                          labelText: "Пароль"
-                                      ),
-                                    ),
-                                    SizedBox(height: 16),
-                                    TextField(
-                                      onChanged: (value) => confirmpassword = value,
-                                      obscureText: true,
-                                      decoration: InputDecoration(
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
-                                          labelText: "Подтвердите пароль"
-                                      ),
-                                    ),
-                                    SizedBox(height: 16),
-                                    TextField(
-                                      onChanged: (value) => code = value,
-                                      decoration: InputDecoration(
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
-                                          labelText: "Код друга (если есть)"
-                                      ),
-                                    ),
-                                    SizedBox(height: 24),
-                                    SizedBox(
-                                      child: ElevatedButton(
-                                          onPressed: () {
-                                            context.read<AuthorizationBloc>().add(RegisterEvent(login: login, password: password, confirmpassword: confirmpassword, code: code, email: email));
-                                          },
-                                          child: Text("Зарегистрироваться", style: TextStyle(),),
-                                          style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 16))
-                                      ),
-                                      width: double.infinity,
-                                    ),
-                                    SizedBox(height: 8),
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.pushReplacementNamed(context, "/login");
-                                        },
-                                        child: Text("Уже есть аккаунт? Войти")
-                                    ),
-                                  ],
-                                ),
+    return Scaffold(
+      body: SafeArea(
+          child: Center(
+              child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(20)),
+                      child: Padding(
+                        padding: const EdgeInsetsGeometry.all(24),
+                        child: Column(
+                          children: [
+                            TextField(
+                              onChanged: (value) => login = value,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                                  labelText: "Имя пользователя"
                               ),
                             ),
-                          )
-                      )
+                            const SizedBox(height: 16),
+                            TextField(
+                              onChanged: (value) => email = value,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                                  labelText: "Email"
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              onChanged: (value) => password = value,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                                  labelText: "Пароль"
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              onChanged: (value) => confirmpassword = value,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                                  labelText: "Подтвердите пароль"
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              onChanged: (value) => code = value,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                                  labelText: "Код друга (если есть)"
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    context.read<AuthorizationBloc>().add(RegisterEvent(login: login, password: password, confirmpassword: confirmpassword, code: code, email: email));
+                                  },
+                                  child: const Text("Зарегистрироваться", style: TextStyle(),),
+                                  style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 16))
+                              ),
+                              width: double.infinity,
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton(
+                                onPressed: () {
+                                  context.read<AuthorizationBloc>().add(ChangeModeEvent());
+                                },
+                                child: const Text("Уже есть аккаунт? Войти")
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   )
-              ),
-            ),
-          );
-        },
+              )
+          )
       ),
     );
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../../config.dart';
+import '../../../main.dart';
 import '../../../settings_context.dart';
 import '../../../storage_context.dart';
 
@@ -37,7 +38,7 @@ class FreemodeRepository {
       answer = data["questions"][0]["answer"];
       print(question);
     } else {
-      throw Exception("Произошла ошибка сервера");
+      throw Except("Произошла ошибка сервера");
     }
     return {"question": question, "answer": answer,};
   }
@@ -51,7 +52,7 @@ class FreemodeRepository {
       ),
     );
     if (!_checkRes(res.statusCode)) {
-      throw Exception("Произошла ошибка");
+      throw Except("Произошла ошибка");
     }
   }
 
@@ -60,7 +61,7 @@ class FreemodeRepository {
       headers: await _headers(),
     );
     if (!_checkRes(res.statusCode)) {
-      throw Exception("Произошла ошибка");
+      throw Except("Произошла ошибка");
     }
   }
 

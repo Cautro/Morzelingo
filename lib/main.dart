@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:morzelingo/pages/authorization/view/authorization_flow_page.dart';
 import 'package:morzelingo/pages/authorization/view/login_page.dart';
 import 'package:morzelingo/pages/authorization/view/register_page.dart';
 import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
@@ -18,6 +19,14 @@ import 'package:morzelingo/pages/education/view/lesson_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_page.dart';
 import 'package:morzelingo/pages/profile/view/settings_page.dart';
+
+class Except implements Exception {
+  final String message;
+  Except(this.message);
+
+  @override
+  String toString() => message;
+}
 
 void main() {
   runApp(MyApp());
@@ -81,8 +90,7 @@ class _MyAppState extends State<MyApp> {
 
           routes: {
             "/home": (context) => HomeTabsPage(),
-            "/register": (context) => RegisterPage(),
-            "/login": (context) => LoginPage(),
+            "/login": (context) => AuthorizationFlowPage(),
             "/freemode": (context) => FreemodeFlowPage(),
             "/profile": (context) => ProfilePage(),
             "/lesson": (context) => LessonPage(),

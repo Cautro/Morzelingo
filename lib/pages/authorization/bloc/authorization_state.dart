@@ -1,22 +1,40 @@
 part of 'authorization_bloc.dart';
 
-class AuthorizationState {}
-
-class AuthorizationInitial extends AuthorizationState {}
-
-class LoginState extends AuthorizationState {
-  LoginState({required this.success, required this.message});
-  final bool success;
-  final String message;
+enum AuthorizationStatus {
+  idle,
+  success,
+  error,
+}
+enum AuthorizationMode {
+  login,
+  register,
 }
 
-class RegisterState extends AuthorizationState {
-  RegisterState({required this.success, required this.message});
-  final bool success;
-  final String message;
+class AuthorizationState extends Equatable {
+  final AuthorizationStatus status;
+  final String? message;
+  final AuthorizationMode mode;
+
+  const AuthorizationState({
+    this.status = AuthorizationStatus.idle,
+    this.message,
+    this.mode = AuthorizationMode.login
+  });
+
+  AuthorizationState copyWith({
+    AuthorizationStatus? status,
+    String? message,
+    AuthorizationMode? mode
+  }) {
+    return AuthorizationState(
+      status: status ?? this.status,
+      message: message ?? this.message,
+      mode: mode ?? this.mode
+    );
+  }
+
+  @override
+  List<Object?> get props => [status, message, mode];
 }
 
-class CheckLoginedState extends AuthorizationState {
-  CheckLoginedState({required this.success});
-  final bool success;
-}
+
