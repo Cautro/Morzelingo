@@ -72,7 +72,7 @@ class DuelsActivePage extends StatelessWidget {
                           style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
                           child: const Text("Покинуть дуэль"),
                           onPressed: () async {
-                            await _leaveDialog;
+                            await _leaveDialog(context);
                           },
                         ),
                       ),
