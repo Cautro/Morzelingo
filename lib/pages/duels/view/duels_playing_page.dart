@@ -109,7 +109,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       print(widget.answer);
-                      context.read<DuelsBloc>().add(AnswerEvent(answer));
+                      context.read<DuelsBloc>().add(AnswerEvent(answer: answer));
                     },
                     child: Text("Ответить"),
                   ),

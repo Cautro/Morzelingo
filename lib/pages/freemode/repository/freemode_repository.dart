@@ -43,19 +43,6 @@ class FreemodeRepository {
     return {"question": question, "answer": answer,};
   }
 
-  Future<void> checkerPractice(bool correct) async {
-    final res = await http.post(
-      Uri.parse("$API/api/checker-practice"),
-      headers: await _headers(),
-      body: jsonEncode(
-        {"correct": correct},
-      ),
-    );
-    if (!_checkRes(res.statusCode)) {
-      throw Except("Произошла ошибка");
-    }
-  }
-
   Future<void> completeFreemode() async {
     final res = await http.post(Uri.parse("$API/api/freemode/complete"),
       headers: await _headers(),

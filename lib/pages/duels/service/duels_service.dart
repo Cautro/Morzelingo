@@ -1,7 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 
 import '../../../settings_context.dart';
-import '../morse_models.dart';
+import '../models/morse_models.dart';
 
 class DuelsService {
 

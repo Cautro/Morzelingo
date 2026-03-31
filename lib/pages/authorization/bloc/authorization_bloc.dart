@@ -12,6 +12,8 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
     required AuthorizationRepository repository,
     required AuthorizationService service,
   }) : _repository = repository, _service = service, super(const AuthorizationState()) {
+
+    // Вход
     on<LoginEvent>((event, emit) async {
       print('datas: ${event.login} ${event.password}');
       try {
@@ -19,8 +21,11 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
         emit(state.copyWith(status: AuthorizationStatus.success, message: loginData["message"]));
       } catch (e) {
         emit(state.copyWith(status: AuthorizationStatus.error, message: e.toString()));
+        emit(state.copyWith(status: AuthorizationStatus.idle, message: null));
       }
     });
+
+    // Регистрация
     on<RegisterEvent>((event, emit) async {
       try {
         await _service.checkRegister(event.login, event.password, event.confirmpassword, event.email);
@@ -28,8 +33,11 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
         emit(state.copyWith(status: AuthorizationStatus.success, message: registerData["message"]));
       } catch (e) {
         emit(state.copyWith(status: AuthorizationStatus.error, message: e.toString()));
+        emit(state.copyWith(status: AuthorizationStatus.idle, message: null));
       }
     });
+
+    // Смена регистрации или входа
     on<ChangeModeEvent>((event, emit) {
       if (state.mode == AuthorizationMode.login) {
         emit(state.copyWith(mode: AuthorizationMode.register));
@@ -37,6 +45,8 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
         emit(state.copyWith(mode: AuthorizationMode.login));
       }
     });
+
+    // Проверка входа
     on<CheckLoginedEvent>((event, emit) async {
       try {
         final bool checkData = await _repository.checkLogined();

@@ -11,14 +11,9 @@ import 'package:morzelingo/pages/duels/view/duels_waiting_page.dart';
 
 import '../../../app_theme.dart';
 
-class DuelsFlowPage extends StatefulWidget {
+class DuelsFlowPage extends StatelessWidget {
   const DuelsFlowPage({super.key});
 
-  @override
-  State<DuelsFlowPage> createState() => _DuelsFlowPageState();
-}
-
-class _DuelsFlowPageState extends State<DuelsFlowPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(

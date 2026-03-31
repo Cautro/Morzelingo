@@ -160,6 +160,7 @@ class PracticeContext {
 
   Future<void> sendStats(List<SymbolUpdate> updates) async {
     String? token = await StorageService.getItem("token");
+    print('${updates.map((e) => e.toJson()).toList()}');
     final response = await http.post(
       Uri.parse("$API/api/practice/submit"),
       headers: {
@@ -178,16 +179,16 @@ class PracticeContext {
 
   void practiceChecker(bool correct) async {
     String? token = await StorageService.getItem("token");
-    final res = await http.post(
-      Uri.parse("$API/api/checker-practice"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode(
-        {"correct": correct},
-      ),
-    );
+    // final res = await http.post(
+    //   Uri.parse("$API/api/checker-practice"),
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     "Authorization": "Bearer $token",
+    //   },
+    //   body: jsonEncode(
+    //     {"correct": correct},
+    //   ),
+    // );
   }
 
   final Map<String, String> morseToLetterEN = {

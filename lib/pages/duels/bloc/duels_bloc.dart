@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart';
+import 'package:morzelingo/pages/duels/models/duel_question_model.dart';
 import 'package:morzelingo/pages/duels/repository/duels_repository.dart';
 import 'package:morzelingo/pages/duels/service/duels_service.dart';
 import 'package:morzelingo/settings_context.dart';
@@ -15,6 +16,7 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
     required DuelsRepository repository,
     required DuelsService service,
   })  : _repository = repository, _service = service, super(const DuelsState()) {
+
     on<CreateDuelEvent>((event, emit) async {
       emit(state.copyWith(isLoading: true));
       try {
@@ -37,6 +39,7 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
         emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "$e"));
       }
     });
+
     on<GetStatusEvent>((event, emit) async {
       try {
         final Map<String, dynamic> statusData = await _repository.getStatus(state.duelId.toString());
@@ -64,12 +67,14 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
       }
 
     });
+
     on<GetTasksEvent>((event, emit) async {
       try {
         String? lang = await SettingsService.getLang();
         final Map<String, dynamic> tasksData = await _repository.getTasks(state.duelId.toString(), lang);
         emit(state.copyWith(tasks: tasksData["questions"]));
-        emit(state.copyWith(answer: await _service.getAnswer(state.tasks[state.currentQuestion]["question"], state.tasks[state.currentQuestion]["type"])));
+        final DuelQuestionModel taskQuestion = DuelQuestionModel.fromJson(state.tasks[state.currentQuestion]);
+        emit(state.copyWith(answer: await _service.getAnswer(taskQuestion.question, taskQuestion.type)));
         emit(state.copyWith(status: DuelsStatus.playing));
         print('${state.currentQuestion}');
         print(state.answer);
@@ -78,6 +83,7 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
       }
 
     });
+
     on<PlayMorseEvent>((event, emit) async {
       try {
         await _service.playMorseAudio(
@@ -87,6 +93,7 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
         emit(state.copyWith(status: DuelsStatus.error, success: false, message: "$e"));
       }
     });
+
     on<AnswerEvent>((event, emit) async {
       try {
         if (state.lives! <= 1) {
@@ -100,7 +107,8 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
         if (success) {
           int score = await _service.scoreHandler(event.answer, state.answer.toString());
           emit(state.copyWith(currentQuestion: state.currentQuestion + 1, score: state.score + score));
-          emit(state.copyWith(answer: await _service.getAnswer(state.tasks[state.currentQuestion]["question"], state.tasks[state.currentQuestion]["type"])));
+          final DuelQuestionModel taskQuestion = DuelQuestionModel.fromJson(state.tasks[state.currentQuestion]);
+          emit(state.copyWith(answer: await _service.getAnswer(taskQuestion.question, taskQuestion.type)));
           try {
             final Response scoreData = await _repository.updateScore(state.duelId.toString(), state.score);
           } catch (e) {

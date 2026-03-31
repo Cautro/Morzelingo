@@ -1,12 +1,13 @@
 part of "authorization_bloc.dart";
 
 abstract class AuthorizationEvent extends Equatable {
+  const AuthorizationEvent();
   @override
   List<Object?> get props => [];
 }
 
 class LoginEvent extends AuthorizationEvent {
-  LoginEvent({required this.login, required this.password});
+  const LoginEvent({required this.login, required this.password});
   final String login;
   final String password;
 
@@ -15,7 +16,7 @@ class LoginEvent extends AuthorizationEvent {
 }
 
 class RegisterEvent extends AuthorizationEvent {
-  RegisterEvent({required this.login, required this.password, required this.confirmpassword, required this.code, required this.email});
+  const RegisterEvent({required this.login, required this.password, required this.confirmpassword, required this.code, required this.email});
   final String login;
   final String password;
   final String confirmpassword;
@@ -27,11 +28,13 @@ class RegisterEvent extends AuthorizationEvent {
 }
 
 class ChangeModeEvent extends AuthorizationEvent {
+  const ChangeModeEvent();
   @override
   List<Object?> get props => [];
 }
 
 class CheckLoginedEvent extends AuthorizationEvent {
+  const CheckLoginedEvent();
   @override
   List<Object?> get props => [];
 }

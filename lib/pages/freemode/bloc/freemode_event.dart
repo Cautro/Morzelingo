@@ -1,21 +1,28 @@
 part of 'freemode_bloc.dart';
 
 abstract class FreemodeEvent extends Equatable {
+  const FreemodeEvent();
   @override
   List<Object?> get props => [];
 }
 
 class GetEvent extends FreemodeEvent {
+  const GetEvent({required this.mode});
   final FreemodeMode mode;
-  GetEvent({required this.mode});
 
   @override
   List<Object?> get props => [mode];
 }
 
+class LeaveEvent extends FreemodeEvent {
+  const LeaveEvent();
+  @override
+  List<Object?> get props => [];
+}
+
 
 class AnswerEvent extends FreemodeEvent {
-  AnswerEvent({required this.answer, required this.text});
+  const AnswerEvent({required this.answer, required this.text});
   final String text;
   final String answer;
 
@@ -24,7 +31,7 @@ class AnswerEvent extends FreemodeEvent {
 }
 
 class AudioPlayEvent extends FreemodeEvent {
-  AudioPlayEvent({required this.question});
+  const AudioPlayEvent({required this.question});
   final String question;
 
   @override

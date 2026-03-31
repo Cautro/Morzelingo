@@ -4,7 +4,6 @@ import '../../../settings_context.dart';
 class FreemodeService {
 
   Future<void> playMorse(String question) async {
-
     if (question.isEmpty) {
       throw Exception("Воспроизводимый текст - пуст");
     }
@@ -17,17 +16,14 @@ class FreemodeService {
     final timing = MorseTiming(wpm);
 
     for (int i = 0; i < question.length; i++) {
-
       final char = question[i];
 
       if (char == '.') {
         await player.play(AssetSource('sounds/dot.wav'));
         await Future.delayed(Duration(milliseconds: timing.dot));
-
       } else if (char == '-') {
         await player.play(AssetSource('sounds/dash.wav'));
         await Future.delayed(Duration(milliseconds: timing.dash));
-
       } else if (char == ' ') {
         await Future.delayed(Duration(milliseconds: timing.letterPause));
       }
@@ -38,7 +34,6 @@ class FreemodeService {
     }
 
     player.dispose();
-
   }
 
   bool answerHandler(String text, String answer) {
@@ -48,5 +43,4 @@ class FreemodeService {
       return false;
     }
   }
-
 }
