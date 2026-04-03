@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/pages/freemode/bloc/freemode_bloc.dart';
+
+import '../../../ui/app_ui.dart';
 
 class FreemodeAudioPage extends StatefulWidget {
   final String question;
   final String answer;
-  const FreemodeAudioPage({super.key, required this.question, required this.answer});
+
+  const FreemodeAudioPage({
+    super.key,
+    required this.question,
+    required this.answer,
+  });
 
   @override
   State<FreemodeAudioPage> createState() => _FreemodeAudioPageState();
@@ -17,11 +23,6 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
   final TextEditingController _controller = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -29,79 +30,56 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Свободный режим - аудио"),
+    return AppPageScaffold(
+      appBar: AppBar(title: const Text("Свободный режим · аудио")),
+      padding: AppSpacing.pageDense,
+      bottomBar: AppDangerButton(
+        onPressed: () => context.read<FreemodeBloc>().add(LeaveEvent()),
+        child: const Text('Выйти'),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    SizedBox(
-                        width: double.infinity,
-                        child: Card(
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Column(
-                              children: [
-                                SizedBox(height: 16,),
-                                Text("Прослушайте морзе и переведите", style: Theme.of(context).textTheme.bodyLarge,),
-                                SizedBox(height: 16,),
-                                TextField(
-                                  controller: _controller,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      text = value;
-                                      print(text);
-                                    });
-                                  },
-                                  decoration: InputDecoration(labelText: "Ответ"),
-                                ),
-                                SizedBox(height: 16,),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                      onPressed: () {
-                                        context.read<FreemodeBloc>().add(AudioPlayEvent(question: widget.question));
-                                      },
-                                      child: Text("Прослушать", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),)
-                                  ),
-                                ),
-                                SizedBox(height: 16,),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                      onPressed: () {
-                                        context.read<FreemodeBloc>().add(AnswerEvent(answer: widget.answer, text: text));
-                                      },
-                                      child: Text("Ответить", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),)
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        )
-                    )
-                  ],
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppExerciseInputPanel(
+              children: [
+                Text(
+                  'Прослушайте морзе и переведите',
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  child: Text("Выйти"),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
-                  onPressed: () => context.read<FreemodeBloc>().add(LeaveEvent()),
+                const SizedBox(height: AppSpacing.lg),
+                TextField(
+                  controller: _controller,
+                  onChanged: (value) {
+                    setState(() {
+                      text = value;
+                    });
+                  },
+                  decoration: const InputDecoration(labelText: 'Ответ'),
                 ),
-              )
-            ],
-          ),
+                const SizedBox(height: AppSpacing.lg),
+                AppSecondaryButton(
+                  onPressed: () {
+                    context.read<FreemodeBloc>().add(
+                          AudioPlayEvent(question: widget.question),
+                        );
+                  },
+                  child: const Text('Прослушать'),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppPrimaryButton(
+                  onPressed: () {
+                    context.read<FreemodeBloc>().add(
+                          AnswerEvent(answer: widget.answer, text: text),
+                        );
+                  },
+                  child: const Text('Ответить'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
-
   }
 }

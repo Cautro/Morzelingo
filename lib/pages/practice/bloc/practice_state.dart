@@ -1,49 +1,76 @@
 part of "practice_bloc.dart";
 
-class PracticeState {}
-
-class PracticeInitial extends PracticeState {}
-
-class PracticeGetQuestionState extends PracticeState {
-  final data;
-  PracticeGetQuestionState({required this.data});
+enum PracticeType {
+  text,
+  morse,
+  audio,
 }
 
-class PracticeNextQuestionState extends PracticeState {
-  PracticeNextQuestionState({required this.type, this.question, this.answer, this.isLast, this.index});
-  final question;
-  final answer;
-  final type;
-  final isLast;
-  final index;
+enum PracticeStatus {
+  idle,
+  active,
+  completed,
+  error,
+  leave,
 }
 
-class PracticeCompleteState extends PracticeState {}
+class PracticeState extends Equatable {
+  final bool isLast;
+  final String question;
+  final String answer;
+  final PracticeType? type;
+  final int index;
+  final bool isLoading;
+  final bool? success;
+  final String? message;
+  final bool isLetter;
+  final List? tasks;
+  final PracticeStatus status;
 
-class LettersGetQuestionState extends PracticeState {
-  final data;
-  LettersGetQuestionState({required this.data});
+  const PracticeState({
+    this.success,
+    this.isLast = false,
+    this.question = "",
+    this.answer = "",
+    this.type,
+    this.index = 0,
+    this.isLoading = false,
+    this.message,
+    this.isLetter = false,
+    this.tasks,
+    this.status = PracticeStatus.idle,
+  });
+
+  PracticeState copyWith({
+    bool? isLoading,
+    String? question,
+    String? answer,
+    PracticeType? type,
+    int? index,
+    bool? success,
+    bool? isLast,
+    String? message,
+    bool? isLetter,
+    List? tasks,
+    PracticeStatus? status,
+  }) {
+    return PracticeState(
+      answer: answer ?? this.answer,
+      message: message ?? this.message,
+      isLoading: isLoading ?? this.isLoading,
+      success: success ?? this.success,
+      question: question ?? this.question,
+      isLast: isLast ?? this.isLast,
+      index: index ?? this.index,
+      type: type ?? this.type,
+      isLetter: isLetter ?? this.isLetter,
+      tasks: tasks ?? this.tasks,
+      status: status ?? this.status,
+    );
+  }
+
+  @override
+  List<Object?> get props => [answer, message, isLoading, success,
+  question, isLast, index, type, isLetter, tasks, status,];
 }
 
-class LettersNextQuestionState extends PracticeState {
-  LettersNextQuestionState({required this.type, this.question, this.answer, this.isLast, this.index});
-  final question;
-  final answer;
-  final type;
-  final isLast;
-  final index;
-}
-
-class LettersCompleteState extends PracticeState {}
-
-class PracticeTextAnswerState extends PracticeState {
-  PracticeTextAnswerState({required this.success, required this.message});
-  final success;
-  final message;
-}
-
-class PracticeMorseAnswerState extends PracticeState {
-  PracticeMorseAnswerState({required this.success, required this.message});
-  final success;
-  final message;
-}

@@ -1,45 +1,114 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:morzelingo/pages/practice/context/practice_context.dart';
+import 'package:morzelingo/pages/practice/models/practice_question_model.dart';
+import 'package:morzelingo/pages/practice/repository/practice_repository.dart';
+import 'package:morzelingo/pages/practice/service/practice_service.dart';
 part 'practice_event.dart';
 part 'practice_state.dart';
 
 class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
-  PracticeBloc() : super(PracticeInitial()) {
-    on<PracticeGetQuestionEvent>((event, emit) async {
-      final data = await PracticeContext().getPracticeQuestion();
-      emit(PracticeGetQuestionState(data: data["data"]));
-    });
-    on<PracticeNextQuestionEvent>((event, emit) async {
-      final data = await PracticeContext().nextPracticeQuestion(event.data, event.index, event.isLast);
-      if (!data["islast"]) {
-        emit(PracticeNextQuestionState(type: data["type"], answer: data["answer"], question: data["question"], index: data["index"], isLast: data["islast"]));
-      } else {
-        PracticeContext().completeLesson();
-        emit(PracticeCompleteState());
+  final PracticeRepository _repository;
+  final PracticeService _service;
+  PracticeBloc({required PracticeRepository repository, required PracticeService service}) :
+        _repository = repository, _service = service, super(PracticeState()) {
+
+    on<GetPracticeEvent>((event, emit) async {
+      try {
+        final List getData = await _repository.getPracticeQuestion();
+        final PracticeQuestionModel task = PracticeQuestionModel.fromJson(getData[state.index]);
+        emit(state.copyWith(status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: _service.stringToType(task.type)));
+        print(getData);
+      } catch (e) {
+        print(e);
+        emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
       }
     });
-    on<LettersGetQuestionEvent>((event, emit) async {
-      final data = await PracticeContext().getLetterQuestion(0);
-      emit(LettersGetQuestionState(data: data));
-    });
-    on<LettersNextQuestionEvent>((event, emit) async {
-      final data = await PracticeContext().nextLetterQuestion(event.data, event.index, event.isLast);
-      if (!data["islast"]) {
-        emit(LettersNextQuestionState(type: data["type"], answer: data["answer"], question: data["question"], index: data["index"], isLast: data["islast"]));
-      } else {
-        emit(LettersCompleteState());
+
+    on<GetLettersEvent>((event, emit) async {
+      try {
+        final List getData = await _service.getAnswersForLetters(await _repository.getLetterQuestion());
+        final PracticeQuestionModel task = PracticeQuestionModel.fromJson(getData[state.index]);
+        emit(state.copyWith(isLetter: true, status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: _service.stringToType(task.type)));
+        print(getData);
+      } catch (e) {
+        print(e);
+        emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
       }
     });
-    on<PracticeTextAnswerEvent>((event, emit) async {
-      final data = await PracticeContext().answerPracticeTextHandler(event.isLetter, event.decoded, event.answer);
-      emit(PracticeTextAnswerState(success: data["success"], message: data["message"]));
+
+    on<AnswerEvent>((event, emit) async {
+      try {
+        print('${state.isLast}');
+        final List<SymbolUpdate> stats = _service.calculateStats(state.answer, event.text);
+        await _repository.sendStats(stats);
+        final bool isRight = _service.checkAnswer(event.text, state.answer);
+        if (isRight) {
+          if (state.isLast) {
+            add(CompleteEvent());
+            return;
+          }
+          if (state.index < state.tasks!.length) {
+            final PracticeQuestionModel task = PracticeQuestionModel.fromJson(state.tasks![state.index + 1]);
+            emit(state.copyWith(
+              index: state.index + 1,
+              isLast: (state.index + 2 == state.tasks!.length),
+              question: task.question,
+              answer: task.answer,
+              type: _service.stringToType(task.type),
+              success: true,
+              message: "Правильно"
+            ));
+            emit(state.copyWith(success: null));
+          }
+        } else {
+          emit(state.copyWith(success: false, message: "Неправильно"));
+          emit(state.copyWith(success: null));
+
+        }
+
+      } catch (e) {
+        print(e);
+        emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      }
     });
-    on<PracticeMorseAnswerEvent>((event, emit) async {
-      final data = await PracticeContext().answerPracticeMorseHandler(event.isLetter, event.text, event.answer);
-      emit(PracticeMorseAnswerState(success: data["success"], message: data["message"]));
+
+    on<CompleteEvent>((event, emit) async {
+      print('complete');
+      try {
+        if (!state.isLetter) {
+          await _repository.completeLesson();
+          emit(state.copyWith(status: PracticeStatus.completed));
+        } else {
+          emit(state.copyWith(status: PracticeStatus.completed));
+        }
+      } catch (e) {
+        print(e);
+        emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      }
     });
-    on<PracticePlayMorseEvent>((event, emit) async {
-      await PracticeContext().playMorseAudio(event.text);
+
+    on<LeaveEvent>((event, emit) {
+      try {
+        emit(state.copyWith(status: PracticeStatus.leave));
+      } catch (e) {
+        print(e);
+        emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      }
+    });
+
+    on<PlayMorseEvent>((event, emit) async {
+      try {
+        await _service.playMorseAudio(state.question);
+      } catch (e) {
+        print(e);
+        emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      }
     });
   }
 }

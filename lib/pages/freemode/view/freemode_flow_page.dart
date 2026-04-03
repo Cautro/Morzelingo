@@ -7,8 +7,9 @@ import 'package:morzelingo/pages/freemode/service/freemode_service.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_audio_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_text_page.dart';
-import '../../../app_theme.dart';
 
+import '../../../app_theme.dart';
+import '../../../ui/app_ui.dart';
 
 class FreemodeFlowPage extends StatelessWidget {
   const FreemodeFlowPage({super.key});
@@ -16,36 +17,56 @@ class FreemodeFlowPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (_) => FreemodeBloc(repository: FreemodeRepository(), service: FreemodeService()),
-        child: BlocConsumer<FreemodeBloc, FreemodeState>(
-          listener: (context, state) {
-            if (state.success != null) {
-              Fluttertoast.showToast(
-                  msg: state.message.toString(),
-                  backgroundColor: state.success! ? AppTheme.success : AppTheme.error,
-                  textColor: Colors.white
+      create: (_) => FreemodeBloc(
+        repository: FreemodeRepository(),
+        service: FreemodeService(),
+      ),
+      child: BlocConsumer<FreemodeBloc, FreemodeState>(
+        listener: (context, state) {
+          if (state.success != null) {
+            Fluttertoast.showToast(
+              msg: state.message.toString(),
+              backgroundColor: state.success! ? AppTheme.success : AppTheme.error,
+              textColor: Colors.white,
+            );
+          }
+        },
+        builder: (context, state) {
+          switch (state.status) {
+            case FreemodeStatus.idle:
+              return const FreemodePage();
+            case FreemodeStatus.error:
+              return AppPageScaffold(
+                child: AppEmptyState(
+                  icon: Icons.error_outline_rounded,
+                  title: 'Ошибка',
+                  subtitle: state.message ?? "Непредвиденная ошибка",
+                ),
               );
-            }
-          },
-          builder: (context, state) {
-            switch (state.status) {
-              case FreemodeStatus.idle:
-                return FreemodePage();
-              case FreemodeStatus.error:
-                return Center(child: Text(state.message ?? "Непредвиденная ошибка"),);
-              case FreemodeStatus.active:
-                switch (state.mode) {
-                  case FreemodeMode.audio:
-                    return FreemodeAudioPage(answer: state.answer, question: state.question,);
-                  case FreemodeMode.text:
-                    return FreemodeTextPage(question: state.question, answer: state.answer,);
-                  default:
-                    return Center(child: Text(state.message ?? "Непредвиденная ошибка"),);
-                }
-            }
-          },
-        )
+            case FreemodeStatus.active:
+              switch (state.mode) {
+                case FreemodeMode.audio:
+                  return FreemodeAudioPage(
+                    answer: state.answer,
+                    question: state.question,
+                  );
+                case FreemodeMode.text:
+                  return FreemodeTextPage(
+                    question: state.question,
+                    answer: state.answer,
+                  );
+                default:
+                  return AppPageScaffold(
+                    child: AppEmptyState(
+                      icon: Icons.error_outline_rounded,
+                      title: 'Ошибка',
+                      subtitle: state.message ?? "Непредвиденная ошибка",
+                    ),
+                  );
+              }
+          }
+        },
+      ),
     );
   }
-
 }

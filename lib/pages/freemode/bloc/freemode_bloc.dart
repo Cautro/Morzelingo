@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart';
-import 'package:morzelingo/pages/authorization/bloc/authorization_bloc.dart';
 import 'package:morzelingo/pages/freemode/models/question_model.dart';
 import 'package:morzelingo/pages/freemode/repository/freemode_repository.dart';
 import 'package:morzelingo/pages/freemode/service/freemode_service.dart';

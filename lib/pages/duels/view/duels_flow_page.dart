@@ -1,4 +1,4 @@
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:morzelingo/pages/duels/bloc/duels_bloc.dart';
@@ -10,6 +10,7 @@ import 'package:morzelingo/pages/duels/view/duels_playing_page.dart';
 import 'package:morzelingo/pages/duels/view/duels_waiting_page.dart';
 
 import '../../../app_theme.dart';
+import '../../../ui/app_ui.dart';
 
 class DuelsFlowPage extends StatelessWidget {
   const DuelsFlowPage({super.key});
@@ -17,10 +18,12 @@ class DuelsFlowPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => DuelsBloc(repository: DuelsRepository(), service: DuelsService()),
+      create: (_) => DuelsBloc(
+        repository: DuelsRepository(),
+        service: DuelsService(),
+      ),
       child: BlocConsumer<DuelsBloc, DuelsState>(
         listener: (context, state) {
-
           if (state.status == DuelsStatus.cancelled) {
             Fluttertoast.showToast(
               msg: "Дуэль отменена",
@@ -35,10 +38,9 @@ class DuelsFlowPage extends StatelessWidget {
             }
           }
           if (state.success != null) {
-            print('${state.success}');
             Fluttertoast.showToast(
               msg: state.message.toString(),
-              backgroundColor: state.success  == true ? AppTheme.success : AppTheme.error,
+              backgroundColor: state.success == true ? AppTheme.success : AppTheme.error,
               textColor: Colors.white,
             );
           }
@@ -56,13 +58,22 @@ class DuelsFlowPage extends StatelessWidget {
             case DuelsStatus.idle:
               return const DuelsMainPage();
             case DuelsStatus.active:
-              return DuelsActivePage(opponent: state.opponent ?? "?",);
+              return DuelsActivePage(opponent: state.opponent ?? "?");
             case DuelsStatus.playing:
-              return DuelsPlayingPage(tasks: state.tasks, currentQuestion: state.currentQuestion, answer: state.answer,);
+              return DuelsPlayingPage(
+                tasks: state.tasks,
+                currentQuestion: state.currentQuestion,
+                answer: state.answer,
+              );
             case DuelsStatus.waiting:
               return const DuelsWaitingPage();
             default:
-              return const Center(child: Text("Ошибка"),);
+              return const AppPageScaffold(
+                child: AppEmptyState(
+                  icon: Icons.error_outline_rounded,
+                  title: 'Ошибка',
+                ),
+              );
           }
         },
       ),

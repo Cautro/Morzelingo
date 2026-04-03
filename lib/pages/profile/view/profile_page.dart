@@ -1,11 +1,11 @@
-import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
-import "package:morzelingo/app_theme.dart";
-import "package:morzelingo/pages/loading_page.dart";
-import "package:morzelingo/pages/profile/bloc/profile_bloc.dart";
-import "package:morzelingo/settings_context.dart";
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:morzelingo/pages/loading_page.dart';
+import 'package:morzelingo/pages/profile/bloc/profile_bloc.dart';
+import 'package:morzelingo/settings_context.dart';
 
-import "../../../theme_controller.dart";
+import '../../../app_theme.dart';
+import '../../../ui/app_ui.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -20,7 +20,6 @@ class _ProfilePageState extends State<ProfilePage> {
   String? xp;
   String? lessondone_en;
   String? lessondone_ru;
-  String? token;
   String? level;
   String? coins;
   String? streak;
@@ -28,50 +27,27 @@ class _ProfilePageState extends State<ProfilePage> {
   String? referral;
   bool isLoading = true;
 
-  @override
-
-
-  void Logout(ProfileBloc bloc,) async {
+  void logout(ProfileBloc bloc) async {
     showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Вы уверены что хотите выйти?"),
-            content: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
-                    onPressed: () async {
-                      bloc.add(LogoutEvent());
-                    },
-                    child: Text("Выйти!",),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text("Остаться"),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
+      context: context,
+      builder: (dialogContext) {
+        return AppConfirmationDialog(
+          title: 'Выйти из аккаунта?',
+          message: 'Вы уверены что хотите выйти из аккаунта.',
+          confirmLabel: 'Выйти',
+          cancelLabel: 'Остаться',
+          destructive: true,
+          onConfirm: () async {
+            Navigator.of(dialogContext).pop();
+            bloc.add(LogoutEvent());
+          },
+        );
+      },
     );
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-
     return BlocProvider(
       create: (_) => ProfileBloc()..add(GetProfileDataEvent()),
       child: BlocListener<ProfileBloc, ProfileState>(
@@ -86,7 +62,6 @@ class _ProfilePageState extends State<ProfilePage> {
               coins = state.coins;
               streak = state.streak;
               needxp = state.needxp;
-              referral = state.referral;
               email = state.email;
               username = state.username;
               isLoading = false;
@@ -98,70 +73,93 @@ class _ProfilePageState extends State<ProfilePage> {
         },
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
-            return isLoading ? Scaffold(body: LoadingPage(),) : Scaffold(
-              body: SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Container(
-                        child: Column(
+            if (isLoading) {
+              return const LoadingPage();
+            }
+
+            return AppPageScaffold(
+              scrollable: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: AppSectionHeader(
+                          title: 'Профиль',
+                          subtitle: 'Ваши данные, детали обучения и статистика.',
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, "/settings");
+                        },
+                        icon: const Icon(Icons.settings_outlined),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  AppSurfaceCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                IconButton(
-                                  onPressed: () {
-                                    Navigator.pushNamed(context, "/settings");
-                                  },
-                                  icon: Icon(Icons.settings),
-                                )
-                              ],
+                            Container(
+                              height: 64,
+                              width: 64,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                borderRadius: AppRadii.lg,
+                              ),
+                              child: Icon(
+                                Icons.person_rounded,
+                                size: 34,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.person, size: 50, color: themeController.themeMode == ThemeMode.dark ? AppTheme.DarktextPrimary : AppTheme.textPrimary,),
-                              ],
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(username ?? "", style: Theme.of(context).textTheme.headlineMedium),
+                                  const SizedBox(height: 4),
+                                  Text(email ?? "", style: Theme.of(context).textTheme.bodyMedium),
+                                ],
+                              ),
                             ),
-                            SizedBox(height: 8,),
-                            Text(username!, style: Theme.of(context).textTheme.titleLarge,),
-                            _ProfileCard(
-                              username: "$username" ?? "",
-                              email: "$email" ?? "",
-                              xp: "$xp" ?? "",
-                              lessondone: "${SettingsService.getLang() == "en" ? lessondone_en : lessondone_ru}" ?? "",
-                              coins: "$coins" ?? "",
-                              level: "$level" ?? "",
-                              streak: "$streak" ?? "",
-                              needxp: "$needxp" ?? "",
-                              refferal: "$referral" ?? "",
-                            ),
-                            SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    Logout(context.read<ProfileBloc>());
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.error),
-                                  child: Text("Выйти из аккаунта", style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),),
-                                )
-                            )
-
                           ],
-                        )
-
+                        ),
+                      ],
                     ),
                   ),
-                ),
+                  const SizedBox(height: AppSpacing.lg),
+                  _ProfileCard(
+                    username: "$username" ?? "",
+                    email: "$email" ?? "",
+                    xp: "$xp" ?? "",
+                    lessondone: "${SettingsService.getLang() == "en" ? lessondone_en : lessondone_ru}" ?? "",
+                    coins: "$coins" ?? "",
+                    level: "$level" ?? "",
+                    streak: "$streak" ?? "",
+                    needxp: "$needxp" ?? "",
+                    refferal: "$referral" ?? "",
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  AppDangerButton(
+                    onPressed: () async {
+                      logout(context.read<ProfileBloc>());
+                    },
+                    child: const Text('Выйти из аккаунта'),
+                  ),
+                ],
               ),
             );
           },
         ),
       ),
     );
-
   }
 }
 
@@ -190,88 +188,68 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(padding: EdgeInsetsGeometry.all(8)),
-          Row(
-            children: [
-              _ProfileItem(text: level, icon: Icon(Icons.leaderboard, color: Colors.blue  ,)),
-              _ProfileItem(text: xp, icon: Icon(Icons.star_rounded, color: Colors.amber,)),
-            ]
-          ),
-          Row(
-              children: [
-                _ProfileItem(text: streak, icon: Icon(Icons.local_fire_department, color: Colors.orange,)),
-                _ProfileItem(text: lessondone, icon: Icon(Icons.done_outline, color: AppTheme.success,)),
-              ]
-          ),
-          Row(
-            children: [
-              _ProfileItem(text: "Опыта до повышения: $needxp", icon: Icon(Icons.upgrade, color: Colors.amber ,)),
-            ],
-          ),
-          Row(
-            children: [
-              _ProfileItem(text: "Реферальный код: $refferal", icon: Icon(Icons.link, color: Colors.blue,))
-            ],
-          ),
-          SizedBox(height: 8,),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, "/friends");
-                  },
-                  child: Text("Друзья"),
-                ),
-              ),
-              SizedBox(width: 8),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, "/lettersstats");
-                  },
-                  child: Text("Статистика букв"),
-                ),
-              ),
-            ],
-          ),
-        ],
-      )
-    );
-  }
-}
-
-class _ProfileItem extends StatelessWidget {
-  final String text;
-  final Icon icon;
-  const _ProfileItem({
-    required this.text,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Card(
-        child: Padding(
-            padding: EdgeInsetsGeometry.all(16),
-            child: Row(
-              children: [
-                icon,
-                Padding(padding: EdgeInsetsGeometry.symmetric(horizontal: 8)),
-                Text(text, style: Theme.of(context).textTheme.bodyLarge),
-              ],
-            )
+    return Column(
+      children: [
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          mainAxisSpacing: AppSpacing.md,
+          crossAxisSpacing: AppSpacing.md,
+          childAspectRatio: 1.25,
+          children: [
+            AppStatTile(
+              icon: Icons.leaderboard_rounded,
+              label: 'Уровень',
+              value: level,
+            ),
+            AppStatTile(
+              icon: Icons.star_rounded,
+              label: 'Опыт',
+              value: xp,
+              color: AppTheme.warning,
+            ),
+            AppStatTile(
+              icon: Icons.local_fire_department_rounded,
+              label: 'Серия',
+              value: streak,
+              color: Colors.orange,
+            ),
+            AppStatTile(
+              icon: Icons.done_outline_rounded,
+              label: 'Пройдено уроков',
+              value: lessondone,
+              color: AppTheme.success,
+            ),
+          ],
         ),
-      ),
+        const SizedBox(height: AppSpacing.md),
+        AppListCard(
+          title: 'До повышения уровня',
+          subtitle: 'Опыта до повышения: $needxp',
+          leading: Icon(Icons.upgrade_rounded, color: AppTheme.warning),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        AppListCard(
+          title: 'Реферальный код',
+          subtitle: refferal,
+          leading: const Icon(Icons.link_rounded),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        AppPrimaryButton(
+          onPressed: () {
+            Navigator.pushNamed(context, "/friends");
+          },
+          child: const Text('Друзья'),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        AppSecondaryButton(
+          onPressed: () {
+            Navigator.pushNamed(context, "/lettersstats");
+          },
+          child: const Text('Статистика букв'),
+        ),
+      ],
     );
   }
 }
-
-
-
-

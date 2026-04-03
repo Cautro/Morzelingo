@@ -1,107 +1,73 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:morzelingo/pages/loading_page.dart';
 
+import '../../../ui/app_ui.dart';
 import '../bloc/education_bloc.dart';
 
 class LessonPage extends StatefulWidget {
-  const LessonPage({super.key,});
+  const LessonPage({super.key});
 
   @override
   State<LessonPage> createState() => _LessonPageState();
-
 }
+
 class _LessonPageState extends State<LessonPage> {
   var lesson;
-  String? lessondone;
-  var done = false;
-  var id;
+  bool done = false;
   bool isLoading = true;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-
     return BlocProvider(
-        create: (_) => EducationBloc()..add(GetLessonDataEvent()),
-        child: BlocListener<EducationBloc, EducationState>(
-            listener: (context, state) {
-              if (state is GetLessonDataState) {
-                setState(() {
-                  lesson = state.lesson;
-                  done = state.done;
-                  isLoading = false;
-                });
-              }
-            },
-            child: BlocBuilder<EducationBloc, EducationState>(
-                builder: (context, state) {
-                  return isLoading ? LoadingPage() : Scaffold(
-                    appBar: AppBar(title: const Text("Теория")),
-                    body: SafeArea(
-                      child: Padding(
-                        padding:  EdgeInsets.all(24),
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: SingleChildScrollView(
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.all(16),
-                                                child: Text(
-                                                  lesson["title"],
-                                                  style: Theme.of(context).textTheme.titleLarge,
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.all(16),
-                                                child: Text(
-                                                  lesson["theory"],
-                                                  style: Theme.of(context).textTheme.bodyLarge,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  )
-                              ),
-                            ),
+      create: (_) => EducationBloc()..add(GetLessonDataEvent()),
+      child: BlocListener<EducationBloc, EducationState>(
+        listener: (context, state) {
+          if (state is GetLessonDataState) {
+            setState(() {
+              lesson = state.lesson;
+              done = state.done;
+              isLoading = false;
+            });
+          }
+        },
+        child: BlocBuilder<EducationBloc, EducationState>(
+          builder: (context, state) {
+            if (isLoading) {
+              return const LoadingPage();
+            }
 
-                            !done ? SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pushNamed(context, '/practice',);
-                                },
-                                child: Text(
-                                  "Закрепить знания",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(color: Colors.white),
-                                ),
-                              ),
-                            ) : Container()
-                          ],
-                        ),
-                      ),
+            return AppPageScaffold(
+              appBar: AppBar(title: const Text("Теория")),
+              scrollable: true,
+              bottomBar: done
+                  ? null
+                  : AppPrimaryButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/practice');
+                      },
+                      child: const Text('Закрепить знания'),
                     ),
-                  );
-                }
-            )
-        )
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppSectionHeader(
+                    title: lesson["title"],
+                    subtitle: !done ? 'Изучите теорию морзе, а после - закрепите свои знания практикой.' : 'Повторите теорию уже пройденного вами урока',
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  AppSurfaceCard(
+                    child: Text(
+                      lesson["theory"],
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

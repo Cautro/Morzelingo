@@ -1,101 +1,99 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:morzelingo/pages/loading_page.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:morzelingo/app_theme.dart';
+import 'package:morzelingo/pages/practice/bloc/practice_bloc.dart';
+import 'package:morzelingo/pages/practice/repository/practice_repository.dart';
+import 'package:morzelingo/pages/practice/service/practice_service.dart';
 import 'package:morzelingo/pages/practice/view/practice_audio_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_morse_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_text_page.dart';
+import 'package:morzelingo/ui/app_ui.dart';
 
-import '../bloc/practice_bloc.dart';
+import '../../loading_page.dart';
 
-class PracticePage extends StatefulWidget {
-  const PracticePage({super.key});
-
-  @override
-  State<PracticePage> createState() => _PracticePageState();
-}
-
-class _PracticePageState extends State<PracticePage> {
-  var data;
-  var question;
-  var answer;
-  var type;
-  bool isLast = false;
-  int index = 0;
-
-  @override
-  void initState() {
-    super.initState();
-  }
+class PracticeFlowPage extends StatelessWidget {
+  const PracticeFlowPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => PracticeBloc()..add(PracticeGetQuestionEvent()),
-      child: BlocListener<PracticeBloc, PracticeState>(
+      create: (_) => PracticeBloc(repository: PracticeRepository(), service: PracticeService())..add(GetPracticeEvent()),
+      child: BlocConsumer<PracticeBloc, PracticeState>(
         listener: (context, state) {
-          if (state is PracticeGetQuestionState) {
-            setState(() {
-              data = state.data;
-              type = data["questions"][index]["type"];
-              question = data["questions"][index]["question"];
-              answer = data["questions"][index]["answer"];
-            });
+          if (state.success != null) {
+            Fluttertoast.showToast(
+              msg: state.message ?? "",
+              backgroundColor: state.success! ? AppTheme.success : AppTheme.error,
+              textColor: Colors.white
+            );
           }
-          if (state is PracticeNextQuestionState) {
-            setState(() {
-              question = state.question;
-              answer = state.answer;
-              type = state.type;
-              index = state.index;
-              isLast = state.isLast;
-            });
+          if (state.status == PracticeStatus.completed) {
+            Fluttertoast.showToast(
+              msg: "Урок завершён",
+              backgroundColor: AppTheme.success,
+              textColor: Colors.white
+            );
+            Navigator.pushReplacementNamed(context, "/home");
           }
-          if (state is PracticeCompleteState) {
-            Navigator.pop(context);
-            Navigator.pop(context);
+          if (state.status == PracticeStatus.leave) {
+            Fluttertoast.showToast(
+                msg: "Урок покинут",
+                backgroundColor: AppTheme.error,
+                textColor: Colors.white
+            );
+            Navigator.pushReplacementNamed(context, "/home");
           }
         },
-        child: BlocBuilder<PracticeBloc, PracticeState>(
-          builder: (context, state) {
-            switch (type) {
-              case "text":
-                return Scaffold(
-                  appBar: AppBar(
-                      title: Text("Отработайте навыки")
-                  ),
-                  body: PracticeTextPage(answer: answer, question: question, isLast: isLast, isLetter: false, currentquestion: ((1 / data["questions"].length) * (index + 1)),
-                    onAnswer: () {
-                      context.read<PracticeBloc>().add(PracticeNextQuestionEvent(data: data, index: index, isLast: isLast));
-                    },
-                  ),
-                );
-              case "audio":
-                return Scaffold(
-                    appBar: AppBar(
-                        title: Text("Отработайте навыки")
-                    ),
-                    body: PracticeAudioPage(answer: answer, question: question, isLetter: false, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
-                      onAnswer: () {
-                        context.read<PracticeBloc>().add(PracticeNextQuestionEvent(data: data, index: index, isLast: isLast));
-                      } ,)
-                );
-              case "morse":
-                return Scaffold(
-                    appBar: AppBar(
-                        title: Text("Отработайте навыки")
-                    ),
-                    body: PracticeMorsePage(answer: answer, question: question, isLetter: false, isLast: isLast, currentquestion: (1 / data["questions"].length * (index + 1)),
-                      onAnswer: () {
-                        context.read<PracticeBloc>().add(PracticeNextQuestionEvent(data: data, index: index, isLast: isLast));
-                      } ,)
-                );
-              default: return LoadingPage();
-            }
-          },
-        ),
+        builder: (context, state) {
+
+          switch (state.status) {
+            case PracticeStatus.idle || PracticeStatus.leave || PracticeStatus.completed:
+              return const LoadingPage();
+            case PracticeStatus.error:
+              return const AppPageScaffold(
+                child: AppEmptyState(
+                  icon: Icons.error_outline_rounded,
+                  title: 'Ошибка',
+                ),
+              );
+            case PracticeStatus.active:
+              Widget content() { switch (state.type) {
+                case PracticeType.text:
+                  return PracticeTextPage(question: state.question, isLast: state.isLast, answer: state.answer, currentquestion: state.index / state.tasks!.length, isLetter: state.isLetter,);
+                case PracticeType.audio:
+                  return PracticeAudioPage(question: state.question, isLast: state.isLast, answer: state.answer, currentquestion: state.index / state.tasks!.length, isLetter: state.isLetter,);
+                case PracticeType.morse:
+                  return PracticeMorsePage(question: state.question, isLast: state.isLast, answer: state.answer, currentquestion: state.index / state.tasks!.length, isLetter: state.isLetter,);
+                default:
+                  return ErrorWidget("Ошибка");
+              }
+              }
+
+              return AppPageScaffold(
+                appBar: AppBar(
+                  title: const Text("Практика"),
+                  automaticallyImplyLeading: false,
+                ),
+                bottomBar: Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: AppDangerButton(
+                        child: const Text("Выйти"),
+                        onPressed: () {
+                          context.read<PracticeBloc>().add(LeaveEvent());
+                        },
+                      ),
+                    )
+                  ],
+                ),
+                child: content(),
+              );
+          }
+
+        },
       ),
     );
-
   }
 }

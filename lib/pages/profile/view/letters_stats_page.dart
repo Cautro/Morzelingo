@@ -1,8 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:morzelingo/pages/profile/bloc/profile_bloc.dart';
 
+import '../../../ui/app_ui.dart';
 
 class LettersStatsPage extends StatefulWidget {
   const LettersStatsPage({super.key});
@@ -14,15 +14,6 @@ class LettersStatsPage extends StatefulWidget {
 class _LettersStatsPageState extends State<LettersStatsPage> {
   List<dynamic> stats = [];
   bool isLoading = true;
-
-  @override
-
-
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,54 +30,59 @@ class _LettersStatsPageState extends State<LettersStatsPage> {
         },
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
-            return Scaffold(
-              appBar: AppBar(
-                title: Text("Статистика букв"),
-              ),
-              body: SafeArea(
-                child: Container(
-                    padding: EdgeInsets.all(16),
-                    child: stats.isNotEmpty ? GridView.count(
-                        childAspectRatio: 1.75,
+            if (isLoading) {
+              return AppPageScaffold(
+                appBar: AppBar(title: const Text("Статистика букв")),
+                child: const AppLoadingIndicator(),
+              );
+            }
+
+            return AppPageScaffold(
+              appBar: AppBar(title: const Text("Статистика букв")),
+              padding: AppSpacing.pageDense,
+              child: stats.isNotEmpty
+                  ? GridView.builder(
+                      itemCount: stats.length,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        children: stats.map((item) {
-                          return SizedBox(
-                            width: double.infinity,
-                            child: Card(
-                              child: Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min  ,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text("Буква ${item["symbol"]}", style: Theme.of(context).textTheme.bodyLarge,)
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text("Правильно: ${item["correct"]}")
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text("Неправильно: ${item["wrong"]}")
-                                        ],
-                                      )
-                                    ],
-                                  )
+                        crossAxisSpacing: AppSpacing.md,
+                        mainAxisSpacing: AppSpacing.md,
+                        childAspectRatio: 1.2,
+                      ),
+                      itemBuilder: (context, index) {
+                        final item = stats[index];
+                        return AppSurfaceCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Буква ${item["symbol"]}",
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
-                            ),
-                          );
-                        }).toList()
-                    ) : Center(child: Text("У вас пока нет статистики"),)
-                ),
-              ),
+                              const Spacer(),
+                              Text(
+                                "Правильно: ${item["correct"]}",
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                "Неправильно: ${item["wrong"]}",
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    )
+                  : const AppEmptyState(
+                      icon: Icons.query_stats_rounded,
+                      title: 'У вас пока нет статистики',
+                      subtitle: 'Она появится после первых попыток в упражнениях.',
+                    ),
             );
           },
         ),
       ),
     );
-
   }
 }

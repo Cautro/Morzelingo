@@ -1,40 +1,41 @@
 part of "practice_bloc.dart";
 
-class PracticeEvent {}
-
-class PracticeGetQuestionEvent extends PracticeEvent {}
-
-class PracticeNextQuestionEvent extends PracticeEvent {
-  PracticeNextQuestionEvent({required this.data, required this.index, required this.isLast});
-  final data;
-  final index;
-  final isLast;
+abstract class PracticeEvent extends Equatable {
+  const PracticeEvent();
+  @override
+  List<Object?> get props => [];
 }
 
-class LettersGetQuestionEvent extends PracticeEvent {}
-
-class LettersNextQuestionEvent extends PracticeEvent {
-  LettersNextQuestionEvent({required this.isLast, required this.data, required this.index});
-  final data;
-  final index;
-  final isLast;
+class GetPracticeEvent extends PracticeEvent {
+  @override
+  List<Object?> get props => [];
 }
 
-class PracticeTextAnswerEvent extends PracticeEvent {
-  PracticeTextAnswerEvent({required this.decoded, required this.isLetter, required this.answer});
-  final decoded;
-  final isLetter;
-  final answer;
+class GetLettersEvent extends PracticeEvent {
+  @override
+  List<Object?> get props => [];
 }
 
-class PracticeMorseAnswerEvent extends PracticeEvent {
-  PracticeMorseAnswerEvent({required this.text, required this.isLetter, required this.answer});
-  final text;
-  final isLetter;
-  final answer;
+class AnswerEvent extends PracticeEvent {
+  final String text;
+  const AnswerEvent({required this.text});
+  @override
+  List<Object?> get props => [text,];
 }
 
-class PracticePlayMorseEvent extends PracticeEvent {
-  PracticePlayMorseEvent({required this.text});
-  final text;
+class PlayMorseEvent extends PracticeEvent {
+  final String text;
+  const PlayMorseEvent({required this.text});
+  @override
+  List<Object?> get props => [text,];
+}
+
+class LeaveEvent extends PracticeEvent {
+  @override
+  List<Object?> get props => [];
+}
+
+class CompleteEvent extends PracticeEvent {
+  @override
+  List<Object?> get props => [];
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:morzelingo/settings_context.dart';
 import 'package:morzelingo/theme_controller.dart';
 
+import '../../../ui/app_ui.dart';
+
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -10,31 +12,21 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppPageScaffold(
       appBar: AppBar(
         title: const Text("Настройки"),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              _wpmSlider(),
-              _themeController(),
-              _langController()
-            ],
-          ),
-        ),
+      padding: AppSpacing.pageDense,
+      child: ListView(
+        children: const [
+          _wpmSlider(),
+          SizedBox(height: AppSpacing.md),
+          _themeController(),
+          SizedBox(height: AppSpacing.md),
+          _langController(),
+        ],
       ),
     );
   }
@@ -56,8 +48,6 @@ class _wpmSliderState extends State<_wpmSlider> {
     getSettings();
   }
 
-  @override
-
   Future<void> getSettings() async {
     final saved = await SettingsService.getWpm();
 
@@ -68,29 +58,33 @@ class _wpmSliderState extends State<_wpmSlider> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Card(
-        child: Container(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Text("$wpm WPM - кол-во слов в минуту "),
-              Slider(
-                value: wpm,
-                min: 5,
-                max: 20,
-                divisions: 15,
-                onChanged: (value) {
-                  setState(() {
-                    wpm = value;
-                  });
-                  SettingsService.setWpm(value.toInt());
-                },
-              ),
-            ],
+    return AppSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AppSectionHeader(
+            title: 'Скорость воспроизведения',
+            subtitle: 'Измените WPM, чтобы подстроить обучение под своё понимание морзе.',
           ),
-        ),
-
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            '$wpm WPM',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Slider(
+            value: wpm,
+            min: 5,
+            max: 20,
+            divisions: 15,
+            onChanged: (value) {
+              setState(() {
+                wpm = value;
+              });
+              SettingsService.setWpm(value.toInt());
+            },
+          ),
+        ],
       ),
     );
   }
@@ -104,18 +98,23 @@ class _themeController extends StatefulWidget {
 }
 
 class _themeControllerState extends State<_themeController> {
+  bool isDark = themeController.themeMode == ThemeMode.dark;
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: Card(
-        child: SwitchListTile(
-          title: Text( themeController.themeMode == ThemeMode.dark ? "Тёмная тема" : "Светлая тема"),
-          value: themeController.themeMode == ThemeMode.dark,
-          onChanged: (value) {
-            themeController.toggleTheme();
-          },
+    return AppSurfaceCard(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: SwitchListTile(
+        title: Text(
+          isDark ? "Тёмная тема" : "Светлая тема",
         ),
+        subtitle: const Text('Измените тему приложения под себя.'),
+        value: themeController.themeMode == ThemeMode.dark,
+        onChanged: (value) {
+          themeController.toggleTheme();
+          setState(() {
+            isDark = themeController.themeMode == ThemeMode.dark;
+          });
+        },
       ),
     );
   }
@@ -132,57 +131,53 @@ class _langControllerState extends State<_langController> {
   String selected = "";
 
   @override
+  void initState() {
+    super.initState();
+    getLang();
+  }
+
   Future<void> getLang() async {
     String? lang = await SettingsService.getLang();
     setState(() {
       selected = lang;
     });
-    print(selected);
-  }
-
-  @override
-  void initState()  {
-    super.initState();
-    getLang();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
+    return AppSurfaceCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Язык обучения", style: Theme.of(context).textTheme.bodyLarge,),
-          Card(
-            child: SizedBox(
-              width: double.infinity,
-              child: SegmentedButton(
-                segments: [
-                  ButtonSegment(
-                      value: "en",
-                      label: Text("Английский")
-                  ),
-                  ButtonSegment(
-                      value: "ru",
-                      label: Text("Русский", style: TextStyle(
-                      ),)
-                  ),
-                ],
-                style: ButtonStyle(
-                    side: WidgetStatePropertyAll(BorderSide.none)
+          const AppSectionHeader(
+            title: 'Язык обучения',
+            subtitle: 'Измените язык обучения на предпочтительный для вас.',
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<String>(
+              segments: const [
+                ButtonSegment<String>(
+                  value: "en",
+                  label: Text("Английский"),
                 ),
-                selected: {selected},
-                onSelectionChanged: (Set<String> newselect) {
-                  setState(() {
-                    selected = newselect.first;
-                  });
-                  SettingsService.setLang(selected);
-                },
-              ),
-            )
+                ButtonSegment<String>(
+                  value: "ru",
+                  label: Text("Русский"),
+                ),
+              ],
+              selected: {selected},
+              onSelectionChanged: (Set<String> newselect) {
+                setState(() {
+                  selected = newselect.first;
+                });
+                SettingsService.setLang(selected);
+              },
+            ),
           ),
         ],
-      )
+      ),
     );
   }
 }

@@ -13,15 +13,16 @@ class FreemodeService {
     player.stop();
 
     final wpm = await SettingsService.getWpm();
-    final timing = MorseTiming(wpm);
+    final timing = MorseTiming.fromWpm(wpm);
 
     for (int i = 0; i < question.length; i++) {
       final char = question[i];
+      print(char);
 
-      if (char == '.') {
+      if (char == '•') {
         await player.play(AssetSource('sounds/dot.wav'));
         await Future.delayed(Duration(milliseconds: timing.dot));
-      } else if (char == '-') {
+      } else if (char == '—') {
         await player.play(AssetSource('sounds/dash.wav'));
         await Future.delayed(Duration(milliseconds: timing.dash));
       } else if (char == ' ') {
