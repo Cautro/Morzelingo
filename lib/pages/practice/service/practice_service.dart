@@ -92,7 +92,7 @@ class PracticeService {
     return text.toUpperCase().trim() == answer.toUpperCase().trim();
   }
 
-  Future<void> playMorseAudio(question) async {
+  Future<void> playMorseAudio(String question) async {
     final player = AudioPlayer();
 
     final int wpm = await SettingsService.getWpm();
@@ -121,18 +121,20 @@ class PracticeService {
   }
 
   Future<List> getAnswersForLetters(List questions) async {
+    List data = questions;
+
     for (int i = 0; i < questions.length; i++) {
 
-      if (questions[i]["type"] == "text") {
-        questions[i]["answer"] = questions[i]["question"];
+      if (data[i]["type"] == "text") {
+        data[i]["answer"] = data[i]["question"];
       }
-      if (questions[i]["type"] == "morse" || questions[i]["type"] == "audio") {
-        questions[i]["answer"] = await _decodeMorse(questions[i]["question"].toString());
+      if (data[i]["type"] == "morse" || data[i]["type"] == "audio") {
+        data[i]["answer"] = await _decodeMorse(data[i]["question"].toString());
       }
 
     }
 
-    return questions;
+    return data;
   }
 
 }

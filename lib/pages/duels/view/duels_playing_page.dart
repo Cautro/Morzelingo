@@ -117,7 +117,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
   }
 }
 
-class TextPage extends StatefulWidget {
+class TextPage extends StatelessWidget {
   final MorseCallback onChange;
   final double value;
   final String text;
@@ -130,31 +130,27 @@ class TextPage extends StatefulWidget {
   });
 
   @override
-  State<TextPage> createState() => _TextPageState();
-}
-
-class _TextPageState extends State<TextPage> {
-  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ProgressBar(value: widget.value),
+          ProgressBar(value: value),
           const SizedBox(height: AppSpacing.md),
           AppExercisePrompt(
             title: 'Переведите',
-            subtitle: widget.text,
+            subtitle: text,
           ),
           const SizedBox(height: AppSpacing.md),
-          MorseKeyWidget(onTextDecoded: widget.onChange),
+          MorseKeyWidget(onTextDecoded: onChange),
         ],
       ),
     );
   }
 }
 
-class MorsePage extends StatefulWidget {
+
+class MorsePage extends StatelessWidget {
   final ValueChanged<String> onChange;
   final double value;
   final String text;
@@ -167,27 +163,22 @@ class MorsePage extends StatefulWidget {
   });
 
   @override
-  State<MorsePage> createState() => _MorsePageState();
-}
-
-class _MorsePageState extends State<MorsePage> {
-  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ProgressBar(value: widget.value),
+          ProgressBar(value: value),
           const SizedBox(height: AppSpacing.md),
           AppExerciseInputPanel(
             children: [
               Text(
-                "Переведите: ${widget.text}",
+                "Переведите: ${text}",
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppSpacing.lg),
               TextField(
-                onChanged: widget.onChange,
+                onChanged: onChange,
                 decoration: const InputDecoration(labelText: "Ответ"),
               ),
             ],
@@ -198,7 +189,8 @@ class _MorsePageState extends State<MorsePage> {
   }
 }
 
-class AudioPage extends StatefulWidget {
+
+class AudioPage extends StatelessWidget {
   final ValueChanged<String> onChange;
   final double value;
   final String text;
@@ -210,18 +202,12 @@ class AudioPage extends StatefulWidget {
     required this.onChange,
   });
 
-  @override
-  State<AudioPage> createState() => _AudioPageState();
-}
-
-class _AudioPageState extends State<AudioPage> {
-  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ProgressBar(value: widget.value),
+          ProgressBar(value: value),
           const SizedBox(height: AppSpacing.md),
           AppExerciseInputPanel(
             children: [
@@ -231,15 +217,15 @@ class _AudioPageState extends State<AudioPage> {
               ),
               const SizedBox(height: AppSpacing.lg),
               TextField(
-                onChanged: widget.onChange,
+                onChanged: onChange,
                 decoration: const InputDecoration(labelText: "Ответ"),
               ),
               const SizedBox(height: AppSpacing.lg),
               AppSecondaryButton(
                 onPressed: () async {
                   context.read<DuelsBloc>().add(
-                        PlayMorseEvent(question: widget.text.toString()),
-                      );
+                    PlayMorseEvent(question: text.toString()),
+                  );
                 },
                 child: const Text('Прослушать'),
               ),
@@ -250,6 +236,7 @@ class _AudioPageState extends State<AudioPage> {
     );
   }
 }
+
 
 class ProgressBar extends StatelessWidget {
   final double value;

@@ -53,7 +53,9 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
         if (checkData) {
           emit(state.copyWith(status: AuthorizationStatus.success, message: "Вход успешен"));
         }
-      } catch (e) {}
+      } catch (e) {
+        emit(state.copyWith(status: AuthorizationStatus.idle,));
+      }
     });
   }
 }

@@ -10,7 +10,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
   final PracticeRepository _repository;
   final PracticeService _service;
   PracticeBloc({required PracticeRepository repository, required PracticeService service}) :
-        _repository = repository, _service = service, super(PracticeState()) {
+        _repository = repository, _service = service, super(const PracticeState()) {
 
     on<GetPracticeEvent>((event, emit) async {
       try {

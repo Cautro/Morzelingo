@@ -5,14 +5,14 @@ import '../models/morse_models.dart';
 
 class DuelsService {
 
-  Map<String, String> morseToLetter = {};
+  Map<String, String> _morseToLetter = {};
 
   Future<String> _decodeMorse(String morseCode) async {
     String? lang = await SettingsService.getLang();
-    morseToLetter = lang == "en" ? MorseModels.morseToLetterEN : MorseModels.morseToLetterRU;
+    _morseToLetter = lang == "en" ? MorseModels.morseToLetterEN : MorseModels.morseToLetterRU;
     return morseCode.split('  ').map((word) {
       return word.split(' ').map((char) {
-        return morseToLetter[char] ?? '';
+        return _morseToLetter[char] ?? '';
       }).join('');
     }).join(' ');
   }

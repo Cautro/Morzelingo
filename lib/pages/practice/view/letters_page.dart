@@ -12,7 +12,7 @@ class LettersPage extends StatefulWidget {
 }
 
 class _LettersPageState extends State<LettersPage> {
-  List lettersEN = [
+  List<Map<String, String>> lettersEN = [
     {"letter": "A", "morse": "•—"},
     {"letter": "B", "morse": "—•••"},
     {"letter": "C", "morse": "—•—•"},
