@@ -1,116 +1,102 @@
 import 'dart:async';
-import 'package:bloc/bloc.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'morse_key_event.dart';
-import 'morse_key_state.dart';
-import '../context/morse_key_context.dart';
-import '../../settings_context.dart' hide MorseTiming;
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
+import 'package:morzelingo/settings_context.dart' hide MorseTiming;
+import 'package:morzelingo/widgets/models/morse_key_models.dart';
+
+part 'morse_key_event.dart';
+part 'morse_key_state.dart';
 
 class MorseKeyBloc extends Bloc<MorseKeyEvent, MorseKeyState> {
-  final SettingsService settingsService;
   final AudioPlayer _player = AudioPlayer();
   Timer? _pauseTimer;
-  Timer? _wordTimer;
 
-  MorseKeyBloc({required this.settingsService}) : super(MorseKeyState.initial()) {
-    on<InitMorseKey>(_onInit);
-    on<AddDot>(_onAddDot);
-    on<AddDash>(_onAddDash);
-    on<FinishLetter>(_onFinishLetter);
-    on<AddSpace>(_onAddSpace);
-    on<ClearMorse>(_onClear);
-    on<BackspacePressed>(_onBackspace);
-    on<TapDownEvent>((e, emit) => emit(state.copyWith(isPressed: true)));
-    on<TapUpEvent>((e, emit) => emit(state.copyWith(isPressed: false)));
-  }
-
-  Future<void> _onInit(InitMorseKey event, Emitter<MorseKeyState> emit) async {
-    emit(state.copyWith(loading: true));
-    _player.setReleaseMode(ReleaseMode.stop);
-
-    try {
-      final lang = await SettingsService.getLang();
-      final wpm = await SettingsService.getWpm();
-      final timing = MorseTiming(wpm);
-
-      final morseMap = (lang == 'ru') ? morseToTextRu : morseToTextEn;
-
-      emit(state.copyWith(
-        morseMap: morseMap,
-        timing: timing,
-        loading: false,
-      ));
-    } catch (e) {
-      emit(state.copyWith(loading: false));
-    }
-  }
-
-  Future<void> _onAddDot(AddDot event, Emitter<MorseKeyState> emit) async {
-    await _player.play(AssetSource('sounds/dot.wav'));
-    _addSymbol('•', emit);
-  }
-
-  Future<void> _onAddDash(AddDash event, Emitter<MorseKeyState> emit) async {
-    await _player.play(AssetSource('sounds/dash.wav'));
-    _addSymbol('—', emit);
-  }
-
-  void _addSymbol(String symbol, Emitter<MorseKeyState> emit) {
-    final newMorse = state.currentMorse + symbol;
-    emit(state.copyWith(currentMorse: newMorse));
-
-    _pauseTimer?.cancel();
-    _wordTimer?.cancel();
-    final int letterPauseMs = state.timing.letterPause;
-    _pauseTimer = Timer(Duration(milliseconds: letterPauseMs * 4), () {
-      add(FinishLetter());
+  MorseKeyBloc() : super(const MorseKeyState()) {
+    on<InitMorseKeyEvent>((event, emit) async {
+      final int wpm = await SettingsService.getWpm();
+      final String lang = await SettingsService.getLang();
+      final MorseTiming timing = MorseTiming.fromWpm(wpm);
+      final Map<String, String> morseMap = lang == "ru" ? morseToTextRu : morseToTextEn;
+      emit(state.copyWith(timing: timing, isPressed: false, decodedText: "", currentMorse: "", morseMap: morseMap));
     });
-  }
 
-  Future<void> _onFinishLetter(FinishLetter event, Emitter<MorseKeyState> emit) async {
-    final letter = state.morseMap[state.currentMorse];
-    String newDecoded = state.decodedText;
-    if (letter != null) {
-      newDecoded = newDecoded + letter;
-      emit(state.copyWith(decodedText: newDecoded));
-    }
-
-    emit(state.copyWith(currentMorse: ''));
-
-    _wordTimer?.cancel();
-    final int wordPauseMs = state.timing.wordPause;
-    final int letterPauseMs = state.timing.letterPause;
-    _wordTimer = Timer(Duration(milliseconds: wordPauseMs), () {
-      add(AddSpace());
+    on<AddDotEvent>((event, emit) async {
+      try {
+        await _player.play(AssetSource('sounds/dot.wav'));
+        add(const AddSymbolEvent(symbol: "•"));
+      } catch (e) {
+        emit(state.copyWith(message: e.toString(), error: true));
+        emit(state.copyWith(error: false));
+      }
     });
-  }
 
-  Future<void> _onAddSpace(AddSpace event, Emitter<MorseKeyState> emit) async {
-    if (state.decodedText.isNotEmpty && !state.decodedText.endsWith(' ')) {
-      final updated = '${state.decodedText} ';
-      emit(state.copyWith(decodedText: updated));
-    }
-  }
+    on<AddDashEvent>((event, emit) async {
+      try {
+        await _player.play(AssetSource('sounds/dash.wav'));
+        add(const AddSymbolEvent(symbol: "—"));
+      } catch (e) {
+        emit(state.copyWith(message: e.toString(), error: true));
+        emit(state.copyWith(error: false));
+      }
+    });
 
-  Future<void> _onClear(ClearMorse event, Emitter<MorseKeyState> emit) async {
-    _pauseTimer?.cancel();
-    _wordTimer?.cancel();
-    emit(state.copyWith(currentMorse: '', decodedText: ''));
-  }
+    on<AddSymbolEvent>((event, emit) {
+      try {
+        emit(state.copyWith(currentMorse: state.currentMorse + event.symbol));
 
-  Future<void> _onBackspace(BackspacePressed event, Emitter<MorseKeyState> emit) async {
-    if (state.decodedText.isNotEmpty) {
-      final s = state.decodedText;
-      final newDecoded = s.substring(0, s.length - 1);
-      emit(state.copyWith(decodedText: newDecoded));
-    }
+        _pauseTimer?.cancel();
+
+        _pauseTimer = Timer(
+          Duration(milliseconds: (state.timing!.letterPause * 4).floor()),
+                () => add(const FinishLetterEvent())
+        );
+
+      } catch (e) {
+        emit(state.copyWith(message: e.toString(), error: true));
+        emit(state.copyWith(error: false));
+      }
+    });
+
+    on<FinishLetterEvent>((event, emit) {
+      try {
+        final String? letter = state.morseMap?[state.currentMorse];
+        if (letter != null) {
+          emit(state.copyWith(decodedText: state.decodedText + letter));
+        }
+        emit(state.copyWith(currentMorse: ""));
+      } catch (e) {
+        emit(state.copyWith(message: e.toString(), error: true));
+        emit(state.copyWith(error: false));
+      }
+    });
+
+    on<AddSpaceEvent>((event, emit) {
+      try {
+        emit(state.copyWith(decodedText: state.decodedText + " "));
+      } catch (e) {
+        emit(state.copyWith(message: e.toString(), error: true));
+        emit(state.copyWith(error: false));
+      }
+    });
+    on<BackspaceEvent>((event, emit) {
+      try {
+        if (state.decodedText.isNotEmpty) {
+          final text = state.decodedText;
+          emit(state.copyWith(decodedText: text.substring(0, text.length - 1)));
+        }
+      } catch (e) {
+        emit(state.copyWith(message: e.toString(), error: true));
+        emit(state.copyWith(error: false));
+      }
+    });
   }
 
   @override
   Future<void> close() {
-    _pauseTimer?.cancel();
-    _wordTimer?.cancel();
     _player.dispose();
+    _pauseTimer?.cancel();
     return super.close();
   }
 }

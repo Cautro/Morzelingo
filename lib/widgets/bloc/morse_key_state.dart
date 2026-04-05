@@ -1,52 +1,45 @@
-import 'package:equatable/equatable.dart';
-import '../context/morse_key_context.dart';
+part of 'morse_key_bloc.dart';
 
 class MorseKeyState extends Equatable {
-  final Map<String, String> morseMap;
-  final String currentMorse;
+  final MorseTiming? timing;
   final String decodedText;
+  final String currentMorse;
   final bool isPressed;
-  final MorseTiming timing;
-  final bool loading;
+  final Map<String, String>? morseMap;
+  final bool error;
+  final String message;
 
   const MorseKeyState({
-    required this.morseMap,
-    required this.currentMorse,
-    required this.decodedText,
-    required this.isPressed,
-    required this.timing,
-    required this.loading,
+    this.currentMorse = "",
+    this.isPressed = false,
+    this.timing,
+    this.decodedText = "",
+    this.morseMap,
+    this.error = false,
+    this.message = "",
   });
 
-  factory MorseKeyState.initial() {
-    return MorseKeyState(
-      morseMap: morseToTextEn,
-      currentMorse: '',
-      decodedText: '',
-      isPressed: false,
-      timing: MorseTiming(10),
-      loading: true,
-    );
-  }
-
   MorseKeyState copyWith({
-    Map<String, String>? morseMap,
-    String? currentMorse,
     String? decodedText,
+    String? currentMorse,
     bool? isPressed,
     MorseTiming? timing,
-    bool? loading,
+    Map<String, String>? morseMap,
+    bool? error,
+    String? message,
   }) {
     return MorseKeyState(
-      morseMap: morseMap ?? this.morseMap,
       currentMorse: currentMorse ?? this.currentMorse,
       decodedText: decodedText ?? this.decodedText,
       isPressed: isPressed ?? this.isPressed,
       timing: timing ?? this.timing,
-      loading: loading ?? this.loading,
+      morseMap: morseMap ?? this.morseMap,
+      error: error ?? this.error,
+      message: message ?? this.message
     );
   }
 
   @override
-  List<Object?> get props => [morseMap, currentMorse, decodedText, isPressed, timing.dotMs, loading];
+  List<Object?> get props => [decodedText, currentMorse, isPressed, timing, morseMap, error,];
+
 }

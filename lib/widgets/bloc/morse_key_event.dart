@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart';
+part of 'morse_key_bloc.dart';
 
 abstract class MorseKeyEvent extends Equatable {
   const MorseKeyEvent();
@@ -6,20 +6,42 @@ abstract class MorseKeyEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class InitMorseKey extends MorseKeyEvent {}
+class InitMorseKeyEvent extends MorseKeyEvent {
+  const InitMorseKeyEvent();
+}
 
-class AddDot extends MorseKeyEvent {}
+class AddDotEvent extends MorseKeyEvent {
+  const AddDotEvent();
+}
 
-class AddDash extends MorseKeyEvent {}
+class AddDashEvent extends MorseKeyEvent {
+  const AddDashEvent();
+}
 
-class FinishLetter extends MorseKeyEvent {}
+class TapDownEvent extends MorseKeyEvent {
+  const TapDownEvent();
+}
 
-class AddSpace extends MorseKeyEvent {}
+class TapUpEvent extends MorseKeyEvent {
+  const TapUpEvent();
+}
 
-class ClearMorse extends MorseKeyEvent {}
+class BackspaceEvent extends MorseKeyEvent {
+  const BackspaceEvent();
+}
 
-class BackspacePressed extends MorseKeyEvent {}
+class AddSpaceEvent extends MorseKeyEvent {
+  const AddSpaceEvent();
+}
 
-class TapDownEvent extends MorseKeyEvent {}
+class FinishLetterEvent extends MorseKeyEvent {
+  const FinishLetterEvent();
+}
 
-class TapUpEvent extends MorseKeyEvent {}
+class AddSymbolEvent extends MorseKeyEvent {
+  final String symbol;
+  const AddSymbolEvent({required this.symbol});
+
+  @override
+  List<Object?> get props => [symbol];
+}
