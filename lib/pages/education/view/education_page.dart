@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:morzelingo/pages/education/bloc/education_bloc.dart';
 import 'package:morzelingo/pages/loading_page.dart';
+import 'package:morzelingo/settings_context.dart';
 import 'package:morzelingo/storage_context.dart';
 
 import '../../../ui/app_ui.dart';
@@ -67,7 +68,20 @@ class _EducationPageState extends State<EducationPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.sm,),
+                  const SizedBox(height: AppSpacing.xs,),
+                  AppSurfaceCard(
+                    child: Row(
+                      children: [
+                        AppInfoPill(
+                          icon: Icons.language_outlined,
+                          label: "Язык",
+                        ),
+                        const SizedBox(width: AppSpacing.md,),
+                        Text(SettingsService.getLang() == "ru" ? "Русский" : "Английский"),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs,),
                   Row(
                     children: [
                       Expanded(

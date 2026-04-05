@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:morzelingo/pages/duels/view/duels_flow_page.dart';
 import 'package:morzelingo/pages/education/view/education_page.dart';
 import 'package:morzelingo/pages/practice/view/letters_page.dart';
 import 'package:morzelingo/pages/profile/view/profile_page.dart';
 
+import '../ui/app_ui.dart';
 import 'freemode/view/freemode_flow_page.dart';
 
 class HomeTabsPage extends StatefulWidget {
@@ -51,6 +54,35 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
       label: 'Профиль',
     ),
   ];
+
+  void _hintsDialog() {
+    Timer(
+      Duration(milliseconds: 500),
+        () {
+          showDialog(
+            context: context,
+            builder: (dialogContext) {
+              return AppConfirmationDialog(
+                title: 'Посмотреть советы?',
+                message: 'Сейчас вы можете посмотреть советы, которые помогут вам в обучении морзе, их всегда можно посмотреть в профиле',
+                confirmLabel: 'Да, Посмотреть',
+                cancelLabel: 'Позже',
+                destructive: false,
+                onConfirm: () {
+                  Navigator.pushNamed(context, "/hints");
+                },
+              );
+            },
+          );
+        }
+    );
+  }
+
+  @override
+  void initState() {
+    _hintsDialog();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

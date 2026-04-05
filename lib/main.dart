@@ -3,6 +3,7 @@ import 'package:morzelingo/pages/authorization/view/authorization_flow_page.dart
 import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_flow_page.dart';
 import 'package:morzelingo/pages/friends/view/friends_page.dart';
+import 'package:morzelingo/pages/hints/view/hints_page.dart';
 import 'package:morzelingo/pages/profile/view/letters_stats_page.dart';
 import 'package:morzelingo/pages/profile/view/profile_page.dart';
 import 'package:morzelingo/theme_controller.dart';
@@ -98,6 +99,7 @@ class _MyAppState extends State<MyApp> {
             "/lettersstats": (context) => LettersStatsPage(),
             "/friends": (context) => FriendsPage(),
             "/duels": (context) => DuelsMainPage(),
+            "/hints": (context) => HintsPage(),
           },
           // builder: (context, child) {
           //   return Column(

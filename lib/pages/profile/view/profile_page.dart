@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:morzelingo/pages/hints/view/hints_page.dart';
 import 'package:morzelingo/pages/loading_page.dart';
 import 'package:morzelingo/pages/profile/bloc/profile_bloc.dart';
 import 'package:morzelingo/settings_context.dart';
@@ -89,6 +90,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           title: 'Профиль',
                           subtitle: 'Ваши данные, детали обучения и статистика.',
                         ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, "/hints");
+                        },
+                        icon: const Icon(Icons.lightbulb_outline),
                       ),
                       IconButton(
                         onPressed: () {

@@ -75,6 +75,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/data/hints.json
     - assets/icon/icon.png
     - assets/sounds/
   # An image asset can refer to one or more resolution-specific "variants", see
