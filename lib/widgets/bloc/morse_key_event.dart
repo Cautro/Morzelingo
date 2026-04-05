@@ -38,10 +38,3 @@ class FinishLetterEvent extends MorseKeyEvent {
   const FinishLetterEvent();
 }
 
-class AddSymbolEvent extends MorseKeyEvent {
-  final String symbol;
-  const AddSymbolEvent({required this.symbol});
-
-  @override
-  List<Object?> get props => [symbol];
-}

@@ -1,13 +1,13 @@
 class MorseTiming {
   final int dotMs;
 
+
   MorseTiming(int wpm) : dotMs = (1200 / (wpm <= 0 ? 20 : wpm)).round();
 
   int get dot => dotMs;
-  int get dash => dotMs * 3;
   int get symbolPause => dotMs;
-  double get letterPause => dotMs * 4;
-  int get wordPause => dotMs * 7;
+  double get letterPause => dotMs * 16;
+  int get wordPause => dotMs * 35;
 
   factory MorseTiming.fromWpm(int wpm) => MorseTiming(wpm);
 }

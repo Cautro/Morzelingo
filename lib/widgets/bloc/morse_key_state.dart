@@ -5,7 +5,7 @@ class MorseKeyState extends Equatable {
   final String decodedText;
   final String currentMorse;
   final bool isPressed;
-  final Map<String, String>? morseMap;
+  final Map<String, String> morseMap;
   final bool error;
   final String message;
 
@@ -14,7 +14,7 @@ class MorseKeyState extends Equatable {
     this.isPressed = false,
     this.timing,
     this.decodedText = "",
-    this.morseMap,
+    this.morseMap = morseToTextEn,
     this.error = false,
     this.message = "",
   });
@@ -40,6 +40,6 @@ class MorseKeyState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [decodedText, currentMorse, isPressed, timing, morseMap, error,];
+  List<Object?> get props => [decodedText, currentMorse, isPressed, timing, morseMap, error, message];
 
 }
