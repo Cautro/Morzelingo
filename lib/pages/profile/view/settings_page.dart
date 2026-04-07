@@ -25,6 +25,8 @@ class _SettingsPageState extends State<SettingsPage> {
           SizedBox(height: AppSpacing.md),
           _themeController(),
           SizedBox(height: AppSpacing.md),
+          _hintsController(),
+          SizedBox(height: AppSpacing.md),
           _langController(),
         ],
       ),
@@ -119,6 +121,48 @@ class _themeControllerState extends State<_themeController> {
     );
   }
 }
+
+class _hintsController extends StatefulWidget {
+  const _hintsController({super.key});
+
+  @override
+  State<_hintsController> createState() => _hintsControllerState();
+}
+
+class _hintsControllerState extends State<_hintsController> {
+  late bool value;
+
+  Future<void> _loadHints() async {
+    final saved = await SettingsService.getHints();
+    if (!mounted) return;
+    setState(() {
+      value = saved;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHints();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppSurfaceCard(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: SwitchListTile(
+        value: value,
+        title: const Text("Подсказки при входе"),
+        subtitle: const Text('Настроить показ окна подсказок при входе'),
+        onChanged: (value) async {
+          await SettingsService.setHints(value);
+          _loadHints();
+        },
+      ),
+    );
+  }
+}
+
 
 class _langController extends StatefulWidget {
   const _langController();

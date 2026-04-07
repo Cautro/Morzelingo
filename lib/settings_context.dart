@@ -4,6 +4,7 @@ class SettingsService {
   static Future<void> setDefault() async {
     setWpm(10);
     setLang("en");
+    setHints(true);
   }
   
   static Future<int> getWpm() async {
@@ -37,6 +38,27 @@ class SettingsService {
       await StorageService.setItem("lang", "en");
     }
     await StorageService.setItem("lang", value.toString());
+  }
+
+  static Future<bool> getHints() async {
+    final String? hints = await StorageService.getItem("hintsettings");
+
+    if (hints == null) {
+      setHints(true);
+      return true;
+    }
+
+    if (hints == "true") {
+      return true;
+    } else if (hints == "false") {
+      return false;
+    }
+    print(hints);
+    return true;
+  }
+
+  static Future<void> setHints(bool value) async {
+    await StorageService.setItem("hintsettings", value.toString());
   }
 
 }

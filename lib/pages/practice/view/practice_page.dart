@@ -73,20 +73,6 @@ class PracticeFlowPage extends StatelessWidget {
               return AppPageScaffold(
                 appBar: AppBar(
                   title: const Text("Практика"),
-                  automaticallyImplyLeading: false,
-                ),
-                bottomBar: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: AppDangerButton(
-                        child: const Text("Выйти"),
-                        onPressed: () {
-                          context.read<PracticeBloc>().add(LeaveEvent());
-                        },
-                      ),
-                    )
-                  ],
                 ),
                 child: content(),
               );

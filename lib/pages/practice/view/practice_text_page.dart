@@ -34,6 +34,18 @@ class _PracticeTextPageState extends State<PracticeTextPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          PopScope(
+            canPop: true,
+            onPopInvokedWithResult: (didPop, result) {
+              if (didPop) {
+                context.read<PracticeBloc>().add(LeaveEvent());
+              }
+            },
+            child: Scaffold(
+              appBar: AppBar(title: Text("Просмотр")),
+              body: Center(child: Text("Контент")),
+            ),
+          ),
           AppProgressBar(value: widget.currentquestion),
           const SizedBox(height: AppSpacing.md),
           AppExercisePrompt(

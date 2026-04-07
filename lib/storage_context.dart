@@ -15,6 +15,7 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(key);
   }
+
   static Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

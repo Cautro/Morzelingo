@@ -52,29 +52,32 @@ class _HintsPageState extends State<HintsPage> {
         itemCount: data.length,
         itemBuilder: (context, index) {
           final item = data[index] as Map<String, dynamic>;
-
-          return AppListCard(
-            title: item["title"] ?? "",
-            subtitle: item["subtitle"] ?? "",
-            leading: Container(
-              height: 44,
-              width: 44,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: AppRadii.md,
+          return Container(
+            padding: EdgeInsets.fromLTRB(0, 0, 0, AppSpacing.xs),
+            child:  AppListCard(
+              title: item["title"] ?? "",
+              subtitle: item["subtitle"] ?? "",
+              leading: Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: AppRadii.md,
+                ),
+                child: Icon(
+                  Icons.lightbulb_outline,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
-              child: Icon(
-                Icons.lightbulb_outline,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HintDetailsPage(item: item))
+                );
+              },
             ),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () {
-              Navigator.push(context, 
-                MaterialPageRoute(builder: (context) => HintDetailsPage(item: item))
-              );
-            },
           );
+
         },
       ),
     );
