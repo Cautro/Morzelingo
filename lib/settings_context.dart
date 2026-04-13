@@ -34,7 +34,7 @@ class SettingsService {
   }
 
   static Future<void> setLang(String value) async {
-    if (value != "ru" || value != "en") {
+    if (value != "ru" && value != "en") {
       await StorageService.setItem("lang", "en");
     }
     await StorageService.setItem("lang", value.toString());

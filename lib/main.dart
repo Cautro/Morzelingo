@@ -16,14 +16,6 @@ import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_page.dart';
 import 'package:morzelingo/pages/profile/view/settings_page.dart';
 
-class Except implements Exception {
-  final String message;
-  Except(this.message);
-
-  @override
-  String toString() => message;
-}
-
 void main() {
   runApp(MyApp());
 }

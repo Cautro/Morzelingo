@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../../config.dart';
-import '../../../main.dart';
+import '../../../core/exceptions/exceptions.dart';
 import '../../../storage_context.dart';
 
 class AuthorizationRepository {

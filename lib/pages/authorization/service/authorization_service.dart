@@ -1,4 +1,4 @@
-import '../../../main.dart';
+import '../../../core/exceptions/exceptions.dart';
 
 class AuthorizationService {
 

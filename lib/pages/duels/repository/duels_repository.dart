@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 import 'package:morzelingo/config.dart';
 import 'package:morzelingo/storage_context.dart';
 
-import '../../../main.dart';
+import '../../../core/exceptions/exceptions.dart';
 
 class DuelsRepository {
 
