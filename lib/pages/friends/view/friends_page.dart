@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:morzelingo/pages/friends/bloc/friends_bloc.dart';
+import 'package:morzelingo/pages/friends/repository/friends_repository.dart';
 
 import '../../../app_theme.dart';
 import '../../../ui/app_ui.dart';
@@ -14,8 +15,6 @@ class FriendsPage extends StatefulWidget {
 }
 
 class _FriendsPageState extends State<FriendsPage> {
-  bool isLoading = true;
-  List<dynamic> friends = [];
   bool isAdd = false;
   String? code;
 
@@ -41,37 +40,19 @@ class _FriendsPageState extends State<FriendsPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => FriendsBloc()..add(GetFriendsEvent()),
+      create: (_) => FriendsBloc(repository: FriendsRepository())..add(GetFriendsEvent()),
       child: BlocListener<FriendsBloc, FriendsState>(
         listener: (context, state) {
-          if (state is FriendsListState) {
-            friends = state.friends;
-            isLoading = false;
-          }
-          if (state is AddFriendState) {
+          if (state.success != null) {
             Fluttertoast.showToast(
-              msg: state.message,
-              backgroundColor: state.success ? AppTheme.success : AppTheme.error,
-              textColor: Colors.white,
-            );
-          }
-          if (state is DeleteFriendState) {
-            Fluttertoast.showToast(
-              msg: state.message,
-              backgroundColor: state.success ? AppTheme.success : AppTheme.error,
+              msg: state.message ?? "",
+              backgroundColor: state.success! ? AppTheme.success : AppTheme.error,
               textColor: Colors.white,
             );
           }
         },
         child: BlocBuilder<FriendsBloc, FriendsState>(
           builder: (context, state) {
-            if (isLoading) {
-              return AppPageScaffold(
-                appBar: AppBar(title: const Text("Друзья")),
-                child: const AppLoadingIndicator(),
-              );
-            }
-
             return AppPageScaffold(
               appBar: AppBar(title: const Text("Друзья")),
               padding: AppSpacing.pageDense,
@@ -120,12 +101,12 @@ class _FriendsPageState extends State<FriendsPage> {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Expanded(
-                    child: friends.isNotEmpty
+                    child: state.friends.isNotEmpty
                         ? ListView.separated(
-                            itemCount: friends.length,
+                            itemCount: state.friends.length,
                             separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                             itemBuilder: (context, index) {
-                              final item = friends[index];
+                              final item = state.friends[index];
                               return AppListCard(
                                 title: "${item["username"]}",
                                 leading: Container(

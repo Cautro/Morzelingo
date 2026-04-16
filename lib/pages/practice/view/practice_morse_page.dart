@@ -40,18 +40,18 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PopScope(
-            canPop: true,
-            onPopInvokedWithResult: (didPop, result) {
-              if (didPop) {
-                context.read<PracticeBloc>().add(LeaveEvent());
-              }
-            },
-            child: Scaffold(
-              appBar: AppBar(title: Text("Просмотр")),
-              body: Center(child: Text("Контент")),
-            ),
-          ),
+          // PopScope(
+          //   canPop: true,
+          //   onPopInvokedWithResult: (didPop, result) {
+          //     if (didPop) {
+          //       context.read<PracticeBloc>().add(LeaveEvent());
+          //     }
+          //   },
+          //   child: Scaffold(
+          //     appBar: AppBar(title: Text("Просмотр")),
+          //     body: Center(child: Text("Контент")),
+          //   ),
+          // ),
           AppProgressBar(value: widget.currentquestion),
           const SizedBox(height: AppSpacing.md),
           AppExerciseInputPanel(
@@ -74,8 +74,8 @@ class _PracticeMorsePageState extends State<PracticeMorsePage> {
               AppPrimaryButton(
                 onPressed: () {
                   context.read<PracticeBloc>().add(
-                        AnswerEvent(text: text)
-                      );
+                      AnswerEvent(text: text)
+                  );
                 },
                 child: Text(!widget.isLast ? "Ответить" : "Закончить"),
               ),

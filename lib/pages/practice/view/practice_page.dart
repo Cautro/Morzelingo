@@ -13,26 +13,27 @@ import 'package:morzelingo/ui/app_ui.dart';
 import '../../loading_page.dart';
 
 class PracticeFlowPage extends StatelessWidget {
-  const PracticeFlowPage({super.key});
+  final String id;
+  const PracticeFlowPage({super.key, required this.id});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => PracticeBloc(repository: PracticeRepository(), service: PracticeService())..add(GetPracticeEvent()),
+      create: (_) => PracticeBloc(repository: PracticeRepository(), service: PracticeService())..add(GetPracticeEvent(id: id)),
       child: BlocConsumer<PracticeBloc, PracticeState>(
         listener: (context, state) {
           if (state.success != null) {
             Fluttertoast.showToast(
-              msg: state.message ?? "",
-              backgroundColor: state.success! ? AppTheme.success : AppTheme.error,
-              textColor: Colors.white
+                msg: state.message ?? "",
+                backgroundColor: state.success! ? AppTheme.success : AppTheme.error,
+                textColor: Colors.white
             );
           }
           if (state.status == PracticeStatus.completed) {
             Fluttertoast.showToast(
-              msg: "Урок завершён",
-              backgroundColor: AppTheme.success,
-              textColor: Colors.white
+                msg: "Урок завершён",
+                backgroundColor: AppTheme.success,
+                textColor: Colors.white
             );
             Navigator.pushReplacementNamed(context, "/home");
           }
@@ -73,6 +74,7 @@ class PracticeFlowPage extends StatelessWidget {
               return AppPageScaffold(
                 appBar: AppBar(
                   title: const Text("Практика"),
+                  automaticallyImplyLeading: true,
                 ),
                 child: content(),
               );

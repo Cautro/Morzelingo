@@ -7,8 +7,10 @@ abstract class PracticeEvent extends Equatable {
 }
 
 class GetPracticeEvent extends PracticeEvent {
+  final String id;
+  const GetPracticeEvent({required this.id});
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [id];
 }
 
 class GetLettersEvent extends PracticeEvent {
@@ -36,6 +38,8 @@ class LeaveEvent extends PracticeEvent {
 }
 
 class CompleteEvent extends PracticeEvent {
+  final String id;
+  const CompleteEvent({required this.id});
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [id];
 }

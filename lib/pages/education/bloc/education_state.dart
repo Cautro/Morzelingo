@@ -1,6 +1,10 @@
 part of 'education_bloc.dart';
 
-class EducationState {}
+class EducationState extends Equatable {
+  @override
+  List<Object?> get props => [];
+
+}
 
 class EducationInitial extends EducationState {}
 

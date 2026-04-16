@@ -97,8 +97,8 @@ class _LettersPageState extends State<LettersPage> {
     final crossAxisCount = width >= 900
         ? 5
         : width >= 700
-            ? 4
-            : 3;
+        ? 4
+        : 3;
 
     return AppPageScaffold(
       child: Column(
@@ -136,9 +136,9 @@ class _LettersPageState extends State<LettersPage> {
                       Text(
                         item["morse"],
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              letterSpacing: 1.4,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          letterSpacing: 1.4,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),

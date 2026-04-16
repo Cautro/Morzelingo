@@ -93,6 +93,7 @@ class EducationContext {
       },
     );
     var data1 = jsonDecode(res1.body);
+    print("lessons ${res1.body}");
       var lessons = data1;
       var completed = lessons.take(lessondone).toList();
       return completed;

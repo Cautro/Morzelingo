@@ -15,6 +15,7 @@ enum PracticeStatus {
 }
 
 class PracticeState extends Equatable {
+  final String? id;
   final bool isLast;
   final String question;
   final String answer;
@@ -39,9 +40,11 @@ class PracticeState extends Equatable {
     this.isLetter = false,
     this.tasks,
     this.status = PracticeStatus.idle,
+    this.id,
   });
 
   PracticeState copyWith({
+    String? id,
     bool? isLoading,
     String? question,
     String? answer,
@@ -55,6 +58,7 @@ class PracticeState extends Equatable {
     PracticeStatus? status,
   }) {
     return PracticeState(
+      id: id ?? this.id,
       answer: answer ?? this.answer,
       message: message ?? this.message,
       isLoading: isLoading ?? this.isLoading,
@@ -71,6 +75,6 @@ class PracticeState extends Equatable {
 
   @override
   List<Object?> get props => [answer, message, isLoading, success,
-  question, isLast, index, type, isLetter, tasks, status,];
+  question, isLast, index, type, isLetter, tasks, status, id];
 }
 

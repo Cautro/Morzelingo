@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:morzelingo/pages/authorization/view/authorization_flow_page.dart';
 import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
+import 'package:morzelingo/pages/education/presentation/pages/lesson_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_flow_page.dart';
 import 'package:morzelingo/pages/friends/view/friends_page.dart';
 import 'package:morzelingo/pages/hints/view/hints_page.dart';
@@ -10,8 +11,7 @@ import 'package:morzelingo/theme_controller.dart';
 import 'package:yandex_mobileads/mobile_ads.dart';
 import 'app_theme.dart';
 import 'pages/home_page.dart';
-import 'package:morzelingo/pages/education/view/completed_lessons_page.dart';
-import 'package:morzelingo/pages/education/view/lesson_page.dart';
+import 'package:morzelingo/pages/education/presentation/pages/completed_lessons_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_page.dart';
 import 'package:morzelingo/pages/profile/view/settings_page.dart';
@@ -83,9 +83,6 @@ class _MyAppState extends State<MyApp> {
             "/login": (context) => AuthorizationFlowPage(),
             "/freemode": (context) => FreemodeFlowPage(),
             "/profile": (context) => ProfilePage(),
-            "/lesson": (context) => LessonPage(),
-            "/completedlessons": (context) => CompletedLessonsPage(),
-            "/practice": (context) => PracticeFlowPage(),
             "/practiceletter": (context) => LettersFlowPage(),
             "/settings": (context) => SettingsPage(),
             "/lettersstats": (context) => LettersStatsPage(),

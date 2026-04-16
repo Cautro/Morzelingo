@@ -44,18 +44,18 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
           const SizedBox(height: AppSpacing.md),
           AppExerciseInputPanel(
             children: [
-              PopScope(
-                canPop: true,
-                onPopInvokedWithResult: (didPop, result) {
-                  if (didPop) {
-                    context.read<PracticeBloc>().add(LeaveEvent());
-                  }
-                },
-                child: Scaffold(
-                  appBar: AppBar(title: Text("Просмотр")),
-                  body: Center(child: Text("Контент")),
-                ),
-              ),
+              // PopScope(
+              //   canPop: true,
+              //   onPopInvokedWithResult: (didPop, result) {
+              //     if (didPop) {
+              //       context.read<PracticeBloc>().add(LeaveEvent());
+              //     }
+              //   },
+              //   child: Scaffold(
+              //     appBar: AppBar(title: Text("Просмотр")),
+              //     body: Center(child: Text("Контент")),
+              //   ),
+              // ),
               Text(
                 "Прослушайте морзе и переведите",
                 style: Theme.of(context).textTheme.titleMedium,
@@ -81,8 +81,8 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
               AppPrimaryButton(
                 onPressed: () {
                   context.read<PracticeBloc>().add(
-                        AnswerEvent(text: text)
-                      );
+                      AnswerEvent(text: text)
+                  );
                 },
                 child: Text(!widget.isLast ? "Ответить" : "Закончить"),
               ),
@@ -93,5 +93,3 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
     );
   }
 }
-
-

@@ -20,8 +20,7 @@ class PracticeRepository {
     };
   }
 
-  Future<void> completeLesson() async {
-    String? id = await StorageService.getItem("lessonid");
+  Future<void> completeLesson(String id) async {
     String? token = await StorageService.getItem("token");
     print('token: $token, id: $id');
     final res = await http.post(Uri.parse("$API/api/complete-lesson"),
@@ -37,8 +36,7 @@ class PracticeRepository {
     }
   }
 
-  Future<List> getPracticeQuestion() async {
-    String? id = await StorageService.getItem("lessonid");
+  Future<List> getPracticeQuestion(String id) async {
     final lang = await SettingsService.getLang();
     final res = await http.get(Uri.parse("$API/api/practice/$id?lang=${lang.trim()}"),
       headers: await _headers(),

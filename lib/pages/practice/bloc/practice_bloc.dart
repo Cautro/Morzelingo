@@ -14,7 +14,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
 
     on<GetPracticeEvent>((event, emit) async {
       try {
-        final List getData = await _repository.getPracticeQuestion();
+        final List getData = await _repository.getPracticeQuestion(event.id);
         final PracticeQuestionModel task = PracticeQuestionModel.fromJson(getData[state.index]);
         emit(state.copyWith(status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: _service.stringToType(task.type)));
         print(getData);
@@ -46,7 +46,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
         final bool isRight = _service.checkAnswer(event.text, state.answer);
         if (isRight) {
           if (state.isLast) {
-            add(CompleteEvent());
+            add(CompleteEvent(id: state.id ?? ""));
             return;
           }
           if (state.index < state.tasks!.length) {
@@ -79,7 +79,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
       print('complete');
       try {
         if (!state.isLetter) {
-          await _repository.completeLesson();
+          await _repository.completeLesson(event.id);
           emit(state.copyWith(status: PracticeStatus.completed));
         } else {
           emit(state.copyWith(status: PracticeStatus.completed));

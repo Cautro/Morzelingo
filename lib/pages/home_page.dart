@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:morzelingo/pages/duels/view/duels_flow_page.dart';
-import 'package:morzelingo/pages/education/view/education_page.dart';
+import 'package:morzelingo/pages/education/presentation/pages/education_page.dart';
 import 'package:morzelingo/pages/practice/view/letters_page.dart';
 import 'package:morzelingo/pages/profile/view/profile_page.dart';
 import 'package:morzelingo/settings_context.dart';

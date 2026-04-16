@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:morzelingo/pages/education/context/education_context.dart';
 part 'education_event.dart';

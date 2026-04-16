@@ -1,22 +1,25 @@
 part of 'friends_bloc.dart';
 
-class FriendsState {}
-
-class FriendsInitial extends FriendsState {}
-
-class FriendsListState extends FriendsState {
-  FriendsListState({required this.friends});
+class FriendsState extends Equatable {
   final List friends;
-}
+  final String? message;
+  final bool? success;
 
-class AddFriendState extends FriendsState {
-  AddFriendState({required this.message, required this.success});
-  final String message;
-  final bool success;
-}
+  const FriendsState({
+    this.message,
+    this.success,
+    this.friends = const [],
+  });
 
-class DeleteFriendState extends FriendsState {
-  DeleteFriendState({required this.message, required this.success});
-  final String message;
-  final bool success;
+  FriendsState copyWith({
+    bool? success,
+    String? message,
+    List? friends
+  }) {
+    return FriendsState(message: message ?? this.message, success: success ?? this.success, friends: friends ?? this.friends);
+  }
+
+  @override
+  List<Object?> get props => [message, success, friends];
+
 }
