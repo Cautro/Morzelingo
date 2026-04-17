@@ -1,27 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:morzelingo/core/api/api_client.dart';
-import 'package:morzelingo/pages/education/bloc/education_bloc.dart';
 import 'package:morzelingo/pages/education/data/repositories/education_repository.dart';
+import 'package:morzelingo/pages/education/domain/repositories/education_repository_interface.dart';
 import 'package:morzelingo/pages/education/presentation/controller/education_controller.dart';
-import 'package:morzelingo/pages/education/presentation/pages/completed_lessons_page.dart';
 import 'package:morzelingo/pages/education/presentation/pages/lesson_page.dart';
 import 'package:morzelingo/pages/loading_page.dart';
 import 'package:morzelingo/settings_context.dart';
-import 'package:morzelingo/storage_context.dart';
-
+import '../../../../app_theme.dart';
 import '../../../../ui/app_ui.dart';
-import '../../domain/entities/lesson.dart';
 
 class EducationPage extends StatefulWidget {
-  const EducationPage({super.key});
+  final IEducationRepository repository;
+  const EducationPage({super.key, required this.repository});
 
   @override
   State<EducationPage> createState() => _EducationPageState();
 }
 
 class _EducationPageState extends State<EducationPage> {
-  final EducationController _model = EducationController(repository: EducationRepository(ApiClient()));
+  late final EducationController _model = EducationController(repository: widget.repository);
 
   @override
   void initState() {
@@ -31,10 +29,24 @@ class _EducationPageState extends State<EducationPage> {
   }
 
   @override
+  void dispose() {
+    _model.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: _model,
       builder: (context, child) {
+        if (_model.state.success != null) {
+          Fluttertoast.showToast(
+            msg: _model.state.message,
+            backgroundColor: _model.state.success == true ? AppTheme.success : AppTheme.error,
+            textColor: Colors.white
+          );
+        }
+
         return _model.state.isLoading ? LoadingPage() : AppPageScaffold(
           scrollable: true,
           child: Column(

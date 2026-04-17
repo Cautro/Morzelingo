@@ -6,8 +6,9 @@ import 'package:morzelingo/pages/education/presentation/pages/education_page.dar
 import 'package:morzelingo/pages/practice/view/letters_page.dart';
 import 'package:morzelingo/pages/profile/view/profile_page.dart';
 import 'package:morzelingo/settings_context.dart';
-
+import '../core/api/api_client.dart';
 import '../ui/app_ui.dart';
+import 'education/data/repositories/education_repository.dart';
 import 'freemode/view/freemode_flow_page.dart';
 
 class HomeTabsPage extends StatefulWidget {
@@ -20,12 +21,12 @@ class HomeTabsPage extends StatefulWidget {
 class _HomeTabsPageState extends State<HomeTabsPage> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    EducationPage(),
-    FreemodeFlowPage(),
-    DuelsFlowPage(),
-    LettersPage(),
-    ProfilePage(),
+  final List<Widget> _screens = [
+    EducationPage(repository: EducationRepository(ApiClient())),
+    const FreemodeFlowPage(),
+    const DuelsFlowPage(),
+    const LettersPage(),
+    const ProfilePage(),
   ];
 
   final List<NavigationDestination> _destinations = const [

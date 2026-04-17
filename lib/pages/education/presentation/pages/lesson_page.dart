@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:morzelingo/pages/loading_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_page.dart';
-
 import '../../../../ui/app_ui.dart';
-import '../../bloc/education_bloc.dart';
 import '../../domain/entities/lesson.dart';
 
 class LessonPage extends StatelessWidget {
