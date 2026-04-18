@@ -24,12 +24,26 @@ class _EducationPageState extends State<EducationPage> {
 
   @override
   void initState() {
+    _controller.addListener(_onStateChanged);
     _controller.getData();
     super.initState();
   }
 
+  void _onStateChanged() {
+    if (_controller.state.success != null) {
+      Fluttertoast.showToast(
+        msg: _controller.state.message,
+        backgroundColor: _controller.state.success == true
+            ? AppTheme.success
+            : AppTheme.error,
+        textColor: Colors.white,
+      );
+    }
+  }
+
   @override
   void dispose() {
+    _controller.removeListener(_onStateChanged);
     _controller.dispose();
     super.dispose();
   }
@@ -39,15 +53,7 @@ class _EducationPageState extends State<EducationPage> {
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, child) {
-        if (_controller.state.success != null) {
-          Fluttertoast.showToast(
-            msg: _controller.state.message,
-            backgroundColor: _controller.state.success == true ? AppTheme.success : AppTheme.error,
-            textColor: Colors.white
-          );
-        }
-
-        return _controller.state.isLoading ? LoadingPage() : AppPageScaffold(
+        return _controller.state.isLoading ? const LoadingPage() : AppPageScaffold(
           scrollable: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +93,7 @@ class _EducationPageState extends State<EducationPage> {
                       label: "Язык",
                     ),
                     const SizedBox(width: AppSpacing.md,),
-                    Text(SettingsService.getLang() == "ru" ? "Русский" : "Английский"),
+                    Text(_controller.state.lang == "ru" ? "Русский" : "Английский"),
                   ],
                 ),
               ),
@@ -134,10 +140,11 @@ class _EducationPageState extends State<EducationPage> {
               const SizedBox(height: AppSpacing.sm),
               AppSecondaryButton(
                 onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => CompletedLessonsPage(completed: _controller.state?.completedLessons ?? [],))
-                  );
+                  final lesson = _controller.state.lesson;
+                  if (lesson == null) return;
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => LessonPage(lesson: lesson, done: false),
+                  ));
                 },
                 child: const Text('К пройденным урокам'),
               ),

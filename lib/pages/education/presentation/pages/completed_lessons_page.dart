@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:morzelingo/pages/education/data/models/lesson_model.dart';
 import 'package:morzelingo/pages/education/domain/entities/lesson.dart';
 import '../../../../ui/app_ui.dart';
 import 'lesson_page.dart';
