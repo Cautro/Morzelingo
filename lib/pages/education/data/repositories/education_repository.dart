@@ -1,4 +1,7 @@
 import 'package:morzelingo/core/api/api_client.dart';
+import 'package:morzelingo/core/api/response_model.dart';
+import 'package:morzelingo/core/exceptions/exceptions.dart';
+import 'package:morzelingo/core/logger/logger.dart';
 import 'package:morzelingo/pages/education/data/models/lesson_model.dart';
 import 'package:morzelingo/pages/education/domain/repositories/education_repository_interface.dart';
 import 'package:morzelingo/settings_context.dart';
@@ -12,25 +15,53 @@ class EducationRepository extends IEducationRepository {
   @override
   Future<Lesson> getLesson() async {
     final String lang = await SettingsService.getLang();
-    final Map<String, dynamic> profileJson = await _client.get(jwt: true, endpoint: "/api/profile");
-    print("profile ${profileJson}");
-    final id = profileJson["lesson_done_${lang.trim()}"] + 1;
-    final Map<String, dynamic> json = await _client.get(jwt: true, endpoint: "/api/lessons/$id/?lang=${lang.trim()}");
-    print("data ${json}");
-    print("title: ${LessonModel.fromJson(json).toEnity().title}");
 
-    return LessonModel.fromJson(json).toEnity();
+    final ResponseModel profileResponse = await _client.get(
+        jwt: true, endpoint: "/api/profile");
+    if (!_client.checkResponseStatus(profileResponse.statusCode)) {
+      throw Except("Ошибка при получении данных с сервера");
+    }
+    appLogger.d("profile ${profileResponse.json}");
+    final id = profileResponse.json["lesson_done_${lang.trim()}"] + 1;
+
+    final ResponseModel lessonsResponse = await _client.get(
+        jwt: true, endpoint: "/api/lessons/$id/?lang=${lang.trim()}");
+    if (!_client.checkResponseStatus(lessonsResponse.statusCode)) {
+      throw Except("Ошибка при получении данных с сервера");
+    }
+    appLogger.d("data ${lessonsResponse.json}");
+    appLogger.d("title: ${LessonModel
+        .fromJson(lessonsResponse.json)
+        .toEntity()
+        .title}");
+
+    return LessonModel.fromJson(lessonsResponse.json).toEntity();
   }
 
   @override
-  Future<List<dynamic>> getCompletedLessons() async {
+  Future<List<Lesson>> getCompletedLessons() async {
     final String lang = await SettingsService.getLang();
-    final Map<String, dynamic> profileJson = await _client.get(jwt: true, endpoint: "/api/profile");
-    print("profile ${profileJson}");
-    final lessonsDone = profileJson["lesson_done_${lang.trim()}"] + 1;
-    final List json = await _client.get(jwt: true, endpoint: "/api/lessons/");
-    print("data ${json}");
 
-    return json.take(int.parse(lessonsDone)).toList();
+    final ResponseModel profileResponse =
+    await _client.get(jwt: true, endpoint: "/api/profile");
+    if (!_client.checkResponseStatus(profileResponse.statusCode)) {
+      throw Except("Ошибка при получении данных с сервера");
+    }
+
+    final int lessonsDone = (profileResponse.json["lesson_done_${lang.trim()}"] as num?)?.toInt() ?? 0;
+
+    final ResponseModel lessonsResponse =
+    await _client.get(jwt: true, endpoint: "/api/lessons/");
+    if (!_client.checkResponseStatus(lessonsResponse.statusCode)) {
+      throw Except("Ошибка при получении данных с сервера");
+    }
+
+    final List<Lesson> lessons = (lessonsResponse.json as List).take(lessonsDone).map((e) => LessonModel.fromJson(e as Map<String, dynamic>).toEntity()).toList();
+
+    if (lessons.isNotEmpty) {
+      appLogger.d(lessons[0].title);
+    }
+
+    return lessons;
   }
 }

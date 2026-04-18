@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:morzelingo/config.dart';
+import 'package:morzelingo/core/api/response_model.dart';
 
 import '../../storage_context.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +9,7 @@ import 'package:http/http.dart' as http;
 
 class ApiClient {
 
-  bool checkStatus(int code) {
+  bool checkResponseStatus(int code) {
     return code >= 200 && code < 300;
   }
 
@@ -26,19 +27,19 @@ class ApiClient {
     }
   }
 
-  Future get({required bool jwt, required String endpoint}) async {
+  Future<ResponseModel> get({required bool jwt, required String endpoint}) async {
     final http.Response res = await http.get(Uri.parse("${API}${endpoint}"),
       headers: jwt ? await _headers(Token: true) : await _headers(Token: false)
     );
-    return jsonDecode(res.body);
+    return ResponseModel(statusCode: res.statusCode, json: jsonDecode(res.body));
   }
 
-  Future post({required bool jwt, required String endpoint, Map<String, dynamic>? body}) async {
+  Future<ResponseModel> post({required bool jwt, required String endpoint, Map<String, dynamic>? body}) async {
     final http.Response res = await http.post(Uri.parse("${API}${endpoint}"),
         headers: jwt ? await _headers(Token: true) : await _headers(Token: false),
         body: jsonEncode(body ?? {})
     );
-    return jsonDecode(res.body);
+    return ResponseModel(statusCode: res.statusCode, json: jsonDecode(res.body));
   }
 
 }

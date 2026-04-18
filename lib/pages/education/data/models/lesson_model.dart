@@ -17,5 +17,5 @@ class LessonModel {
     return LessonModel(id: json['id'], theory: json['theory'], title: json['title'], xp_reward: json['xp_reward']);
   }
 
-  Lesson toEnity() => Lesson(id: id, theory: theory, title: title, xp_reward: xp_reward);
+  Lesson toEntity() => Lesson(id: id, theory: theory, title: title, xp_reward: xp_reward);
 }

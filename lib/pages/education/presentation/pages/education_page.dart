@@ -9,6 +9,7 @@ import 'package:morzelingo/pages/loading_page.dart';
 import 'package:morzelingo/settings_context.dart';
 import '../../../../app_theme.dart';
 import '../../../../ui/app_ui.dart';
+import 'completed_lessons_page.dart';
 
 class EducationPage extends StatefulWidget {
   final IEducationRepository repository;
@@ -19,35 +20,34 @@ class EducationPage extends StatefulWidget {
 }
 
 class _EducationPageState extends State<EducationPage> {
-  late final EducationController _model = EducationController(repository: widget.repository);
+  late final EducationController _controller = EducationController(repository: widget.repository);
 
   @override
   void initState() {
-    _model.getLessons();
-    // _model.getCompletedLessons();
+    _controller.getData();
     super.initState();
   }
 
   @override
   void dispose() {
-    _model.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: _model,
+      listenable: _controller,
       builder: (context, child) {
-        if (_model.state.success != null) {
+        if (_controller.state.success != null) {
           Fluttertoast.showToast(
-            msg: _model.state.message,
-            backgroundColor: _model.state.success == true ? AppTheme.success : AppTheme.error,
+            msg: _controller.state.message,
+            backgroundColor: _controller.state.success == true ? AppTheme.success : AppTheme.error,
             textColor: Colors.white
           );
         }
 
-        return _model.state.isLoading ? LoadingPage() : AppPageScaffold(
+        return _controller.state.isLoading ? LoadingPage() : AppPageScaffold(
           scrollable: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,11 +63,11 @@ class _EducationPageState extends State<EducationPage> {
                   children: [
                     AppInfoPill(
                       icon: Icons.auto_awesome_rounded,
-                      label: 'Награда ${_model.state.lesson?.xp_reward} опыта',
+                      label: 'Награда ${_controller.state.lesson?.xp_reward} опыта',
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text(
-                      _model.state.lesson?.title ?? "",
+                      _controller.state.lesson?.title ?? "",
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     const SizedBox(height: AppSpacing.sm),
@@ -126,21 +126,21 @@ class _EducationPageState extends State<EducationPage> {
                 onPressed: () {
                   Navigator.push(
                       context, 
-                      MaterialPageRoute(builder: (context) => LessonPage(lesson: _model.state.lesson!, done: false))
+                      MaterialPageRoute(builder: (context) => LessonPage(lesson: _controller.state.lesson!, done: false))
                   );
                 },
                 child: const Text('Начать урок'),
               ),
               const SizedBox(height: AppSpacing.sm),
-              // AppSecondaryButton(
-              //   onPressed: () {
-              //     Navigator.push(
-              //         context,
-              //         MaterialPageRoute(builder: (context) => CompletedLessonsPage(completed: _model.state?.completedLessons ?? [],))
-              //     );
-              //   },
-              //   child: const Text('К пройденным урокам'),
-              // ),
+              AppSecondaryButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CompletedLessonsPage(completed: _controller.state?.completedLessons ?? [],))
+                  );
+                },
+                child: const Text('К пройденным урокам'),
+              ),
             ],
           ),
         );

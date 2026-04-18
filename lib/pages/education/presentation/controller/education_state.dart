@@ -3,14 +3,14 @@ import '../../domain/entities/lesson.dart';
 
 class EducationState extends Equatable {
   final Lesson? lesson;
-  final List? completedLessons;
+  final List<Lesson>? completedLessons;
   final bool isLoading;
   final bool? success;
   final String message;
 
   const EducationState({this.lesson, this.completedLessons, this.isLoading = true, this.success, this.message = ""});
 
-  EducationState copyWith({Lesson? lesson, List? completedLessons, bool? isLoading, bool? success, String? message}) {
+  EducationState copyWith({Lesson? lesson, List<Lesson>? completedLessons, bool? isLoading, bool? success, String? message}) {
     return EducationState(
         completedLessons: completedLessons ?? this.completedLessons,
         lesson: lesson ?? this.lesson,
@@ -21,5 +21,5 @@ class EducationState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [lesson, completedLessons, isLoading];
+  List<Object?> get props => [lesson, completedLessons, isLoading, success, message];
 }
