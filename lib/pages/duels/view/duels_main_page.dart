@@ -23,7 +23,7 @@ class DuelsMainPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppInfoPill(
+                const AppInfoPill(
                   icon: Icons.flash_on_rounded,
                   label: 'Режим соревнования',
                 ),
@@ -35,7 +35,7 @@ class DuelsMainPage extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg),
                 AppPrimaryButton(
                   onPressed: () {
-                    context.read<DuelsBloc>().add(CreateDuelEvent());
+                    context.read<DuelsBloc>().add(const CreateDuelEvent());
                   },
                   child: const Text('Начать дуэль'),
                 ),

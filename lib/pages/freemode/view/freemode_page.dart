@@ -36,7 +36,7 @@ class FreemodePage extends StatelessWidget {
                 AppPrimaryButton(
                   onPressed: () {
                     context.read<FreemodeBloc>().add(
-                          GetEvent(mode: FreemodeMode.audio),
+                          const GetEvent(mode: FreemodeMode.audio),
                         );
                   },
                   child: const Text('Играть в режиме аудио'),
@@ -45,7 +45,7 @@ class FreemodePage extends StatelessWidget {
                 AppSecondaryButton(
                   onPressed: () {
                     context.read<FreemodeBloc>().add(
-                          GetEvent(mode: FreemodeMode.text),
+                          const GetEvent(mode: FreemodeMode.text),
                         );
                   },
                   child: const Text('Играть в режиме текста'),

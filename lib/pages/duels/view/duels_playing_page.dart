@@ -38,7 +38,7 @@ class _DuelsPlayingPageState extends State<DuelsPlayingPage> {
           destructive: true,
           onConfirm: () {
             Navigator.of(dialogContext).pop();
-            duelsBloc.add(LeaveEvent());
+            duelsBloc.add(const LeaveEvent());
           },
         );
       },
@@ -173,7 +173,7 @@ class MorsePage extends StatelessWidget {
           AppExerciseInputPanel(
             children: [
               Text(
-                "Переведите: ${text}",
+                "Переведите: $text",
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -202,6 +202,7 @@ class AudioPage extends StatelessWidget {
     required this.onChange,
   });
 
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(

@@ -25,7 +25,7 @@ class DuelsActivePage extends StatelessWidget {
         destructive: true,
         onConfirm: () {
           Navigator.of(dialogContext).pop();
-          duelsBloc.add(LeaveEvent());
+          duelsBloc.add(const LeaveEvent());
         },
       ),
     );
@@ -53,7 +53,7 @@ class DuelsActivePage extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg),
                 AppPrimaryButton(
                   onPressed: () {
-                    context.read<DuelsBloc>().add(GetTasksEvent());
+                    context.read<DuelsBloc>().add(const GetTasksEvent());
                   },
                   child: const Text('К заданиям'),
                 ),

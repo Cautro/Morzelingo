@@ -28,7 +28,7 @@ class _FreemodeTextPageState extends State<FreemodeTextPage> {
       appBar: AppBar(title: const Text("Свободный режим · текст")),
       padding: AppSpacing.pageDense,
       bottomBar: AppDangerButton(
-        onPressed: () => context.read<FreemodeBloc>().add(LeaveEvent()),
+        onPressed: () => context.read<FreemodeBloc>().add(const LeaveEvent()),
         child: const Text('Выйти'),
       ),
       child: SingleChildScrollView(

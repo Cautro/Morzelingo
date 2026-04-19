@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:morzelingo/ui/app_ui.dart';
 
@@ -9,7 +8,7 @@ class HintDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppPageScaffold(
-      appBar: AppBar(title: Text("Совет"),),
+      appBar: AppBar(title: const Text("Совет"),),
       padding: AppSpacing.pageDense,
       child: Column(
         children: [

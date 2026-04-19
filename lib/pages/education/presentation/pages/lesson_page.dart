@@ -7,7 +7,7 @@ class LessonPage extends StatelessWidget {
   final bool done;
   final Lesson lesson;
 
-  const LessonPage({required this.lesson, required this.done});
+  const LessonPage({super.key, required this.lesson, required this.done});
 
   @override
   Widget build(BuildContext context) {

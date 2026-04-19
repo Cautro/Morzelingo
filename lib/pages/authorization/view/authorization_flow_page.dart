@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:morzelingo/core/api/api_client.dart';
 import 'package:morzelingo/pages/authorization/bloc/authorization_bloc.dart';
 import 'package:morzelingo/pages/authorization/repository/authorization_repository.dart';
 import 'package:morzelingo/pages/authorization/service/authorization_service.dart';
@@ -16,7 +17,7 @@ class AuthorizationFlowPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AuthorizationBloc(repository: AuthorizationRepository(), service: AuthorizationService())..add(CheckLoginedEvent()),
+      create: (_) => AuthorizationBloc(repository: AuthorizationRepository(ApiClient()), service: AuthorizationService())..add(const CheckLoginedEvent()),
       child: BlocConsumer<AuthorizationBloc, AuthorizationState>(
         listener: (context, state) {
           print('cheeeeeeck');
@@ -34,9 +35,9 @@ class AuthorizationFlowPage extends StatelessWidget {
         builder: (context, state) {
           switch (state.mode) {
             case AuthorizationMode.login:
-              return LoginPage();
+              return const LoginPage();
             case AuthorizationMode.register:
-              return RegisterPage();
+              return const RegisterPage();
           }
         },
       ),

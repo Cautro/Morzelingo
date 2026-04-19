@@ -1,9 +1,7 @@
 import 'dart:convert';
-
 import 'package:morzelingo/config.dart';
 import 'package:morzelingo/core/api/response_model.dart';
-
-import '../../storage_context.dart';
+import 'package:morzelingo/core/authorization/authorization.dart';
 import 'package:http/http.dart' as http;
 
 
@@ -15,7 +13,7 @@ class ApiClient {
 
   Future<Map<String, String>> _headers({required bool Token}) async {
     if(Token) {
-      final token = await StorageService.getItem('token');
+      final token = await Authorization().getToken();
       return {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -28,14 +26,14 @@ class ApiClient {
   }
 
   Future<ResponseModel> get({required bool jwt, required String endpoint}) async {
-    final http.Response res = await http.get(Uri.parse("${API}${endpoint}"),
+    final http.Response res = await http.get(Uri.parse("$API$endpoint"),
       headers: jwt ? await _headers(Token: true) : await _headers(Token: false)
     );
     return ResponseModel(statusCode: res.statusCode, json: jsonDecode(res.body));
   }
 
-  Future<ResponseModel> post({required bool jwt, required String endpoint, Map<String, dynamic>? body}) async {
-    final http.Response res = await http.post(Uri.parse("${API}${endpoint}"),
+  Future<ResponseModel> post({required bool jwt, required String endpoint, dynamic body}) async {
+    final http.Response res = await http.post(Uri.parse("$API$endpoint"),
         headers: jwt ? await _headers(Token: true) : await _headers(Token: false),
         body: jsonEncode(body ?? {})
     );

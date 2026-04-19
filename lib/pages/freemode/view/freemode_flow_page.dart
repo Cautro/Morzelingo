@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:morzelingo/core/api/api_client.dart';
 import 'package:morzelingo/pages/freemode/bloc/freemode_bloc.dart';
 import 'package:morzelingo/pages/freemode/repository/freemode_repository.dart';
 import 'package:morzelingo/pages/freemode/service/freemode_service.dart';
@@ -18,7 +19,7 @@ class FreemodeFlowPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => FreemodeBloc(
-        repository: FreemodeRepository(),
+        repository: FreemodeRepository(ApiClient()),
         service: FreemodeService(),
       ),
       child: BlocConsumer<FreemodeBloc, FreemodeState>(

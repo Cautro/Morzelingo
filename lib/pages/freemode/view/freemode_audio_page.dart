@@ -34,7 +34,7 @@ class _FreemodeAudioPageState extends State<FreemodeAudioPage> {
       appBar: AppBar(title: const Text("Свободный режим · аудио")),
       padding: AppSpacing.pageDense,
       bottomBar: AppDangerButton(
-        onPressed: () => context.read<FreemodeBloc>().add(LeaveEvent()),
+        onPressed: () => context.read<FreemodeBloc>().add(const LeaveEvent()),
         child: const Text('Выйти'),
       ),
       child: SingleChildScrollView(

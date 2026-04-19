@@ -1,34 +1,18 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../../../config.dart';
+import 'package:morzelingo/core/api/api_client.dart';
+import 'package:morzelingo/core/api/response_model.dart';
 import '../../../core/exceptions/exceptions.dart';
+import '../../../core/logger/logger.dart';
 import '../../../storage_context.dart';
 
 class AuthorizationRepository {
-
-  Map<String, String> _headers() {
-    return {"Content-Type": "application/json",};
-  }
-
-  bool _checkRes(int code) {
-    if (code <= 299 && code >= 200) {
-      return true;
-    } else {
-      return false;
-    }
-  }
+  final ApiClient _client;
+  const AuthorizationRepository(this._client);
 
   Future<Map<String, dynamic>> LoginHandler(String login, String password) async {
-    final res = await http.post(Uri.parse("$API/api/login"),
-        headers: _headers(),
-        body: jsonEncode({
-          "username": login,
-          "password": password
-        })
-    );
-    final json = jsonDecode(res.body);
-    print('$json');
-    if (_checkRes(res.statusCode)) {
+    final ResponseModel res = await _client.post(jwt: false, endpoint: "/api/login", body: {"username": login, "password": password});
+    final json = res.json;
+    AppLogger.d('$json');
+    if (_client.checkResponseStatus(res.statusCode)) {
       await StorageService.setItem("token", json["token"]);
       return {"success": true, "message": "Вход успешен"};
     } else {
@@ -37,18 +21,15 @@ class AuthorizationRepository {
   }
 
   Future<Map<String, dynamic>> RegisterHandler(String login, String password, String email, String code) async {
-    final res = await http.post(Uri.parse("$API/api/register"),
-        headers: _headers(),
-        body: jsonEncode({
-          "username": login,
-          "email": email,
-          "password": password,
-          "referral_code": code,
-        })
-    );
-    final json = jsonDecode(res.body);
-    print('$json');
-    if (_checkRes(res.statusCode)) {
+    final ResponseModel res = await _client.post(jwt: false, endpoint: "/api/register", body: {
+      "username": login,
+      "email": email,
+      "password": password,
+      "referral_code": code,
+    });
+    final json = res.json;
+    AppLogger.d('$json');
+    if (_client.checkResponseStatus(res.statusCode)) {
       await StorageService.setItem("token", json["token"]);
       return {"success": true, "message": "Регистрация успешна"};
     } else {
@@ -57,15 +38,10 @@ class AuthorizationRepository {
   }
 
   Future<bool> checkLogined() async {
-    String? token = await StorageService.getItem("token");
-    final res = await http.get(Uri.parse("$API/api/profile"),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-    final data = jsonDecode(res.body);
-    print(data);
-    if (!_checkRes(res.statusCode)) {
+    final ResponseModel res = await _client.get(jwt: true, endpoint: "/api/profile");
+    final data = res.json;
+    AppLogger.d(data);
+    if (!_client.checkResponseStatus(res.statusCode)) {
       throw Except("Ваши данные для авторизации недействительны");
     }
     return true;

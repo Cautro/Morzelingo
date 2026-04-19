@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:morzelingo/app_theme.dart';
+import 'package:morzelingo/core/api/api_client.dart';
 import 'package:morzelingo/pages/practice/bloc/practice_bloc.dart';
 import 'package:morzelingo/pages/practice/repository/practice_repository.dart';
 import 'package:morzelingo/pages/practice/service/practice_service.dart';
@@ -19,7 +20,7 @@ class PracticeFlowPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => PracticeBloc(repository: PracticeRepository(), service: PracticeService())..add(GetPracticeEvent(id: id)),
+      create: (_) => PracticeBloc(repository: PracticeRepository(ApiClient()), service: PracticeService())..add(GetPracticeEvent(id: id)),
       child: BlocConsumer<PracticeBloc, PracticeState>(
         listener: (context, state) {
           if (state.success != null) {

@@ -44,18 +44,6 @@ class _PracticeAudioPageState extends State<PracticeAudioPage> {
           const SizedBox(height: AppSpacing.md),
           AppExerciseInputPanel(
             children: [
-              // PopScope(
-              //   canPop: true,
-              //   onPopInvokedWithResult: (didPop, result) {
-              //     if (didPop) {
-              //       context.read<PracticeBloc>().add(LeaveEvent());
-              //     }
-              //   },
-              //   child: Scaffold(
-              //     appBar: AppBar(title: Text("Просмотр")),
-              //     body: Center(child: Text("Контент")),
-              //   ),
-              // ),
               Text(
                 "Прослушайте морзе и переведите",
                 style: Theme.of(context).textTheme.titleMedium,

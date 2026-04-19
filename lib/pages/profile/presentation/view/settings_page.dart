@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:morzelingo/settings_context.dart';
 import 'package:morzelingo/theme_controller.dart';
 
-import '../../../ui/app_ui.dart';
+import '../../../../ui/app_ui.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -123,7 +123,7 @@ class _themeControllerState extends State<_themeController> {
 }
 
 class _hintsController extends StatefulWidget {
-  const _hintsController({super.key});
+  const _hintsController();
 
   @override
   State<_hintsController> createState() => _hintsControllerState();
@@ -149,7 +149,7 @@ class _hintsControllerState extends State<_hintsController> {
   @override
   Widget build(BuildContext context) {
     return AppSurfaceCard(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: SwitchListTile(
         value: value,
         title: const Text("Подсказки при входе"),

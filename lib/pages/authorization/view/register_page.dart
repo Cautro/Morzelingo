@@ -33,7 +33,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 alignment: Alignment.centerLeft,
                 child: TextButton(
                   onPressed: () {
-                    context.read<AuthorizationBloc>().add(ChangeModeEvent());
+                    context.read<AuthorizationBloc>().add(const ChangeModeEvent());
                   },
                   child: const Text('Уже есть аккаунт? Войти'),
                 ),

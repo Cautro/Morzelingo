@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:morzelingo/pages/duels/view/duels_flow_page.dart';
 import 'package:morzelingo/pages/education/presentation/pages/education_page.dart';
 import 'package:morzelingo/pages/practice/view/letters_page.dart';
-import 'package:morzelingo/pages/profile/view/profile_page.dart';
+import 'package:morzelingo/pages/profile/data/repositories/profile_repository.dart';
+import 'package:morzelingo/pages/profile/presentation/view/profile_page.dart';
 import 'package:morzelingo/settings_context.dart';
 import '../core/api/api_client.dart';
 import '../ui/app_ui.dart';
@@ -26,7 +27,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
     const FreemodeFlowPage(),
     const DuelsFlowPage(),
     const LettersPage(),
-    const ProfilePage(),
+    ProfilePage(repository: ProfileRepository(ApiClient()),),
   ];
 
   final List<NavigationDestination> _destinations = const [
@@ -61,7 +62,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
     final bool isEnable = await SettingsService.getHints();
     if (isEnable) {
       Timer(
-        Duration(milliseconds: 500),
+        const Duration(milliseconds: 500),
           () {
             showDialog(
               context: context,

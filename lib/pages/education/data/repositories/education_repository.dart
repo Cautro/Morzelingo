@@ -21,7 +21,7 @@ class EducationRepository extends IEducationRepository {
     if (!_client.checkResponseStatus(profileResponse.statusCode)) {
       throw Except("Ошибка при получении данных с сервера");
     }
-    appLogger.d("profile ${profileResponse.json}");
+    AppLogger.d("profile ${profileResponse.json}");
     final id = profileResponse.json["lesson_done_${lang.trim()}"] + 1;
 
     final ResponseModel lessonsResponse = await _client.get(
@@ -29,8 +29,8 @@ class EducationRepository extends IEducationRepository {
     if (!_client.checkResponseStatus(lessonsResponse.statusCode)) {
       throw Except("Ошибка при получении данных с сервера");
     }
-    appLogger.d("data ${lessonsResponse.json}");
-    appLogger.d("title: ${LessonModel
+    AppLogger.d("data ${lessonsResponse.json}");
+    AppLogger.d("title: ${LessonModel
         .fromJson(lessonsResponse.json)
         .toEntity()
         .title}");
@@ -59,7 +59,7 @@ class EducationRepository extends IEducationRepository {
     final List<Lesson> lessons = (lessonsResponse.json as List).take(lessonsDone).map((e) => LessonModel.fromJson(e as Map<String, dynamic>).toEntity()).toList();
 
     if (lessons.isNotEmpty) {
-      appLogger.d(lessons[0].title);
+      AppLogger.d(lessons[0].title);
     }
 
     return lessons;

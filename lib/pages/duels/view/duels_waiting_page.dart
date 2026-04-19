@@ -12,7 +12,7 @@ class DuelsWaitingPage extends StatelessWidget {
     return AppPageScaffold(
       bottomBar: AppDangerButton(
         onPressed: () {
-          context.read<DuelsBloc>().add(LeaveEvent());
+          context.read<DuelsBloc>().add(const LeaveEvent());
         },
         child: const Text('Отменить'),
       ),

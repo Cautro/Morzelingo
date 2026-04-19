@@ -25,7 +25,7 @@ class EducationController extends ChangeNotifier {
       _state = _state.copyWith(lesson: lesson, completedLessons: completedLessons, lang: lang);
       notifyListeners();
     } catch (e) {
-      appLogger.e(e);
+      AppLogger.e(e);
       _state = _state.copyWith(message: e.toString(), success: false);
       notifyListeners();
     } finally {

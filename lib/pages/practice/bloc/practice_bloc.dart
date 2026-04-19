@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:morzelingo/pages/practice/models/practice_question_model.dart';
 import 'package:morzelingo/pages/practice/repository/practice_repository.dart';
 import 'package:morzelingo/pages/practice/service/practice_service.dart';
+
+import '../../../core/logger/logger.dart';
 part 'practice_event.dart';
 part 'practice_state.dart';
 
@@ -17,9 +19,9 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
         final List getData = await _repository.getPracticeQuestion(event.id);
         final PracticeQuestionModel task = PracticeQuestionModel.fromJson(getData[state.index]);
         emit(state.copyWith(status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: _service.stringToType(task.type)));
-        print(getData);
+        AppLogger.d(getData);
       } catch (e) {
-        print(e);
+        AppLogger.d(e);
         emit(state.copyWith(success: false, message: e.toString()));
         emit(state.copyWith(success: null));
       }
@@ -30,9 +32,9 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
         final List getData = await _service.getAnswersForLetters(await _repository.getLetterQuestion());
         final PracticeQuestionModel task = PracticeQuestionModel.fromJson(getData[state.index]);
         emit(state.copyWith(isLetter: true, status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: _service.stringToType(task.type)));
-        print(getData);
+        AppLogger.d(getData);
       } catch (e) {
-        print(e);
+        AppLogger.d(e);
         emit(state.copyWith(success: false, message: e.toString()));
         emit(state.copyWith(success: null));
       }
@@ -40,7 +42,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
 
     on<AnswerEvent>((event, emit) async {
       try {
-        print('${state.isLast}');
+        AppLogger.d('${state.isLast}');
         final List<SymbolUpdate> stats = _service.calculateStats(state.answer, event.text);
         await _repository.sendStats(stats);
         final bool isRight = _service.checkAnswer(event.text, state.answer);
@@ -69,14 +71,14 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
         }
 
       } catch (e) {
-        print(e);
+        AppLogger.d(e);
         emit(state.copyWith(success: false, message: e.toString()));
         emit(state.copyWith(success: null));
       }
     });
 
     on<CompleteEvent>((event, emit) async {
-      print('complete');
+      AppLogger.d('complete');
       try {
         if (!state.isLetter) {
           await _repository.completeLesson(event.id);
@@ -85,7 +87,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
           emit(state.copyWith(status: PracticeStatus.completed));
         }
       } catch (e) {
-        print(e);
+        AppLogger.d(e);
         emit(state.copyWith(success: false, message: e.toString()));
         emit(state.copyWith(success: null));
       }
@@ -95,7 +97,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
       try {
         emit(state.copyWith(status: PracticeStatus.leave));
       } catch (e) {
-        print(e);
+        AppLogger.d(e);
         emit(state.copyWith(success: false, message: e.toString()));
         emit(state.copyWith(success: null));
       }
@@ -105,7 +107,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
       try {
         await _service.playMorseAudio(state.question);
       } catch (e) {
-        print(e);
+        AppLogger.d(e);
         emit(state.copyWith(success: false, message: e.toString()));
         emit(state.copyWith(success: null));
       }

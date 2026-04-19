@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:morzelingo/core/api/api_client.dart';
 import 'package:morzelingo/pages/friends/bloc/friends_bloc.dart';
 import 'package:morzelingo/pages/friends/repository/friends_repository.dart';
 
@@ -40,7 +41,7 @@ class _FriendsPageState extends State<FriendsPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => FriendsBloc(repository: FriendsRepository())..add(GetFriendsEvent()),
+      create: (_) => FriendsBloc(repository: FriendsRepository(ApiClient()))..add(GetFriendsEvent()),
       child: BlocListener<FriendsBloc, FriendsState>(
         listener: (context, state) {
           if (state.success != null) {
@@ -74,16 +75,16 @@ class _FriendsPageState extends State<FriendsPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Код друга'),
+                                const Text('Имя пользователя друга'),
                                 const SizedBox(height: AppSpacing.sm),
                                 TextField(
                                   onChanged: (value) {
                                     setState(() {
-                                      code = value.toUpperCase();
+                                      code = value;
                                     });
                                   },
                                   decoration: const InputDecoration(
-                                    labelText: "Код друга",
+                                    labelText: "Имя пользователя друга",
                                   ),
                                 ),
                                 const SizedBox(height: AppSpacing.md),
@@ -108,7 +109,8 @@ class _FriendsPageState extends State<FriendsPage> {
                             itemBuilder: (context, index) {
                               final item = state.friends[index];
                               return AppListCard(
-                                title: "${item["username"]}",
+                                title: "$item",
+                                subtitle: "Вы с $item друзья",
                                 leading: Container(
                                   height: 44,
                                   width: 44,
@@ -124,15 +126,15 @@ class _FriendsPageState extends State<FriendsPage> {
                                 footer: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text("Общая серия - ${item["streak"]}", style: Theme.of(context).textTheme.bodyLarge),
-                                    const SizedBox(height: AppSpacing.xs),
-                                    Text("Серия друга - ${item["individual_streak"]}", style: Theme.of(context).textTheme.bodyMedium),
-                                    const SizedBox(height: AppSpacing.xs),
-                                    Text("Последняя активность - ${item["last_active"]}", style: Theme.of(context).textTheme.bodyMedium),
-                                    const SizedBox(height: AppSpacing.md),
+                                    // Text("Общая серия - ${item["streak"]}", style: Theme.of(context).textTheme.bodyLarge),
+                                    // const SizedBox(height: AppSpacing.xs),
+                                    // Text("Серия друга - ${item["individual_streak"]}", style: Theme.of(context).textTheme.bodyMedium),
+                                    // const SizedBox(height: AppSpacing.xs),
+                                    // Text("Последняя активность - ${item["last_active"]}", style: Theme.of(context).textTheme.bodyMedium),
+                                    // const SizedBox(height: AppSpacing.md),
                                     AppDangerButton(
                                       onPressed: () {
-                                        deleteDialog(context.read<FriendsBloc>(), item["username"]);
+                                        deleteDialog(context.read<FriendsBloc>(), item);
                                       },
                                       child: const Text('Удалить друга'),
                                     ),

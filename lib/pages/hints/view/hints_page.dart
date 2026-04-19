@@ -53,7 +53,7 @@ class _HintsPageState extends State<HintsPage> {
         itemBuilder: (context, index) {
           final item = data[index] as Map<String, dynamic>;
           return Container(
-            padding: EdgeInsets.fromLTRB(0, 0, 0, AppSpacing.xs),
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, AppSpacing.xs),
             child:  AppListCard(
               title: item["title"] ?? "",
               subtitle: item["subtitle"] ?? "",

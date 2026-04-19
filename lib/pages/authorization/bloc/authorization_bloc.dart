@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:morzelingo/core/logger/logger.dart';
 import 'package:morzelingo/pages/authorization/repository/authorization_repository.dart';
 import 'package:morzelingo/pages/authorization/service/authorization_service.dart';
 part 'authorization_event.dart';
@@ -15,7 +16,7 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
 
     // Вход
     on<LoginEvent>((event, emit) async {
-      print('datas: ${event.login} ${event.password}');
+      AppLogger.d('datas: ${event.login} ${event.password}');
       try {
         final Map<String, dynamic> loginData = await _repository.LoginHandler(event.login, event.password);
         emit(state.copyWith(status: AuthorizationStatus.success, message: loginData["message"]));

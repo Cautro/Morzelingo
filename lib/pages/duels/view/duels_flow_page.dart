@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:morzelingo/core/api/api_client.dart';
 import 'package:morzelingo/pages/duels/bloc/duels_bloc.dart';
 import 'package:morzelingo/pages/duels/repository/duels_repository.dart';
 import 'package:morzelingo/pages/duels/service/duels_service.dart';
@@ -19,7 +20,7 @@ class DuelsFlowPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => DuelsBloc(
-        repository: DuelsRepository(),
+        repository: DuelsRepository(ApiClient()),
         service: DuelsService(),
       ),
       child: BlocConsumer<DuelsBloc, DuelsState>(
@@ -34,7 +35,7 @@ class DuelsFlowPage extends StatelessWidget {
           }
           if (state.status == DuelsStatus.playing) {
             if (state.currentQuestion >= state.tasks.length) {
-              context.read<DuelsBloc>().add(CompleteEvent());
+              context.read<DuelsBloc>().add(const CompleteEvent());
             }
           }
           if (state.success != null) {

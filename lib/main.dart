@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:morzelingo/core/api/api_client.dart';
 import 'package:morzelingo/pages/authorization/view/authorization_flow_page.dart';
 import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
-import 'package:morzelingo/pages/education/presentation/pages/lesson_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_flow_page.dart';
 import 'package:morzelingo/pages/friends/view/friends_page.dart';
 import 'package:morzelingo/pages/hints/view/hints_page.dart';
-import 'package:morzelingo/pages/profile/view/letters_stats_page.dart';
-import 'package:morzelingo/pages/profile/view/profile_page.dart';
+import 'package:morzelingo/pages/profile/data/repositories/profile_repository.dart';
+import 'package:morzelingo/pages/profile/presentation/view/profile_page.dart';
+import 'package:morzelingo/pages/profile/presentation/view/settings_page.dart';
 import 'package:morzelingo/theme_controller.dart';
 import 'package:yandex_mobileads/mobile_ads.dart';
 import 'app_theme.dart';
 import 'pages/home_page.dart';
-import 'package:morzelingo/pages/education/presentation/pages/completed_lessons_page.dart';
 import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
-import 'package:morzelingo/pages/practice/view/practice_page.dart';
-import 'package:morzelingo/pages/profile/view/settings_page.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -50,7 +48,7 @@ class _MyAppState extends State<MyApp> {
 
   void _loadAd() {
     banner = _createBanner();
-    banner.loadAd(adRequest: AdRequest());
+    banner.loadAd(adRequest: const AdRequest());
     setState(() {
       isBannerAlreadyCreated = true;
     });
@@ -79,16 +77,15 @@ class _MyAppState extends State<MyApp> {
           initialRoute: "/login",
 
           routes: {
-            "/home": (context) => HomeTabsPage(),
-            "/login": (context) => AuthorizationFlowPage(),
-            "/freemode": (context) => FreemodeFlowPage(),
-            "/profile": (context) => ProfilePage(),
-            "/practiceletter": (context) => LettersFlowPage(),
-            "/settings": (context) => SettingsPage(),
-            "/lettersstats": (context) => LettersStatsPage(),
-            "/friends": (context) => FriendsPage(),
-            "/duels": (context) => DuelsMainPage(),
-            "/hints": (context) => HintsPage(),
+            "/home": (context) => const HomeTabsPage(),
+            "/login": (context) => const AuthorizationFlowPage(),
+            "/freemode": (context) => const FreemodeFlowPage(),
+            "/profile": (context) => ProfilePage(repository: ProfileRepository(ApiClient()),),
+            "/practiceletter": (context) => const LettersFlowPage(),
+            "/settings": (context) => const SettingsPage(),
+            "/friends": (context) => const FriendsPage(),
+            "/duels": (context) => const DuelsMainPage(),
+            "/hints": (context) => const HintsPage(),
           },
           // builder: (context, child) {
           //   return Column(

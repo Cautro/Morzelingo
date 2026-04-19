@@ -1,64 +1,41 @@
 import 'dart:convert';
-
-import 'package:http/http.dart' as http;
+import 'package:morzelingo/core/api/api_client.dart';
+import 'package:morzelingo/core/api/response_model.dart';
 import 'package:morzelingo/core/exceptions/exceptions.dart';
-
-import '../../../config.dart';
-import '../../../storage_context.dart';
+import '../../../core/logger/logger.dart';
 
 class FriendsRepository {
-
-  Future<Map<String, String>> _headers() async {
-    final token = await StorageService.getItem('token');
-    return {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    };
-  }
-
-  bool _checkRes(int code) {
-    if (code <= 299 && code >= 200) {
-      return true;
-    } else {
-      return false;
-    }
-  }
+  final ApiClient _client;
+  FriendsRepository(this._client);
 
   Future<List> getData() async {
-    final res = await http.get(Uri.parse("$API/api/friends"),
-        headers: await _headers(),
-    );
-    final data = await jsonDecode(res.body);
+    final ResponseModel res = await _client.get(jwt: true, endpoint: "/api/friends");
+    final data = await jsonDecode(res.json);
     List friends = data["friends"];
-    print(friends);
+    AppLogger.d(friends);
 
     return friends;
   }
 
-  Future<String> addHandler(code) async {
-    final res = await http.post(Uri.parse("$API/api/add-to-friend"),
-      headers: await _headers(),
-      body: jsonEncode({"referral_code": code}),
-    );
-    final data = jsonDecode(res.body);
-    print(data);
-    if (!_checkRes(res.statusCode)) {
+  Future<String> addHandler(String code) async {
+    AppLogger.d(code);
+    final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/friends/add", body: {"friend": code});
+    final data = jsonDecode(res.json);
+    AppLogger.d(data);
+    if (!_client.checkResponseStatus(res.statusCode)) {
       throw Except(data["message"]);
     }
     return "Друг добавлен";
   }
 
   Future<String> deleteHandler(username) async {
-    final res = await http.post(Uri.parse("$API/api/delete-friend"),
-      headers: await _headers(),
-      body: jsonEncode({"username": username}),
-    );
-    final data = jsonDecode(res.body);
-    print(data);
-    if (!_checkRes(res.statusCode)) {
+    final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/friends/delete", body: {"friend": username});
+    final data = jsonDecode(res.json);
+    AppLogger.d(data);
+    if (!_client.checkResponseStatus(res.statusCode)) {
       throw Except(data["message"]);
     }
-    print(data);
+    AppLogger.d(data);
     return "Друг удалён";
   }
 

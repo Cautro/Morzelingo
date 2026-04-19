@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 
+import '../../../core/logger/logger.dart';
 import '../../../settings_context.dart';
 import '../models/morse_models.dart';
 
@@ -65,9 +66,9 @@ class DuelsService {
   }
 
   Future<bool> answerHandler(String answer, String rightAnswer) async {
-    print('$answer $rightAnswer');
+    AppLogger.d('$answer $rightAnswer');
     bool success = answer.toUpperCase().trim() == rightAnswer.toUpperCase().trim();
-    print('ANSWER RIGHT? $success');
+    AppLogger.d('ANSWER RIGHT? $success');
     return success;
   }
 

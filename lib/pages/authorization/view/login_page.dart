@@ -30,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
                 alignment: Alignment.centerLeft,
                 child: TextButton(
                   onPressed: () {
-                    context.read<AuthorizationBloc>().add(ChangeModeEvent());
+                    context.read<AuthorizationBloc>().add(const ChangeModeEvent());
                   },
                   child: const Text('Нет аккаунта? Зарегистрироваться'),
                 ),

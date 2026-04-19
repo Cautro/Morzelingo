@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import '../../../core/logger/logger.dart';
 import '../../../settings_context.dart';
 
 class FreemodeService {
@@ -17,7 +18,7 @@ class FreemodeService {
 
     for (int i = 0; i < question.length; i++) {
       final char = question[i];
-      print(char);
+      AppLogger.d(char);
 
       if (char == '•') {
         await player.play(AssetSource('sounds/dot.wav'));

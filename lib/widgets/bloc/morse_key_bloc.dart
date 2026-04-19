@@ -51,7 +51,7 @@ class MorseKeyBloc extends Bloc<MorseKeyEvent, MorseKeyState> {
     });
 
     on<AddSpaceEvent>((event, emit) {
-        emit(state.copyWith(decodedText: state.decodedText + " "));
+        emit(state.copyWith(decodedText: "${state.decodedText} "));
     });
 
     on<BackspaceEvent>((event, emit) {
