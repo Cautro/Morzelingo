@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:morzelingo/pages/practice/view/practice_page.dart';
+import 'package:morzelingo/pages/practice/presentation/view/practice_page.dart';
 import '../../../../ui/app_ui.dart';
 import '../../domain/entities/lesson.dart';
 

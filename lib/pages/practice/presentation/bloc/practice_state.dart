@@ -1,10 +1,5 @@
 part of "practice_bloc.dart";
 
-enum PracticeType {
-  text,
-  morse,
-  audio,
-}
 
 enum PracticeStatus {
   idle,
@@ -25,7 +20,7 @@ class PracticeState extends Equatable {
   final bool? success;
   final String? message;
   final bool isLetter;
-  final List? tasks;
+  final List<Question>? tasks;
   final PracticeStatus status;
 
   const PracticeState({
@@ -54,7 +49,7 @@ class PracticeState extends Equatable {
     bool? isLast,
     String? message,
     bool? isLetter,
-    List? tasks,
+    List<Question>? tasks,
     PracticeStatus? status,
   }) {
     return PracticeState(

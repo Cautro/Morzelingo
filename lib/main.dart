@@ -5,6 +5,7 @@ import 'package:morzelingo/pages/duels/view/duels_main_page.dart';
 import 'package:morzelingo/pages/freemode/view/freemode_flow_page.dart';
 import 'package:morzelingo/pages/friends/view/friends_page.dart';
 import 'package:morzelingo/pages/hints/view/hints_page.dart';
+import 'package:morzelingo/pages/practice/presentation/view/practice_letters_page.dart';
 import 'package:morzelingo/pages/profile/data/repositories/profile_repository.dart';
 import 'package:morzelingo/pages/profile/presentation/view/profile_page.dart';
 import 'package:morzelingo/pages/profile/presentation/view/settings_page.dart';
@@ -12,7 +13,6 @@ import 'package:morzelingo/theme_controller.dart';
 import 'package:yandex_mobileads/mobile_ads.dart';
 import 'app_theme.dart';
 import 'pages/home_page.dart';
-import 'package:morzelingo/pages/practice/view/practice_letters_page.dart';
 
 void main() {
   runApp(const MyApp());

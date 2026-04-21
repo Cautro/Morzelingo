@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../ui/app_ui.dart';
+import '../../../../ui/app_ui.dart';
 import '../bloc/practice_bloc.dart';
 
 class PracticeAudioPage extends StatefulWidget {

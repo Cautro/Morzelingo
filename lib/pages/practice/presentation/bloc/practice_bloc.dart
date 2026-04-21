@@ -1,11 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:morzelingo/pages/practice/models/practice_question_model.dart';
-import 'package:morzelingo/pages/practice/repository/practice_repository.dart';
-import 'package:morzelingo/pages/practice/service/practice_service.dart';
-
-import '../../../core/logger/logger.dart';
-import '../../../core/play_morse/play_morse.dart';
+import 'package:morzelingo/pages/practice/domain/entities/question.dart';
+import 'package:morzelingo/pages/practice/data/repositories/practice_repository.dart';
+import '../../../../core/logger/logger.dart';
+import '../../../../core/play_morse/play_morse.dart';
+import '../../domain/entities/question_types.dart';
+import '../../domain/services/practice_service.dart';
 part 'practice_event.dart';
 part 'practice_state.dart';
 
@@ -17,9 +17,9 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
 
     on<GetPracticeEvent>((event, emit) async {
       try {
-        final List getData = await _repository.getPracticeQuestion(event.id);
-        final PracticeQuestionModel task = PracticeQuestionModel.fromJson(getData[state.index]);
-        emit(state.copyWith(status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: _service.stringToType(task.type)));
+        final List<Question> getData = await _repository.getPracticeQuestion(event.id);
+        final Question task = getData[state.index];
+        emit(state.copyWith(status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: task.type, id: event.id));
         AppLogger.d(getData);
       } catch (e) {
         AppLogger.d(e);
@@ -30,9 +30,9 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
 
     on<GetLettersEvent>((event, emit) async {
       try {
-        final List getData = await _service.getAnswersForLetters(await _repository.getLetterQuestion());
-        final PracticeQuestionModel task = PracticeQuestionModel.fromJson(getData[state.index]);
-        emit(state.copyWith(isLetter: true, status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: _service.stringToType(task.type)));
+        final List<Question> getData = await _repository.getLetterQuestion();
+        final Question task = getData[state.index];
+        emit(state.copyWith(isLetter: true, status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: task.type));
         AppLogger.d(getData);
       } catch (e) {
         AppLogger.d(e);
@@ -53,13 +53,13 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
             return;
           }
           if (state.index < state.tasks!.length) {
-            final PracticeQuestionModel task = PracticeQuestionModel.fromJson(state.tasks![state.index + 1]);
+            final Question task = state.tasks![state.index + 1];
             emit(state.copyWith(
               index: state.index + 1,
               isLast: (state.index + 2 == state.tasks!.length),
               question: task.question,
               answer: task.answer,
-              type: _service.stringToType(task.type),
+              type: task.type,
               success: true,
               message: "Правильно"
             ));

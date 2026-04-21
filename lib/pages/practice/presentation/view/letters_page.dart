@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:morzelingo/settings_context.dart';
 import 'package:morzelingo/storage_context.dart';
 
-import '../../../ui/app_ui.dart';
+import '../../../../ui/app_ui.dart';
 
 class LettersPage extends StatefulWidget {
   const LettersPage({super.key});

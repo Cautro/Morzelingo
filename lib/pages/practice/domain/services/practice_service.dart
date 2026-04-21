@@ -1,7 +1,7 @@
-import '../../../core/exceptions/exceptions.dart';
-import '../../../settings_context.dart';
-import '../bloc/practice_bloc.dart';
-import '../models/morse_model.dart';
+import '../../../../core/exceptions/exceptions.dart';
+import '../../../../settings_context.dart';
+import '../../../duels/models/morse_models.dart';
+import '../entities/question_types.dart';
 
 class PracticeService {
 
@@ -71,18 +71,6 @@ class PracticeService {
     return stats.values.toList();
   }
 
-  Map<String, String> morseToLetter = {};
-
-  Future<String> _decodeMorse(String morseCode) async {
-    String? lang = await SettingsService.getLang();
-    morseToLetter = lang == "en" ? MorseModels.morseToLetterEN : MorseModels.morseToLetterRU;
-    return morseCode.split('  ').map((word) {
-      return word.split(' ').map((char) {
-        return morseToLetter[char] ?? '';
-      }).join('');
-    }).join(' ');
-  }
-
   bool checkAnswer(String text, String answer) {
     if (text.isEmpty || answer.isEmpty) {
       throw Except("Текст пуст");
@@ -90,22 +78,6 @@ class PracticeService {
     return text.toUpperCase().trim() == answer.toUpperCase().trim();
   }
 
-  Future<List> getAnswersForLetters(List questions) async {
-    List data = questions;
-
-    for (int i = 0; i < questions.length; i++) {
-
-      if (data[i]["type"] == "text") {
-        data[i]["answer"] = data[i]["question"];
-      }
-      if (data[i]["type"] == "morse" || data[i]["type"] == "audio") {
-        data[i]["answer"] = await _decodeMorse(data[i]["question"].toString());
-      }
-
-    }
-
-    return data;
-  }
 
 }
 

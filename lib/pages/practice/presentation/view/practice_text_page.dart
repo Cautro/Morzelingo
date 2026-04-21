@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:morzelingo/pages/practice/bloc/practice_bloc.dart';
+import 'package:morzelingo/pages/practice/presentation/bloc/practice_bloc.dart';
 import 'package:morzelingo/widgets/view/morse_key.dart';
 
-import '../../../ui/app_ui.dart';
+import '../../../../ui/app_ui.dart';
 
 class PracticeTextPage extends StatefulWidget {
   final String question;

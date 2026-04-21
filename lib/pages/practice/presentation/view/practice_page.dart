@@ -3,15 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:morzelingo/app_theme.dart';
 import 'package:morzelingo/core/api/api_client.dart';
-import 'package:morzelingo/pages/practice/bloc/practice_bloc.dart';
-import 'package:morzelingo/pages/practice/repository/practice_repository.dart';
-import 'package:morzelingo/pages/practice/service/practice_service.dart';
-import 'package:morzelingo/pages/practice/view/practice_audio_page.dart';
-import 'package:morzelingo/pages/practice/view/practice_morse_page.dart';
-import 'package:morzelingo/pages/practice/view/practice_text_page.dart';
+import 'package:morzelingo/pages/practice/presentation/bloc/practice_bloc.dart';
+import 'package:morzelingo/pages/practice/data/repositories/practice_repository.dart';
+import 'package:morzelingo/pages/practice/presentation/view/practice_audio_page.dart';
+import 'package:morzelingo/pages/practice/presentation/view/practice_morse_page.dart';
+import 'package:morzelingo/pages/practice/presentation/view/practice_text_page.dart';
 import 'package:morzelingo/ui/app_ui.dart';
 
-import '../../loading_page.dart';
+import '../../../loading_page.dart';
+import '../../domain/entities/question_types.dart';
+import '../../domain/services/practice_service.dart';
 
 class PracticeFlowPage extends StatelessWidget {
   final String id;
