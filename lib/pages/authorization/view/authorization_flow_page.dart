@@ -7,6 +7,7 @@ import 'package:morzelingo/pages/authorization/repository/authorization_reposito
 import 'package:morzelingo/pages/authorization/service/authorization_service.dart';
 import 'package:morzelingo/pages/authorization/view/login_page.dart';
 import 'package:morzelingo/pages/authorization/view/register_page.dart';
+import 'package:morzelingo/pages/loading_page.dart';
 
 import '../../../app_theme.dart';
 
@@ -33,11 +34,15 @@ class AuthorizationFlowPage extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          switch (state.mode) {
-            case AuthorizationMode.login:
-              return const LoginPage();
-            case AuthorizationMode.register:
-              return const RegisterPage();
+          if (state.isLoading) {
+            return const LoadingPage();
+          } else {
+            switch (state.mode) {
+              case AuthorizationMode.login:
+                return const LoginPage();
+              case AuthorizationMode.register:
+                return const RegisterPage();
+            }
           }
         },
       ),

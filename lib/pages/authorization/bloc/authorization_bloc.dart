@@ -49,6 +49,7 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
 
     // Проверка входа
     on<CheckLoginedEvent>((event, emit) async {
+      emit(state.copyWith(isLoading: true));
       try {
         final bool checkData = await _repository.checkLogined();
         if (checkData) {
@@ -56,6 +57,8 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
         }
       } catch (e) {
         emit(state.copyWith(status: AuthorizationStatus.idle,));
+      } finally {
+        emit(state.copyWith(isLoading: false));
       }
     });
   }

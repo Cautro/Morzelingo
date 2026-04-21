@@ -5,6 +5,7 @@ import 'package:morzelingo/pages/practice/repository/practice_repository.dart';
 import 'package:morzelingo/pages/practice/service/practice_service.dart';
 
 import '../../../core/logger/logger.dart';
+import '../../../core/play_morse/play_morse.dart';
 part 'practice_event.dart';
 part 'practice_state.dart';
 
@@ -105,7 +106,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
 
     on<PlayMorseEvent>((event, emit) async {
       try {
-        await _service.playMorseAudio(state.question);
+        await PlayMorse().playMorseAudio(state.question);
       } catch (e) {
         AppLogger.d(e);
         emit(state.copyWith(success: false, message: e.toString()));

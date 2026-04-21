@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'package:morzelingo/core/api/api_client.dart';
 import 'package:morzelingo/core/api/response_model.dart';
-import '../../../config.dart';
 import '../../../core/exceptions/exceptions.dart';
 import '../../../core/logger/logger.dart';
 import '../../../settings_context.dart';
@@ -14,9 +12,9 @@ class FreemodeRepository {
     String question;
     String answer;
     String? lang = await SettingsService.getLang();
-    final ResponseModel res = await _client.get(jwt: true, endpoint: "$API/api/freemode?"
+    final ResponseModel res = await _client.get(jwt: true, endpoint: "/api/freemode?"
         "mode=$mode&lang=$lang&count=1");
-    final data = jsonDecode(res.json);
+    final data = res.json;
     AppLogger.d(data);
     if (_client.checkResponseStatus(res.statusCode)) {
       question = data["questions"][0]["question"];

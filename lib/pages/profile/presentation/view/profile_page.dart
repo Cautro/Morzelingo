@@ -76,7 +76,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, child) {
-        return _controller.state.isLoading ? const LoadingPage() : AppPageScaffold(
+        return _controller.state.isLoading == true ? const LoadingPage() : AppPageScaffold(
           scrollable: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

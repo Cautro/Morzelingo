@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:morzelingo/pages/freemode/models/question_model.dart';
 import 'package:morzelingo/pages/freemode/repository/freemode_repository.dart';
 import 'package:morzelingo/pages/freemode/service/freemode_service.dart';
+
+import '../../../core/play_morse/play_morse.dart';
 part 'freemode_event.dart';
 part 'freemode_state.dart';
 
@@ -41,7 +43,7 @@ class FreemodeBloc extends Bloc<FreemodeEvent, FreemodeState> {
 
     on<AudioPlayEvent>((event, emit) async {
       try {
-        await _service.playMorse(event.question);
+        await PlayMorse().playMorseAudio(event.question);
       } catch (e) {
         emit(state.copyWith(success: false, status: FreemodeStatus.error, message: e.toString()));
       }

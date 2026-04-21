@@ -1,5 +1,6 @@
 import 'package:morzelingo/core/api/api_client.dart';
 import 'package:morzelingo/core/api/response_model.dart';
+import 'package:morzelingo/core/authorization/authorization.dart';
 import '../../../core/exceptions/exceptions.dart';
 import '../../../core/logger/logger.dart';
 import '../../../storage_context.dart';
@@ -13,7 +14,7 @@ class AuthorizationRepository {
     final json = res.json;
     AppLogger.d('$json');
     if (_client.checkResponseStatus(res.statusCode)) {
-      await StorageService.setItem("token", json["token"]);
+      await Authorization().setToken(json["token"]);
       return {"success": true, "message": "Вход успешен"};
     } else {
       throw Except(json["error"].toString());
@@ -30,7 +31,7 @@ class AuthorizationRepository {
     final json = res.json;
     AppLogger.d('$json');
     if (_client.checkResponseStatus(res.statusCode)) {
-      await StorageService.setItem("token", json["token"]);
+      await Authorization().setToken(json["token"]);
       return {"success": true, "message": "Регистрация успешна"};
     } else {
       throw Except(json["error"].toString());

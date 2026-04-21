@@ -91,34 +91,6 @@ class PracticeService {
     return text.toUpperCase().trim() == answer.toUpperCase().trim();
   }
 
-  Future<void> playMorseAudio(String question) async {
-    final player = AudioPlayer();
-
-    final int wpm = await SettingsService.getWpm();
-    final timing = MorseTiming.fromWpm(wpm);
-
-    for (int i = 0; i < question.length; i++) {
-      final char = question[i];
-      if (char == '•') {
-        await player.play(AssetSource('sounds/dot.wav'));
-        await Future.delayed(Duration(milliseconds: timing.dot));
-      } else if (char == '—') {
-        await player.play(AssetSource('sounds/dash.wav'));
-        await Future.delayed(Duration(milliseconds: timing.dash));
-      } else if (char == ' ') {
-        // если пробел, это конец буквы или слова
-        await Future.delayed(Duration(milliseconds: timing.letterPause));
-      }
-
-      // пауза между символами (если это не последний символ и не пробел)
-      if (i < question.length - 1 && question[i + 1] != ' ' && char != ' ') {
-        await Future.delayed(Duration(milliseconds: timing.symbolPause));
-      }
-    }
-
-    player.dispose();
-  }
-
   Future<List> getAnswersForLetters(List questions) async {
     List data = questions;
 

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:morzelingo/core/play_morse/play_morse.dart';
 import 'package:morzelingo/pages/duels/models/duel_question_model.dart';
 import 'package:morzelingo/pages/duels/repository/duels_repository.dart';
 import 'package:morzelingo/pages/duels/service/duels_service.dart';
@@ -87,7 +88,7 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
 
     on<PlayMorseEvent>((event, emit) async {
       try {
-        await _service.playMorseAudio(
+        await PlayMorse().playMorseAudio(
           event.question.toString(),
         );
       } catch (e) {
