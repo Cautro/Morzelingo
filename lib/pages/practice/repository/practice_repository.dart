@@ -14,7 +14,7 @@ class PracticeRepository {
     String? token = await StorageService.getItem("token");
     AppLogger.d('token: $token, id: $id');
     final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/complete-lesson", body: {
-      "lesson_id": int.parse(id ?? "0")
+      "lesson_id": int.tryParse(id) ?? 0
     });
     var json = res.json;
     AppLogger.d(json);

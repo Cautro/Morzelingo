@@ -19,7 +19,8 @@ class ProfileController extends ChangeNotifier {
     notifyListeners();
     try {
       final profileData = await _repository.getData();
-      _state = _state.copyWith(profile: profileData);
+      final String lang = await SettingsService.getLang();
+      _state = _state.copyWith(profile: profileData, lang: lang);
       notifyListeners();
     } catch (e) {
       AppLogger.e(e.toString());

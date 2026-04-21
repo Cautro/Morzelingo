@@ -1,6 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
-import '../../../core/logger/logger.dart';
-import '../../../settings_context.dart';
 
 class FreemodeService {
 

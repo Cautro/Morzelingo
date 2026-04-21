@@ -130,7 +130,7 @@ class _hintsController extends StatefulWidget {
 }
 
 class _hintsControllerState extends State<_hintsController> {
-  late bool value;
+  late bool value = false;
 
   Future<void> _loadHints() async {
     final saved = await SettingsService.getHints();

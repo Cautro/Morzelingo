@@ -60,6 +60,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
 
   Future<void> _hintsDialog() async {
     final bool isEnable = await SettingsService.getHints();
+    if (!mounted) return;
     if (isEnable) {
       Timer(
         const Duration(milliseconds: 500),

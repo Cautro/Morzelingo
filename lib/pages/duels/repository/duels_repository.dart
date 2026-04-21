@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'package:morzelingo/core/api/api_client.dart';
 import 'package:morzelingo/core/api/response_model.dart';
-
 import '../../../core/exceptions/exceptions.dart';
 import '../../../core/logger/logger.dart';
 
@@ -35,7 +33,7 @@ class DuelsRepository {
     if (!_client.checkResponseStatus(res.statusCode)) {
       throw Except('Ошибка сервера: ${res.statusCode}');
     }
-    return jsonDecode(res.json);
+    return res.json;
   }
 
   Future<void> updateScore(String duelId, int score) async {

@@ -3,7 +3,6 @@ import 'package:morzelingo/core/api/response_model.dart';
 import 'package:morzelingo/core/authorization/authorization.dart';
 import '../../../core/exceptions/exceptions.dart';
 import '../../../core/logger/logger.dart';
-import '../../../storage_context.dart';
 
 class AuthorizationRepository {
   final ApiClient _client;

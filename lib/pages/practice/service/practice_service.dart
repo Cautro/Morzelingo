@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import '../../../core/exceptions/exceptions.dart';
 import '../../../settings_context.dart';
 import '../bloc/practice_bloc.dart';

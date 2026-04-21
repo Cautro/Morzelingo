@@ -1,6 +1,5 @@
 import 'package:morzelingo/pages/profile/data/models/symbol_stats_model.dart';
 import 'package:morzelingo/pages/profile/domain/entities/profile.dart';
-import 'package:morzelingo/pages/profile/domain/entities/symbol_stats.dart';
 
 class ProfileModel {
   final String username;

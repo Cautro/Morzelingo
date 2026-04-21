@@ -6,7 +6,6 @@ import 'package:morzelingo/pages/profile/domain/entities/symbol_stats.dart';
 import 'package:morzelingo/pages/profile/domain/repositories/profile_repository_interface.dart';
 import 'package:morzelingo/pages/profile/presentation/controller/profile_controller.dart';
 import 'package:morzelingo/pages/profile/presentation/view/letters_stats_page.dart';
-import 'package:morzelingo/settings_context.dart';
 import '../../../../app_theme.dart';
 import '../../../../ui/app_ui.dart';
 
@@ -144,7 +143,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 username: "${_controller.state.profile?.username}" ?? "",
                 email: "${_controller.state.profile?.email}" ?? "",
                 xp: "${_controller.state.profile?.xp}" ?? "",
-                lessondone: "${SettingsService.getLang() == "en" ? _controller.state.profile?.lesson_done_en : _controller.state.profile?.lesson_done_ru}" ?? "",
+                lessondone: "${_controller.state.lang == "en" ? _controller.state.profile?.lesson_done_en : _controller.state.profile?.lesson_done_ru}" ?? "",
                 coins: "${_controller.state.profile?.coins}" ?? "",
                 level: "${_controller.state.profile?.level}" ?? "",
                 streak: "${_controller.state.profile?.streak}" ?? "",

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:morzelingo/pages/education/domain/repositories/education_repository_interface.dart';
 import 'package:morzelingo/pages/education/presentation/controller/education_controller.dart';
+import 'package:morzelingo/pages/education/presentation/pages/completed_lessons_page.dart';
 import 'package:morzelingo/pages/education/presentation/pages/lesson_page.dart';
 import 'package:morzelingo/pages/loading_page.dart';
 import '../../../../app_theme.dart';
@@ -126,9 +127,11 @@ class _EducationPageState extends State<EducationPage> {
               const SizedBox(height: AppSpacing.lg),
               AppPrimaryButton(
                 onPressed: () {
+                  final lesson = _controller.state.lesson;
+                  if (lesson == null) return;
                   Navigator.push(
                       context, 
-                      MaterialPageRoute(builder: (context) => LessonPage(lesson: _controller.state.lesson!, done: false))
+                      MaterialPageRoute(builder: (context) => LessonPage(lesson: lesson, done: false))
                   );
                 },
                 child: const Text('Начать урок'),
@@ -136,10 +139,10 @@ class _EducationPageState extends State<EducationPage> {
               const SizedBox(height: AppSpacing.sm),
               AppSecondaryButton(
                 onPressed: () {
-                  final lesson = _controller.state.lesson;
-                  if (lesson == null) return;
+                  final completed = _controller.state.completedLessons;
+                  if (completed == null) return;
                   Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => LessonPage(lesson: lesson, done: false),
+                    builder: (_) => CompletedLessonsPage(completed: completed,),
                   ));
                 },
                 child: const Text('К пройденным урокам'),
