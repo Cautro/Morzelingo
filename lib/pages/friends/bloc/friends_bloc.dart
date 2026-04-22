@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:morzelingo/core/exceptions/exceptions.dart';
 import 'package:morzelingo/pages/friends/repository/friends_repository.dart';
 
 part 'friends_event.dart';
@@ -12,8 +13,11 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsState>{
       try {
         List friends = await _repository.getData();
         emit(state.copyWith(friends: friends));
-      } catch (e) {
+      } on AppException catch (e) {
         emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      } catch (e) {
+        emit(state.copyWith(success: false, message: "Неизвестная ошибка"));
         emit(state.copyWith(success: null));
       }
     });
@@ -23,8 +27,11 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsState>{
         emit(state.copyWith(success: true, message: data));
         emit(state.copyWith(success: null));
         add(GetFriendsEvent());
-      } catch (e) {
+      } on AppException catch (e) {
         emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      } catch (e) {
+        emit(state.copyWith(success: false, message: "Неизвестная ошибка"));
         emit(state.copyWith(success: null));
       }
     });
@@ -34,8 +41,11 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsState>{
         emit(state.copyWith(success: true, message: data));
         emit(state.copyWith(success: null));
         add(GetFriendsEvent());
-      } catch (e) {
+      } on AppException catch (e) {
         emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      } catch (e) {
+        emit(state.copyWith(success: false, message: "Неизвестная ошибка"));
         emit(state.copyWith(success: null));
       }
     });

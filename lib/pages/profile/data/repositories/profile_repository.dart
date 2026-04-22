@@ -14,7 +14,7 @@ class ProfileRepository extends IProfileRepository {
   Future<Profile> getData() async {
     final ResponseModel profileResponse = await _client.get(jwt: true, endpoint: "/api/profile");
     if (!_client.checkResponseStatus(profileResponse.statusCode)) {
-      throw Except("Ошибка при получении данных с сервера");
+      throw ServerException("Ошибка сервера");
     }
     AppLogger.d("DATA: ${profileResponse.json}, CODE: ${profileResponse.statusCode}");
     return ProfileModel.fromJson(profileResponse.json).toEntity();

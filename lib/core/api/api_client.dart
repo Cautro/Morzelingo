@@ -5,6 +5,7 @@ import 'package:morzelingo/config.dart';
 import 'package:morzelingo/core/api/response_model.dart';
 import 'package:morzelingo/core/authorization/authorization.dart';
 import 'package:http/http.dart' as http;
+import 'package:morzelingo/core/exceptions/exceptions.dart';
 
 
 class ApiClient {
@@ -30,89 +31,55 @@ class ApiClient {
 
   Future<ResponseModel> get({required bool jwt, required String endpoint}) async {
     try {
-      final http.Response res = await http.get(Uri.parse("$API$endpoint"),
+      final http.Response res = await http.get(Uri.parse("${AppConfig.apiBaseUrl}$endpoint"),
         headers: jwt ? await _headers(token: true) : await _headers(token: false)
       ).timeout(_timeout);
+
+      if (res.statusCode == 401) {
+        throw const UnauthorizedException("Сессия истекла");
+      }
+
       return ResponseModel(statusCode: res.statusCode, json: jsonDecode(res.body));
     } on SocketException {
-      throw const ApiClientException(
-        type: ApiErrorType.noInternet,
-        message: 'Нет подключения к интернету',
-      );
+      throw const NetworkException('Нет подключения к интернету');
     } on TimeoutException {
-      throw const ApiClientException(
-        type: ApiErrorType.timeout,
-        message: 'Превышено время ожидания запроса',
-      );
+      throw const TimeoutAppException('Превышено время ожидания запроса');
     } on FormatException {
-      throw const ApiClientException(
-        type: ApiErrorType.invalidJson,
-        message: 'Сервер вернул некорректный JSON',
-      );
+      throw const InvalidData('Сервер вернул некорректный JSON');
     }  catch (e) {
-      if (e is ApiClientException) rethrow;
+      if (e is UnknownException) rethrow;
 
-      throw ApiClientException(
-        type: ApiErrorType.unknown,
-        message: 'Неизвестная ошибка: $e',
-      );
+      throw UnknownException('Неизвестная ошибка: $e');
     }
   }
 
   Future<ResponseModel> post({required bool jwt, required String endpoint, dynamic body}) async {
     try {
-      final http.Response res = await http.post(Uri.parse("$API$endpoint"),
+      final http.Response res = await http.post(Uri.parse("${AppConfig.apiBaseUrl}$endpoint"),
           headers: jwt ? await _headers(token: true) : await _headers(token: false),
           body: jsonEncode(body ?? {})
       ).timeout(_timeout);
+
+      if (res.statusCode == 401) {
+        Authorization().deleteToken();
+        throw const UnauthorizedException("Сессия истекла");
+      }
+
+
       return ResponseModel(statusCode: res.statusCode, json: jsonDecode(res.body));
     } on SocketException {
-      throw const ApiClientException(
-        type: ApiErrorType.noInternet,
-        message: 'Нет подключения к интернету',
-      );
+      throw const NetworkException('Нет подключения к интернету');
     } on TimeoutException {
-      throw const ApiClientException(
-        type: ApiErrorType.timeout,
-        message: 'Превышено время ожидания запроса',
-      );
+      throw const TimeoutAppException('Превышено время ожидания запроса');
     } on FormatException {
-      throw const ApiClientException(
-        type: ApiErrorType.invalidJson,
-        message: 'Сервер вернул некорректный JSON',
-      );
+      throw const InvalidData('Сервер вернул некорректный JSON');
     } catch (e) {
-      if (e is ApiClientException) rethrow;
+      if (e is UnknownException) rethrow;
 
-      throw ApiClientException(
-        type: ApiErrorType.unknown,
-        message: 'Неизвестная ошибка: $e',
+      throw UnknownException(
+        "Неизвестная ошибка: $e"
       );
     }
   }
 
-}
-
-enum ApiErrorType {
-  noInternet,
-  timeout,
-  invalidJson,
-  unauthorized,
-  forbidden,
-  notFound,
-  server,
-  unknown,
-}
-
-class ApiClientException implements Exception {
-  final ApiErrorType type;
-  final String message;
-
-  const ApiClientException({
-    required this.type,
-    required this.message,
-  });
-
-  @override
-  String toString() => 'ApiClientException(type: $type, message: $message)';
 }

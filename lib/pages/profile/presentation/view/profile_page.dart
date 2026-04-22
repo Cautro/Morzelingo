@@ -140,17 +140,20 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: AppSpacing.lg),
               _ProfileCard(
-                username: "${_controller.state.profile?.username}" ?? "",
-                email: "${_controller.state.profile?.email}" ?? "",
-                xp: "${_controller.state.profile?.xp}" ?? "",
-                lessondone: "${_controller.state.lang == "en" ? _controller.state.profile?.lesson_done_en : _controller.state.profile?.lesson_done_ru}" ?? "",
-                coins: "${_controller.state.profile?.coins}" ?? "",
-                level: "${_controller.state.profile?.level}" ?? "",
-                streak: "${_controller.state.profile?.streak}" ?? "",
-                needxp: "${_controller.state.profile?.need_xp}" ?? "",
-                refferal: "${_controller.state.profile?.referral_code}" ?? "",
+                username: _controller.state.profile?.username ?? "",
+                email: _controller.state.profile?.email ?? "",
+                xp: _controller.state.profile?.xp?.toString() ?? "0",
+                lessondone: _controller.state.lang == "en"
+                    ? (_controller.state.profile?.lesson_done_en ?? "0").toString()
+                    : (_controller.state.profile?.lesson_done_ru ?? "0").toString(),
+                coins: _controller.state.profile?.coins?.toString() ?? "0",
+                level: _controller.state.profile?.level?.toString() ?? "0",
+                streak: _controller.state.profile?.streak?.toString() ?? "0",
+                needxp: _controller.state.profile?.need_xp?.toString() ?? "0",
+                refferal: _controller.state.profile?.referral_code ?? "",
                 stats: _controller.state.profile?.symbol_stats ?? [],
               ),
+
               const SizedBox(height: AppSpacing.lg),
               AppDangerButton(
                 onPressed: () async {

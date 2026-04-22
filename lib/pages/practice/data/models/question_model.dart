@@ -1,7 +1,7 @@
+import 'package:morzelingo/core/morse/morse_alphabet.dart';
 import 'package:morzelingo/pages/practice/domain/entities/question.dart';
 import 'package:morzelingo/pages/practice/domain/entities/question_types.dart';
 import '../../../../settings_context.dart';
-import '../../../duels/models/morse_models.dart';
 
 class PracticeQuestionModel {
   final PracticeType type;
@@ -24,8 +24,7 @@ class PracticeQuestionModel {
 
   static Future<String> _decodeMorse(String morseCode) async {
     final String? lang = await SettingsService.getLang();
-    final Map<String, String> morseToLetter =
-    (lang == "en") ? MorseModels.morseToLetterEN : MorseModels.morseToLetterRU;
+    final Map<String, String> morseToLetter = MorseAlphabet.forLang(lang ?? "en");
 
     return morseCode.split('  ').map((word) {
       return word.split(' ').map((char) {

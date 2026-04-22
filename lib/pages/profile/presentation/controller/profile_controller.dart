@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:morzelingo/core/authorization/authorization.dart';
+import 'package:morzelingo/core/exceptions/exceptions.dart';
 import 'package:morzelingo/core/logger/logger.dart';
 import 'package:morzelingo/pages/profile/domain/repositories/profile_repository_interface.dart';
 import 'package:morzelingo/pages/profile/presentation/controller/profile_state.dart';
@@ -22,9 +23,12 @@ class ProfileController extends ChangeNotifier {
       final String lang = await SettingsService.getLang();
       _state = _state.copyWith(profile: profileData, lang: lang);
       notifyListeners();
-    } catch (e) {
+    } on AppException catch (e) {
       AppLogger.e(e.toString());
       _state = _state.copyWith(message: e.toString(), success: false);
+      notifyListeners();
+    } catch (e) {
+      _state = _state.copyWith(message: "Неизвестная ошибка", success: false);
       notifyListeners();
     } finally {
       _state = _state.copyWith(success: null, isLoading: false);
@@ -37,9 +41,12 @@ class ProfileController extends ChangeNotifier {
       await StorageService.clearAll();
       await SettingsService.setDefault();
       await Authorization().deleteToken();
+    } on AppException catch (e) {
+      AppLogger.e(e.toString());
+      _state = _state.copyWith(message: e.toString(), success: false);
+      notifyListeners();
     } catch (e) {
-      AppLogger .e(e.toString());
-      _state = _state .copyWith(success: false, message: e.toString());
+      _state = _state.copyWith(message: "Неизвестная ошибка", success: false);
       notifyListeners();
     } finally {
       _state = _state .copyWith(success: null);

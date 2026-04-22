@@ -16,7 +16,7 @@ class AuthorizationRepository {
       await Authorization().setToken(json["token"]);
       return {"success": true, "message": "Вход успешен"};
     } else {
-      throw Except(json["error"].toString());
+      throw ServerException(json["error"].toString());
     }
   }
 
@@ -33,7 +33,7 @@ class AuthorizationRepository {
       await Authorization().setToken(json["token"]);
       return {"success": true, "message": "Регистрация успешна"};
     } else {
-      throw Except(json["error"].toString());
+      throw ServerException(json["error"].toString());
     }
   }
 
@@ -42,7 +42,7 @@ class AuthorizationRepository {
     final data = res.json;
     AppLogger.d(data);
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except("Ваши данные для авторизации недействительны");
+      throw UnauthorizedException("Ваши данные для авторизации недействительны");
     }
     return true;
   }

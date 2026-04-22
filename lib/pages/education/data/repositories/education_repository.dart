@@ -19,7 +19,7 @@ class EducationRepository extends IEducationRepository {
     final ResponseModel profileResponse = await _client.get(
         jwt: true, endpoint: "/api/profile");
     if (!_client.checkResponseStatus(profileResponse.statusCode)) {
-      throw Except("Ошибка при получении данных с сервера");
+      throw ServerException("Ошибка при получении данных с сервера");
     }
     AppLogger.d("profile ${profileResponse.json}");
     final id = profileResponse.json["lesson_done_${lang.trim()}"] + 1;
@@ -27,7 +27,7 @@ class EducationRepository extends IEducationRepository {
     final ResponseModel lessonsResponse = await _client.get(
         jwt: true, endpoint: "/api/lessons/$id/?lang=${lang.trim()}");
     if (!_client.checkResponseStatus(lessonsResponse.statusCode)) {
-      throw Except("Ошибка при получении данных с сервера");
+      throw ServerException("Ошибка при получении данных с сервера");
     }
     AppLogger.d("data ${lessonsResponse.json}");
     AppLogger.d("title: ${LessonModel
@@ -45,7 +45,7 @@ class EducationRepository extends IEducationRepository {
     final ResponseModel profileResponse =
     await _client.get(jwt: true, endpoint: "/api/profile");
     if (!_client.checkResponseStatus(profileResponse.statusCode)) {
-      throw Except("Ошибка при получении данных с сервера");
+      throw ServerException("Ошибка при получении данных с сервера");
     }
 
     final int lessonsDone = (profileResponse.json["lesson_done_${lang.trim()}"] as num?)?.toInt() ?? 0;
@@ -53,7 +53,7 @@ class EducationRepository extends IEducationRepository {
     final ResponseModel lessonsResponse =
     await _client.get(jwt: true, endpoint: "/api/lessons/");
     if (!_client.checkResponseStatus(lessonsResponse.statusCode)) {
-      throw Except("Ошибка при получении данных с сервера");
+      throw ServerException("Ошибка при получении данных с сервера");
     }
 
     final List<Lesson> lessons = (lessonsResponse.json as List).take(lessonsDone).map((e) => LessonModel.fromJson(e as Map<String, dynamic>).toEntity()).toList();

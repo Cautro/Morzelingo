@@ -1,6 +1,4 @@
 import '../../../../core/exceptions/exceptions.dart';
-import '../../../../settings_context.dart';
-import '../../../duels/models/morse_models.dart';
 import '../entities/question_types.dart';
 
 class PracticeService {
@@ -73,7 +71,7 @@ class PracticeService {
 
   bool checkAnswer(String text, String answer) {
     if (text.isEmpty || answer.isEmpty) {
-      throw Except("Текст пуст");
+      throw ValidationException("Текст пуст");
     }
     return text.toUpperCase().trim() == answer.toUpperCase().trim();
   }

@@ -1,5 +1,7 @@
 import 'package:morzelingo/storage_context.dart';
 
+import 'core/logger/logger.dart';
+
 class SettingsService {
   static Future<void> setDefault() async {
     setWpm(10);
@@ -54,7 +56,7 @@ class SettingsService {
     } else if (hints == "false") {
       return false;
     }
-    print(hints);
+    AppLogger.d("HINTS: $hints");
     return true;
   }
 

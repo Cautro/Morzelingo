@@ -26,7 +26,7 @@ class PracticeRepository extends IPracticeRepository {
     var json = res.json;
     AppLogger.d(json);
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except("Ошибка сервера");
+      throw ServerException("Ошибка сервера");
     }
   }
 
@@ -43,7 +43,7 @@ class PracticeRepository extends IPracticeRepository {
         .toList();
 
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except("Ошибка сервера");
+      throw ServerException("Ошибка сервера");
     }
 
     return data;
@@ -55,7 +55,7 @@ class PracticeRepository extends IPracticeRepository {
     final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/practice/submit", body: updates.map((e) => e.toJson()).toList(),);
 
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except("Ошибка сервера");
+      throw ServerException("Ошибка сервера");
     }
   }
 
@@ -67,7 +67,7 @@ class PracticeRepository extends IPracticeRepository {
     final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/practice?letters=$encodedLetter&lang=$lang");
 
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except("Ошибка сервера");
+      throw ServerException("Ошибка сервера");
     }
 
     final Map<String, dynamic> json = res.json is String

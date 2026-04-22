@@ -21,7 +21,7 @@ class FreemodeRepository {
       answer = data["questions"][0]["answer"];
       AppLogger.d(question);
     } else {
-      throw Except("Произошла ошибка сервера");
+      throw ServerException("Произошла ошибка сервера");
     }
     return {"question": question, "answer": answer,};
   }
@@ -29,7 +29,7 @@ class FreemodeRepository {
   Future<void> completeFreemode() async {
     final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/freemode/complete");
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except("Произошла ошибка");
+      throw ServerException("Ошибка сервера");
     }
   }
 

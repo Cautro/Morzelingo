@@ -1,12 +1,13 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:morzelingo/core/play_morse/play_morse.dart';
+import 'package:morzelingo/core/exceptions/exceptions.dart';
 import 'package:morzelingo/pages/duels/models/duel_question_model.dart';
 import 'package:morzelingo/pages/duels/repository/duels_repository.dart';
 import 'package:morzelingo/pages/duels/service/duels_service.dart';
 import 'package:morzelingo/settings_context.dart';
 
 import '../../../core/logger/logger.dart';
+import '../../../core/morse/play_morse.dart';
 part 'duels_event.dart';
 part 'duels_state.dart';
 
@@ -37,8 +38,10 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
         if (state.status == DuelsStatus.waiting) {
           add(const GetStatusEvent());
         }
-      } catch (e) {
+      } on AppException catch (e) {
         emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "$e"));
+      } catch (e) {
+        emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "Неизвестная ошибка"));
       }
     });
 
@@ -64,8 +67,10 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
           await Future.delayed(const Duration(seconds: 1));
           add(const GetStatusEvent());
         }
-      } catch (e) {
+      } on AppException catch (e) {
         emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "$e"));
+      } catch (e) {
+        emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "Неизвестная ошибка"));
       }
 
     });
@@ -80,8 +85,10 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
         emit(state.copyWith(status: DuelsStatus.playing));
         AppLogger.d('${state.currentQuestion}');
         AppLogger.d(state.answer);
-      } catch (e) {
+      } on AppException catch (e) {
         emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "$e"));
+      } catch (e) {
+        emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "Неизвестная ошибка"));
       }
 
     });
@@ -91,8 +98,10 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
         await PlayMorse().playMorseAudio(
           event.question.toString(),
         );
-      } catch (e) {
+      } on AppException catch (e) {
         emit(state.copyWith(status: DuelsStatus.error, success: false, message: "$e"));
+      } catch (e) {
+        emit(state.copyWith(status: DuelsStatus.error, success: false, message: "Неизвестная ошибка"));
       }
     });
 
@@ -113,8 +122,10 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
           emit(state.copyWith(answer: await _service.getAnswer(taskQuestion.question, taskQuestion.type)));
           try {
             await _repository.updateScore(state.duelId.toString(), state.score);
-          } catch (e) {
+          } on AppException catch (e) {
             emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "$e"));
+          } catch (e) {
+            emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "Неизвестная ошибка"));
           }
         }
         if (!success) {
@@ -122,8 +133,10 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
         }
         AppLogger.d('score: ${state.score}');
         emit(state.copyWith(message: null, success: null));
-      } catch (e) {
+      } on AppException catch (e) {
         emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "$e"));
+      } catch (e) {
+        emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "Неизвестная ошибка"));
       }
     });
     on<LeaveEvent>((event, emit) async {
@@ -132,8 +145,10 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
         if (data["ok"] == true) {
           emit(state.copyWith(status: DuelsStatus.cancelled));
         }
-      } catch (e) {
+      } on AppException catch (e) {
         emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "$e"));
+      } catch (e) {
+        emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "Неизвестная ошибка"));
       }
     });
     on<CompleteEvent>((event, emit) async {
@@ -141,8 +156,10 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
         final Map<String, dynamic> data = await _repository.completeDuel(state.duelId.toString());
         emit(state.copyWith(status: DuelsStatus.finished));
         AppLogger.d('FINISHED!!!!!!!!!');
-      } catch (e) {
+      } on AppException catch (e) {
         emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "$e"));
+      } catch (e) {
+        emit(state.copyWith(isLoading: false, status: DuelsStatus.error, success: false, message: "Неизвестная ошибка"));
       }
     });
   }

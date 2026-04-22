@@ -1,7 +1,7 @@
+import 'package:morzelingo/core/morse/morse_alphabet.dart';
 
 import '../../../core/logger/logger.dart';
 import '../../../settings_context.dart';
-import '../models/morse_models.dart';
 
 class DuelsService {
 
@@ -9,7 +9,7 @@ class DuelsService {
 
   Future<String> _decodeMorse(String morseCode) async {
     String? lang = await SettingsService.getLang();
-    _morseToLetter = lang == "en" ? MorseModels.morseToLetterEN : MorseModels.morseToLetterRU;
+    _morseToLetter = MorseAlphabet.forLang(lang);
     return morseCode.split('  ').map((word) {
       return word.split(' ').map((char) {
         return _morseToLetter[char] ?? '';

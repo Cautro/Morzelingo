@@ -14,7 +14,7 @@ class MorseKeyState extends Equatable {
     this.isPressed = false,
     this.timing,
     this.decodedText = "",
-    this.morseMap = morseToTextEn,
+    this.morseMap = MorseAlphabet.en,
     this.error = false,
     this.message = "",
   });

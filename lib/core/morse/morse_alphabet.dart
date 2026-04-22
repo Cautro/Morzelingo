@@ -1,6 +1,7 @@
-class MorseModels {
-  const MorseModels._();
-  static const Map<String, String> morseToLetterEN = {
+class MorseAlphabet {
+  const MorseAlphabet._();
+
+  static const Map<String, String> en = {
     "•—": "A", "—•••": "B", "—•—•": "C", "—••": "D", "•": "E",
     "••—•": "F", "——•": "G", "••••": "H", "••": "I", "•———": "J",
     "—•—": "K", "•—••": "L", "——": "M", "—•": "N", "———": "O",
@@ -10,11 +11,21 @@ class MorseModels {
     '—••••': '6', '——•••': '7', '———••': '8', '————•': '9',
   };
 
-  static const Map<String, String> morseToLetterRU = {
+  static const Map<String, String> ru = {
     '•—': 'А', '—•••': 'Б', '•——': 'В', '——•': 'Г', '—••': 'Д', '•': 'Е', '•••—': 'Ж', '——••': 'З', '••': 'И', '•———': 'Й',
     '—•—': 'К', '•—••': 'Л', '——': 'М', '—•': 'Н', '———': 'О', '•——•': 'П', '•—•': 'Р', '•••': 'С', '—': 'Т', '••—': 'У',
     '••—•': 'Ф', '••••': 'Х', '—•—•': 'Ц', '———•': 'Ч', '————': 'Ш', '——•—': 'Щ', '—•——': 'Ы', '—••—': 'Ь', '••—••': 'Э',
     '••——': 'Ю', '•—•—': 'Я', '/': ' ', '—————': '0', '•————': '1', '••———': '2', '•••——': '3', '••••—': '4', '•••••': '5',
     '—••••': '6', '——•••': '7', '———••': '8', '————•': '9',
   };
+
+  static Map<String, String> forLang(String lang) =>
+      lang == 'ru' ? ru : en;
+
+  static String decodeMorse(String morseCode, String lang) {
+    final map = forLang(lang);
+    return morseCode.split('  ').map((word) {
+      return word.split(' ').map((char) => map[char] ?? '').join('');
+    }).join(' ');
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:morzelingo/core/exceptions/exceptions.dart';
 import 'package:morzelingo/pages/education/domain/repositories/education_repository_interface.dart';
 import 'package:morzelingo/pages/education/presentation/controller/education_state.dart';
 import 'package:morzelingo/settings_context.dart';
@@ -24,9 +25,12 @@ class EducationController extends ChangeNotifier {
 
       _state = _state.copyWith(lesson: lesson, completedLessons: completedLessons, lang: lang);
       notifyListeners();
-    } catch (e) {
+    } on AppException catch (e) {
       AppLogger.e(e);
       _state = _state.copyWith(message: e.toString(), success: false);
+      notifyListeners();
+    } catch (e) {
+      _state = _state.copyWith(message: "Неизвестная ошибка", success: false);
       notifyListeners();
     } finally {
       _state = _state.copyWith(success: null, isLoading: false);

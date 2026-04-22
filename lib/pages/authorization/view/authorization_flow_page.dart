@@ -21,7 +21,6 @@ class AuthorizationFlowPage extends StatelessWidget {
       create: (_) => AuthorizationBloc(repository: AuthorizationRepository(ApiClient()), service: AuthorizationService())..add(const CheckLoginedEvent()),
       child: BlocConsumer<AuthorizationBloc, AuthorizationState>(
         listener: (context, state) {
-          print('cheeeeeeck');
           if (state.status != AuthorizationStatus.idle) {
             Fluttertoast.showToast(
               msg: state.message.toString(),

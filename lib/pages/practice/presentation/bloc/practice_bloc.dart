@@ -1,9 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:morzelingo/core/exceptions/exceptions.dart';
 import 'package:morzelingo/pages/practice/domain/entities/question.dart';
 import 'package:morzelingo/pages/practice/data/repositories/practice_repository.dart';
 import '../../../../core/logger/logger.dart';
-import '../../../../core/play_morse/play_morse.dart';
+import '../../../../core/morse/play_morse.dart';
 import '../../domain/entities/question_types.dart';
 import '../../domain/services/practice_service.dart';
 part 'practice_event.dart';
@@ -21,9 +22,12 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
         final Question task = getData[state.index];
         emit(state.copyWith(status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: task.type, id: event.id));
         AppLogger.d(getData);
-      } catch (e) {
-        AppLogger.d(e);
+      } on AppException catch (e) {
+        AppLogger.e(e);
         emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      } catch (e) {
+        emit(state.copyWith(success: false, message: "Неизвестная ошибка"));
         emit(state.copyWith(success: null));
       }
     });
@@ -34,9 +38,12 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
         final Question task = getData[state.index];
         emit(state.copyWith(isLetter: true, status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: task.type));
         AppLogger.d(getData);
-      } catch (e) {
-        AppLogger.d(e);
+      } on AppException catch (e) {
+        AppLogger.e(e);
         emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      } catch (e) {
+        emit(state.copyWith(success: false, message: "Неизвестная ошибка"));
         emit(state.copyWith(success: null));
       }
     });
@@ -68,12 +75,14 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
         } else {
           emit(state.copyWith(success: false, message: "Неправильно"));
           emit(state.copyWith(success: null));
-
         }
 
-      } catch (e) {
-        AppLogger.d(e);
+      } on AppException catch (e) {
+        AppLogger.e(e);
         emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      } catch (e) {
+        emit(state.copyWith(success: false, message: "Неизвестная ошибка"));
         emit(state.copyWith(success: null));
       }
     });
@@ -87,9 +96,12 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
         } else {
           emit(state.copyWith(status: PracticeStatus.completed));
         }
-      } catch (e) {
-        AppLogger.d(e);
+      } on AppException catch (e) {
+        AppLogger.e(e);
         emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      } catch (e) {
+        emit(state.copyWith(success: false, message: "Неизвестная ошибка"));
         emit(state.copyWith(success: null));
       }
     });
@@ -97,9 +109,12 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
     on<LeaveEvent>((event, emit) {
       try {
         emit(state.copyWith(status: PracticeStatus.leave));
-      } catch (e) {
-        AppLogger.d(e);
+      } on AppException catch (e) {
+        AppLogger.e(e);
         emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      } catch (e) {
+        emit(state.copyWith(success: false, message: "Неизвестная ошибка"));
         emit(state.copyWith(success: null));
       }
     });
@@ -107,9 +122,12 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
     on<PlayMorseEvent>((event, emit) async {
       try {
         await PlayMorse().playMorseAudio(state.question);
-      } catch (e) {
-        AppLogger.d(e);
+      } on AppException catch (e) {
+        AppLogger.e(e);
         emit(state.copyWith(success: false, message: e.toString()));
+        emit(state.copyWith(success: null));
+      } catch (e) {
+        emit(state.copyWith(success: false, message: "Неизвестная ошибка"));
         emit(state.copyWith(success: null));
       }
     });

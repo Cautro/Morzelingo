@@ -11,7 +11,7 @@ class Authorization {
   Future<String> getToken() async {
     String? token = await _storage.read(key: "token");
     if (token == null) {
-      throw Except("Токен авторизации не сохранён");
+      throw StorageException("Токен авторизации не сохранён");
     }
     return token;
   }

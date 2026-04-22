@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:morzelingo/settings_context.dart' hide MorseTiming;
-import 'package:morzelingo/widgets/models/morse_key_models.dart';
+import 'package:morzelingo/core/morse/morse_alphabet.dart';
+import 'package:morzelingo/settings_context.dart';
+
+import '../../core/morse/morse_timings.dart';
 
 part 'morse_key_event.dart';
 part 'morse_key_state.dart';
@@ -17,7 +19,7 @@ class MorseKeyBloc extends Bloc<MorseKeyEvent, MorseKeyState> {
       final int wpm = await SettingsService.getWpm();
       final String lang = await SettingsService.getLang();
       final MorseTiming timing = MorseTiming.fromWpm(wpm);
-      final Map<String, String> morseMap = lang == "ru" ? morseToTextRu : morseToTextEn;
+      final Map<String, String> morseMap = MorseAlphabet.forLang(lang);
       emit(state.copyWith(timing: timing, isPressed: false, decodedText: "", currentMorse: "", morseMap: morseMap));
     });
 

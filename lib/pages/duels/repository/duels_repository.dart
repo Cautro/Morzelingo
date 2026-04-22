@@ -13,7 +13,7 @@ class DuelsRepository {
     AppLogger.d('$json');
     AppLogger.d('$json');
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Exception('Ошибка сервера: ${res.statusCode}');
+      throw ServerException('Ошибка сервера: ${res.statusCode}');
     }
     return json;
   }
@@ -22,7 +22,7 @@ class DuelsRepository {
     final ResponseModel res = await _client.get(jwt: true, endpoint: "/api/duels/status/$duelId");
     AppLogger.d(res.json);
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except('Ошибка сервера: ${res.statusCode}');
+      throw ServerException('Ошибка сервера: ${res.statusCode}');
     }
     return res.json;
   }
@@ -31,7 +31,7 @@ class DuelsRepository {
     final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/duels/get-tasks/$duelId?lang=$lang");
     AppLogger.d(res.json);
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except('Ошибка сервера: ${res.statusCode}');
+      throw ServerException('Ошибка сервера: ${res.statusCode}');
     }
     return res.json;
   }
@@ -40,7 +40,7 @@ class DuelsRepository {
     final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/duels/update-score/$duelId", body: {"score": score});
     AppLogger.d(res.json);
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except('Ошибка сервера: ${res.statusCode}');
+      throw ServerException('Ошибка сервера: ${res.statusCode}');
     }
   }
 
@@ -48,7 +48,7 @@ class DuelsRepository {
     final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/duels/complete/$duelId");
     AppLogger.d('complete   ${res.json}');
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except('Ошибка сервера: ${res.statusCode}');
+      throw ServerException('Ошибка сервера: ${res.statusCode}');
     }
     return res.json;
   }
@@ -57,7 +57,7 @@ class DuelsRepository {
     final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/duels/leave/$duelId");
     AppLogger.d(res.json);
     if (!_client.checkResponseStatus(res.statusCode)) {
-      throw Except('Ошибка сервера: ${res.statusCode}');
+      throw ServerException('Ошибка сервера: ${res.statusCode}');
     }
     return res.json;
   }
