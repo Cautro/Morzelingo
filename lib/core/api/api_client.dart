@@ -47,7 +47,7 @@ class ApiClient {
     } on FormatException {
       throw const InvalidData('Сервер вернул некорректный JSON');
     }  catch (e) {
-      if (e is UnknownException) rethrow;
+      if (e is AppException) rethrow;
 
       throw UnknownException('Неизвестная ошибка: $e');
     }
@@ -74,7 +74,7 @@ class ApiClient {
     } on FormatException {
       throw const InvalidData('Сервер вернул некорректный JSON');
     } catch (e) {
-      if (e is UnknownException) rethrow;
+      if (e is AppException) rethrow;
 
       throw UnknownException(
         "Неизвестная ошибка: $e"

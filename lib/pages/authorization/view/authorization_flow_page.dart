@@ -28,7 +28,7 @@ class AuthorizationFlowPage extends StatelessWidget {
               textColor: Colors.white
             );
           }
-          if (state.status == AuthorizationStatus.success) {
+          if (state.status == AuthorizationStatus.success || state.status == AuthorizationStatus.sessionSuccess) {
             Navigator.pushReplacementNamed(context, "/home");
           }
         },

@@ -64,11 +64,11 @@ class MorseKeyBloc extends Bloc<MorseKeyEvent, MorseKeyState> {
     });
 
     on<TapUpEvent>((event, emit) {
-      emit(state.copyWith(isPressed: true));
+      emit(state.copyWith(isPressed: false));
     });
 
     on<TapDownEvent>((event, emit) {
-      emit(state.copyWith(isPressed: false));
+      emit(state.copyWith(isPressed: true));
     });
   }
 

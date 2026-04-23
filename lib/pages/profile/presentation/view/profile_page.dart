@@ -129,7 +129,7 @@ class ProfilePage extends StatelessWidget {
                     _ProfileCard(
                       username: state.profile?.username ?? "",
                       email: state.profile?.email ?? "",
-                      xp: state.profile?.xp?.toString() ?? "0",
+                      xp: state.profile?.xp.toString() ?? "0",
                       lessondone: state.lang == "en"
                           ? (state.profile?.lesson_done_en ?? "0").toString()
                           : (state.profile?.lesson_done_ru ?? "0").toString(),

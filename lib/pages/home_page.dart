@@ -87,7 +87,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
 
   @override
   void initState() {
-    _hintsDialog();
+    unawaited(_hintsDialog());
     super.initState();
   }
 

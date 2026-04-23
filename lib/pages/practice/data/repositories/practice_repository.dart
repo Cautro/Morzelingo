@@ -18,8 +18,6 @@ class PracticeRepository extends IPracticeRepository {
 
   @override
   Future<void> completeLesson(String id) async {
-    String? token = await StorageService.getItem("token");
-    AppLogger.d('token: $token, id: $id');
     final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/complete-lesson", body: {
       "lesson_id": int.tryParse(id) ?? 0
     });
@@ -34,6 +32,11 @@ class PracticeRepository extends IPracticeRepository {
   Future<List<Question>> getPracticeQuestion(String id) async {
     final lang = await SettingsService.getLang();
     final ResponseModel res = await _client.get(jwt: true, endpoint: "/api/practice/$id?lang=${lang.trim()}");
+
+    if (!_client.checkResponseStatus(res.statusCode)) {
+      throw ServerException("Ошибка сервера");
+    }
+
     final Map<String, dynamic> json = res.json is String
         ? jsonDecode(res.json as String) as Map<String, dynamic>
         : res.json as Map<String, dynamic>;
@@ -42,9 +45,6 @@ class PracticeRepository extends IPracticeRepository {
         .map<Question>((e) => PracticeQuestionModel.fromJson(e as Map<String, dynamic>).toEntity())
         .toList();
 
-    if (!_client.checkResponseStatus(res.statusCode)) {
-      throw ServerException("Ошибка сервера");
-    }
 
     return data;
   }

@@ -53,7 +53,7 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState>{
       try {
         final bool checkData = await _repository.checkLogined();
         if (checkData) {
-          emit(state.copyWith(status: AuthorizationStatus.success, message: "Вход успешен"));
+          emit(state.copyWith(status: AuthorizationStatus.sessionSuccess, message: "Вход успешен"));
         }
       } catch (e) {
         emit(state.copyWith(status: AuthorizationStatus.idle,));

@@ -28,7 +28,7 @@ class FriendsRepository {
     return "Друг добавлен";
   }
 
-  Future<String> deleteHandler(username) async {
+  Future<String> deleteHandler(String username) async {
     final ResponseModel res = await _client.post(jwt: true, endpoint: "/api/friends/delete", body: {"friend": username});
     final data = res.json;
     AppLogger.d(data);

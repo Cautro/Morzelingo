@@ -32,7 +32,6 @@ class EducationPage extends StatelessWidget {
         },
         builder: (context, state) {
           return state.isLoading ? const LoadingPage() : AppPageScaffold(
-            scrollable: true,
             child: RefreshIndicator(
               onRefresh: () => context.read<EducationCubit>().getData(),
               child: SingleChildScrollView(

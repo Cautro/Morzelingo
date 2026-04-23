@@ -153,7 +153,7 @@ class DuelsBloc extends Bloc<DuelsEvent, DuelsState> {
     });
     on<CompleteEvent>((event, emit) async {
       try {
-        final Map<String, dynamic> data = await _repository.completeDuel(state.duelId.toString());
+        await _repository.completeDuel(state.duelId.toString());
         emit(state.copyWith(status: DuelsStatus.finished));
         AppLogger.d('FINISHED!!!!!!!!!');
       } on AppException catch (e) {

@@ -4,6 +4,7 @@ enum AuthorizationStatus {
   idle,
   success,
   error,
+  sessionSuccess,
 }
 enum AuthorizationMode {
   login,
