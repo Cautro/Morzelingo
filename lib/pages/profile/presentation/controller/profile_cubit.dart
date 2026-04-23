@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:morzelingo/core/authorization/authorization.dart';
 import 'package:morzelingo/core/exceptions/exceptions.dart';
 import 'package:morzelingo/core/logger/logger.dart';
@@ -7,32 +8,23 @@ import 'package:morzelingo/pages/profile/presentation/controller/profile_state.d
 import 'package:morzelingo/settings_context.dart';
 import 'package:morzelingo/storage_context.dart';
 
-class ProfileController extends ChangeNotifier {
+class ProfileCubit extends Cubit<ProfileState> {
   final IProfileRepository _repository;
-  ProfileState _state = const ProfileState();
-
-  ProfileController({required IProfileRepository repository}) : _repository = repository;
-
-  ProfileState get state => _state;
+  ProfileCubit({required IProfileRepository repository}) : _repository = repository, super(const ProfileState());
 
   Future<void> getData() async {
-    _state = _state.copyWith(isLoading: true);
-    notifyListeners();
+    emit(state.copyWith(isLoading: true));
     try {
       final profileData = await _repository.getData();
       final String lang = await SettingsService.getLang();
-      _state = _state.copyWith(profile: profileData, lang: lang);
-      notifyListeners();
+      emit(state.copyWith(profile: profileData, lang: lang));
     } on AppException catch (e) {
       AppLogger.e(e.toString());
-      _state = _state.copyWith(message: e.toString(), success: false);
-      notifyListeners();
+      emit(state.copyWith(message: e.toString(), success: false));
     } catch (e) {
-      _state = _state.copyWith(message: "Неизвестная ошибка", success: false);
-      notifyListeners();
+      emit(state.copyWith(message: "Неизвестная ошибка", success: false));
     } finally {
-      _state = _state.copyWith(success: null, isLoading: false);
-      notifyListeners();
+      emit(state.copyWith(success: null, isLoading: false));
     }
   }
 
@@ -43,14 +35,11 @@ class ProfileController extends ChangeNotifier {
       await Authorization().deleteToken();
     } on AppException catch (e) {
       AppLogger.e(e.toString());
-      _state = _state.copyWith(message: e.toString(), success: false);
-      notifyListeners();
+      emit(state.copyWith(message: e.toString(), success: false));
     } catch (e) {
-      _state = _state.copyWith(message: "Неизвестная ошибка", success: false);
-      notifyListeners();
+      emit(state.copyWith(message: "Неизвестная ошибка", success: false));
     } finally {
-      _state = _state .copyWith(success: null);
-      notifyListeners();
+      emit(state .copyWith(success: null));
     }
   }
 }

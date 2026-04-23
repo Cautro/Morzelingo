@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:morzelingo/core/exceptions/exceptions.dart';
 import 'package:morzelingo/pages/education/domain/repositories/education_repository_interface.dart';
 import 'package:morzelingo/pages/education/presentation/controller/education_state.dart';
@@ -7,34 +8,26 @@ import '../../domain/entities/lesson.dart';
 import 'package:morzelingo/core/logger/logger.dart';
 
 
-class EducationController extends ChangeNotifier {
+class EducationCubit extends Cubit<EducationState> {
   final IEducationRepository _repository;
-  EducationState _state = const EducationState();
 
-  EducationController({required IEducationRepository repository}) : _repository = repository;
-
-  EducationState get state => _state;
+  EducationCubit({required IEducationRepository repository}) : _repository = repository, super(const EducationState());
 
   Future<void> getData() async {
-    _state = _state.copyWith(isLoading: true);
-    notifyListeners();
+    emit(state.copyWith(isLoading: true));
     try {
       final String lang = await SettingsService.getLang();
       final Lesson lesson = await _repository.getLesson();
       final List<Lesson> completedLessons = await _repository.getCompletedLessons();
 
-      _state = _state.copyWith(lesson: lesson, completedLessons: completedLessons, lang: lang);
-      notifyListeners();
+      emit(state.copyWith(lesson: lesson, completedLessons: completedLessons, lang: lang));
     } on AppException catch (e) {
       AppLogger.e(e);
-      _state = _state.copyWith(message: e.toString(), success: false);
-      notifyListeners();
+      emit(state.copyWith(message: e.toString(), success: false));
     } catch (e) {
-      _state = _state.copyWith(message: "Неизвестная ошибка", success: false);
-      notifyListeners();
+      emit(state.copyWith(message: "Неизвестная ошибка", success: false));
     } finally {
-      _state = _state.copyWith(success: null, isLoading: false);
-      notifyListeners();
+      emit(state.copyWith(success: null, isLoading: false));
     }
   }
 

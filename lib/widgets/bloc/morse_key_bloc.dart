@@ -62,7 +62,16 @@ class MorseKeyBloc extends Bloc<MorseKeyEvent, MorseKeyState> {
         emit(state.copyWith(decodedText: text.substring(0, text.length - 1)));
       }
     });
+
+    on<TapUpEvent>((event, emit) {
+      emit(state.copyWith(isPressed: true));
+    });
+
+    on<TapDownEvent>((event, emit) {
+      emit(state.copyWith(isPressed: false));
+    });
   }
+
 
   void _addSymbol(String symbol, Emitter<MorseKeyState> emit) {
     emit(state.copyWith(currentMorse: state.currentMorse + symbol));

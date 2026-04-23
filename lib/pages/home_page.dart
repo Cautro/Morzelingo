@@ -96,7 +96,10 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(

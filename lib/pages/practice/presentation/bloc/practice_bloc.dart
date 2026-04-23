@@ -22,6 +22,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
         final Question task = getData[state.index];
         emit(state.copyWith(status: PracticeStatus.active, tasks: getData, answer: task.answer, question: task.question, type: task.type, id: event.id));
         AppLogger.d(getData);
+        AppLogger.d("QUESTION: ${task.question}, ANSWER: ${task.answer}, TYPE: ${task.type}");
       } on AppException catch (e) {
         AppLogger.e(e);
         emit(state.copyWith(success: false, message: e.toString()));
@@ -77,6 +78,7 @@ class PracticeBloc extends Bloc<PracticeEvent, PracticeState>{
           emit(state.copyWith(success: null));
         }
 
+        AppLogger.d("QUESTION: ${state.tasks?[state.index].question ?? ""}, ANSWER: ${state.tasks?[state.index].answer ?? ""}, TYPE: ${state.tasks?[state.index].type ?? ""}");
       } on AppException catch (e) {
         AppLogger.e(e);
         emit(state.copyWith(success: false, message: e.toString()));

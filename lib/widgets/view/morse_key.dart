@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../ui/app_ui.dart';
 import '../bloc/morse_key_bloc.dart';
@@ -144,8 +145,14 @@ class _MorseKeyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.read<MorseKeyBloc>().add(const AddDotEvent()),
-      onLongPress: () => context.read<MorseKeyBloc>().add(const AddDashEvent()),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        context.read<MorseKeyBloc>().add(const AddDotEvent());
+      },
+      onLongPress: () {
+        HapticFeedback.heavyImpact();
+        context.read<MorseKeyBloc>().add(const AddDashEvent());
+      },
       onTapDown: (_) => context.read<MorseKeyBloc>().add(const TapDownEvent()),
       onTapUp: (_) => context.read<MorseKeyBloc>().add(const TapUpEvent()),
       onTapCancel: () => context.read<MorseKeyBloc>().add(const TapUpEvent()),
