@@ -1,4 +1,4 @@
-package com.example.morzelingo
+package com.ditdah.app
 
 import io.flutter.embedding.android.FlutterActivity
 

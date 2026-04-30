@@ -51,6 +51,7 @@ class AppPageScaffold extends StatelessWidget {
 
     if (scrollable) {
       content = SingleChildScrollView(
+        // physics: const AlwaysScrollableScrollPhysics(),
         padding: padding,
         child: content,
       );

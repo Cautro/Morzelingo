@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:morzelingo/settings_context.dart';
 import 'package:morzelingo/theme_controller.dart';
-
 import '../../../../ui/app_ui.dart';
 
 class SettingsPage extends StatefulWidget {

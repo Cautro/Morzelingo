@@ -59,97 +59,94 @@ class ProfilePage extends StatelessWidget {
         },
         builder: (context, state) {
           return state.isLoading == true ? const LoadingPage() : AppPageScaffold(
-            scrollable: true,
+            scrollable: false,
             child: RefreshIndicator(
               onRefresh: () => context.read<ProfileCubit>().getData(),
-              child: SingleChildScrollView(
+              child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                children: [
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: AppSectionHeader(
+                          title: 'Профиль',
+                          subtitle: 'Ваши данные, детали обучения и статистика.',
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, "/hints");
+                        },
+                        icon: const Icon(Icons.lightbulb_outline),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, "/settings");
+                        },
+                        icon: const Icon(Icons.settings_outlined),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  AppSurfaceCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Expanded(
-                          child: AppSectionHeader(
-                            title: 'Профиль',
-                            subtitle: 'Ваши данные, детали обучения и статистика.',
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, "/hints");
-                          },
-                          icon: const Icon(Icons.lightbulb_outline),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, "/settings");
-                          },
-                          icon: const Icon(Icons.settings_outlined),
+                        Row(
+                          children: [
+                            Container(
+                              height: 64,
+                              width: 64,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                borderRadius: AppRadii.lg,
+                              ),
+                              child: Icon(
+                                Icons.person_rounded,
+                                size: 34,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(state.profile?.username ?? "", style: Theme.of(context).textTheme.headlineMedium),
+                                  const SizedBox(height: 4),
+                                  Text(state.profile?.email ?? "", style: Theme.of(context).textTheme.bodyMedium),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                    AppSurfaceCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                height: 64,
-                                width: 64,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                  borderRadius: AppRadii.lg,
-                                ),
-                                child: Icon(
-                                  Icons.person_rounded,
-                                  size: 34,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.md),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(state.profile?.username ?? "", style: Theme.of(context).textTheme.headlineMedium),
-                                    const SizedBox(height: 4),
-                                    Text(state.profile?.email ?? "", style: Theme.of(context).textTheme.bodyMedium),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _ProfileCard(
-                      username: state.profile?.username ?? "",
-                      email: state.profile?.email ?? "",
-                      xp: state.profile?.xp.toString() ?? "0",
-                      lessondone: state.lang == "en"
-                          ? (state.profile?.lesson_done_en ?? "0").toString()
-                          : (state.profile?.lesson_done_ru ?? "0").toString(),
-                      coins: state.profile?.coins?.toString() ?? "0",
-                      level: state.profile?.level?.toString() ?? "0",
-                      streak: state.profile?.streak?.toString() ?? "0",
-                      needxp: state.profile?.need_xp?.toString() ?? "0",
-                      refferal: state.profile?.referral_code ?? "",
-                      stats: state.profile?.symbol_stats ?? [],
-                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _ProfileCard(
+                    username: state.profile?.username ?? "",
+                    email: state.profile?.email ?? "",
+                    xp: state.profile?.xp.toString() ?? "0",
+                    lessondone: state.lang == "en"
+                        ? (state.profile?.lesson_done_en ?? "0").toString()
+                        : (state.profile?.lesson_done_ru ?? "0").toString(),
+                    coins: state.profile?.coins?.toString() ?? "0",
+                    level: state.profile?.level?.toString() ?? "0",
+                    streak: state.profile?.streak?.toString() ?? "0",
+                    needxp: state.profile?.need_xp?.toString() ?? "0",
+                    refferal: state.profile?.referral_code ?? "",
+                    stats: state.profile?.symbol_stats ?? [],
+                  ),
 
-                    const SizedBox(height: AppSpacing.lg),
-                    AppDangerButton(
-                      onPressed: () async {
-                        logout(context);
-                      },
-                      child: const Text('Выйти из аккаунта'),
-                    ),
-                  ],
-                ),
+                  const SizedBox(height: AppSpacing.lg),
+                  AppDangerButton(
+                    onPressed: () async {
+                      logout(context);
+                    },
+                    child: const Text('Выйти из аккаунта'),
+                  ),
+                ],
               ),
             ),
           );

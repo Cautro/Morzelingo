@@ -30,27 +30,37 @@ class EducationPage extends StatelessWidget {
             );
           }
         },
-        builder: (context, state) {
-          return state.isLoading ? const LoadingPage() : AppPageScaffold(
-            child: RefreshIndicator(
-              onRefresh: () => context.read<EducationCubit>().getData(),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          builder: (context, state) {
+            if (state.isLoading) {
+              return const LoadingPage();
+            }
+
+            return AppPageScaffold(
+              scrollable: false,
+              padding: EdgeInsets.zero,
+              child: RefreshIndicator(
+                onRefresh: () => context.read<EducationCubit>().getData(),
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: AppSpacing.page.copyWith(
+                    bottom: AppSpacing.xl + 80,
+                  ),
                   children: [
                     const AppSectionHeader(
                       title: 'Текущий урок',
-                      subtitle: 'Изучайте теорию и сразу переходите к закреплению материала в практических заданиях.',
+                      subtitle:
+                      'Изучайте теорию и сразу переходите к закреплению материала в практических заданиях.',
                     ),
+
                     const SizedBox(height: AppSpacing.lg),
+
                     AppSurfaceCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppInfoPill(
                             icon: Icons.auto_awesome_rounded,
-                            label: 'Награда ${state.lesson?.xp_reward} опыта',
+                            label: 'Награда ${state.lesson?.xp_reward ?? 0} опыта',
                           ),
                           const SizedBox(height: AppSpacing.lg),
                           Text(
@@ -59,13 +69,15 @@ class EducationPage extends StatelessWidget {
                           ),
                           const SizedBox(height: AppSpacing.sm),
                           Text(
-                            'Последовательное изучение морзе в 2х этапах: теория и практика.',
+                            'Последовательное изучение морзе в 2 этапах: теория и практика.',
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs,),
+
+                    const SizedBox(height: AppSpacing.xs),
+
                     AppSurfaceCard(
                       child: Row(
                         children: [
@@ -73,70 +85,96 @@ class EducationPage extends StatelessWidget {
                             icon: Icons.language_outlined,
                             label: "Язык",
                           ),
-                          const SizedBox(width: AppSpacing.md,),
+                          const SizedBox(width: AppSpacing.md),
                           Text(state.lang == "ru" ? "Русский" : "Английский"),
                         ],
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs,),
-                    const Row(
-                      children: [
-                        Expanded(
-                          child: AppSurfaceCard(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                AppInfoPill(icon: Icons.menu_book_rounded, label: "Теория",),
-                                SizedBox(height: AppSpacing.lg),
-                                Text("Краткое объяснение теории азбуки морзе",),
-                              ],
+
+                    const SizedBox(height: AppSpacing.xs),
+
+                    const SizedBox(
+                      height: 170,
+                      child: const Row(
+                        children: [
+                          Expanded(
+                            child: AppSurfaceCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AppInfoPill(
+                                    icon: Icons.menu_book_rounded,
+                                    label: "Теория",
+                                  ),
+                                  SizedBox(height: AppSpacing.lg),
+                                  Text("Краткое объяснение теории Морзе"),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: AppSurfaceCard(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                AppInfoPill(icon: Icons.electric_bolt, label: "Практика",),
-                                SizedBox(height: AppSpacing.lg),
-                                Text("Закрепление материала через задания",),
-                              ],
+                          SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: AppSurfaceCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AppInfoPill(
+                                    icon: Icons.electric_bolt,
+                                    label: "Практика",
+                                  ),
+                                  SizedBox(height: AppSpacing.lg),
+                                  Text("Закрепление материала через задания"),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+
                     const SizedBox(height: AppSpacing.lg),
+
                     AppPrimaryButton(
                       onPressed: () {
                         final lesson = state.lesson;
                         if (lesson == null) return;
+
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => LessonPage(lesson: lesson, done: false))
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LessonPage(
+                              lesson: lesson,
+                              done: false,
+                            ),
+                          ),
                         );
                       },
                       child: const Text('Начать урок'),
                     ),
+
                     const SizedBox(height: AppSpacing.sm),
+
                     AppSecondaryButton(
                       onPressed: () {
                         final completed = state.completedLessons;
                         if (completed == null) return;
-                        Navigator.push(context, MaterialPageRoute(
-                          builder: (_) => CompletedLessonsPage(completed: completed,),
-                        ));
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CompletedLessonsPage(
+                              completed: completed,
+                            ),
+                          ),
+                        );
                       },
                       child: const Text('К пройденным урокам'),
                     ),
                   ],
                 ),
               ),
-            ),
-          );
-        },
+            );
+          }
       ),
     );
   }
