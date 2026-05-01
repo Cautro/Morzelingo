@@ -1,0 +1,48 @@
+04-28 22:07:03.338 D/AndroidRuntime( 7797): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+04-28 22:07:03.391 I/AndroidRuntime( 7797): Using default boot image
+04-28 22:07:03.391 I/AndroidRuntime( 7797): Leaving lock profiling enabled
+04-28 22:07:05.081 D/AndroidRuntime( 7797): Calling main entry com.android.commands.monkey.Monkey
+04-28 22:07:05.235 I/AconfigPackage( 7797): com.android.permission.flags is mapped to com.android.permission
+04-28 22:07:05.296 I/AconfigPackage( 7797): android.permission.flags is mapped to system
+04-28 22:07:05.399 E/FeatureFlagsImplExport( 7797): android.os.flagging.AconfigStorageReadException: ERROR_PACKAGE_NOT_FOUND: package android.xr cannot be found on the device
+04-28 22:07:06.131 V/GrammaticalInflectionUtils(  810): AttributionSource: android.content.AttributionSource@4eb1c02b does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+04-28 22:07:06.244 I/ActivityTaskManager(  810): START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.ditdah.app/.MainActivity} with LAUNCH_SINGLE_TOP from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+04-28 22:07:06.266 V/GrammaticalInflectionUtils(  810): AttributionSource: android.content.AttributionSource@4eb1c02b does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+04-28 22:07:06.442 W/ActivityManager(  810): Slow operation: 175ms so far, now at startProcess: done updating pids map
+04-28 22:07:06.574 I/AndroidRuntime( 7797): VM exiting with result code 0.
+04-28 22:07:06.705 W/PermissionService(  810): getPermissionFlags: Unknown user -1
+04-28 22:07:06.705 W/PermissionService(  810): getPermissionFlags: Unknown user -1
+04-28 22:07:07.418 W/HWUI    ( 1084): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+04-28 22:07:07.456 V/WindowManager(  810):     startWCT=WindowContainerTransaction { changes= {} hops= [] errorCallbackToken=null taskFragmentOrganizer=null }
+04-28 22:07:08.535 D/AndroidRuntime( 7813): Shutting down VM
+04-28 22:07:08.651 W/HWUI    ( 7813): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+04-28 22:07:08.765 E/AndroidRuntime( 7813): FATAL EXCEPTION: main
+04-28 22:07:08.765 E/AndroidRuntime( 7813): Process: com.ditdah.app, PID: 7813
+04-28 22:07:08.765 E/AndroidRuntime( 7813): java.lang.RuntimeException: Unable to instantiate activity ComponentInfo{com.ditdah.app/com.ditdah.app.MainActivity}: java.lang.ClassNotFoundException: Didn't find class "com.ditdah.app.MainActivity" on path: DexPathList[[zip file "/data/app/~~npeLsxYyq04lWkTW64XZ2w==/com.ditdah.app-iXEJZVf1Wa93TEy9UZJkQQ==/base.apk"],nativeLibraryDirectories=[/data/app/~~npeLsxYyq04lWkTW64XZ2w==/com.ditdah.app-iXEJZVf1Wa93TEy9UZJkQQ==/lib/x86_64, /data/app/~~npeLsxYyq04lWkTW64XZ2w==/com.ditdah.app-iXEJZVf1Wa93TEy9UZJkQQ==/base.apk!/lib/x86_64, /system/lib64, /system_ext/lib64]]
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4186)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:4467)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:222)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.servertransaction.TransactionExecutor.executeNonLifecycleItem(TransactionExecutor.java:133)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.servertransaction.TransactionExecutor.executeTransactionItems(TransactionExecutor.java:103)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:80)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2823)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.os.Handler.dispatchMessage(Handler.java:110)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.os.Looper.loopOnce(Looper.java:248)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.os.Looper.loop(Looper.java:338)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.ActivityThread.main(ActivityThread.java:9067)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at java.lang.reflect.Method.invoke(Native Method)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:593)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:932)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): Caused by: java.lang.ClassNotFoundException: Didn't find class "com.ditdah.app.MainActivity" on path: DexPathList[[zip file "/data/app/~~npeLsxYyq04lWkTW64XZ2w==/com.ditdah.app-iXEJZVf1Wa93TEy9UZJkQQ==/base.apk"],nativeLibraryDirectories=[/data/app/~~npeLsxYyq04lWkTW64XZ2w==/com.ditdah.app-iXEJZVf1Wa93TEy9UZJkQQ==/lib/x86_64, /data/app/~~npeLsxYyq04lWkTW64XZ2w==/com.ditdah.app-iXEJZVf1Wa93TEy9UZJkQQ==/base.apk!/lib/x86_64, /system/lib64, /system_ext/lib64]]
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at dalvik.system.BaseDexClassLoader.findClass(BaseDexClassLoader.java:259)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at java.lang.ClassLoader.loadClass(ClassLoader.java:637)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at java.lang.ClassLoader.loadClass(ClassLoader.java:573)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.AppComponentFactory.instantiateActivity(AppComponentFactory.java:95)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.Instrumentation.newActivity(Instrumentation.java:1443)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4173)
+04-28 22:07:08.765 E/AndroidRuntime( 7813): 	... 13 more
+04-28 22:07:09.188 V/WindowManager(  810):     startWCT=WindowContainerTransaction { changes= {} hops= [] errorCallbackToken=null taskFragmentOrganizer=null }
+04-28 22:07:09.365 E/TaskPersister(  810): File error accessing recents directory (directory doesn't exist?).
+04-28 22:07:09.474 I/EmojiCompatManager( 1420): java.lang.IllegalStateException: EmojiCompat is not initialized. Please call EmojiCompat.init() first
+04-28 22:07:10.281 W/HWUI    (  810): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+04-28 22:07:13.178 E/TaskPersister(  810): File error accessing recents directory (directory doesn't exist?).
