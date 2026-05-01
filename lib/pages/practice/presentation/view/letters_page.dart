@@ -93,13 +93,6 @@ class _LettersPageState extends State<LettersPage> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = width >= 900
-        ? 5
-        : width >= 700
-        ? 4
-        : 3;
-
     return AppPageScaffold(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,40 +101,67 @@ class _LettersPageState extends State<LettersPage> {
             title: 'Алфавит Морзе',
             subtitle: 'Выберите символ и перейдите к его точечной тренировке в разных режимах',
           ),
+
           const SizedBox(height: AppSpacing.lg),
+
           Expanded(
-            child: GridView.builder(
-              itemCount: letters.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                mainAxisSpacing: AppSpacing.md,
-                crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: 1,
-              ),
-              itemBuilder: (context, index) {
-                final item = letters[index];
-                return AppSurfaceCard(
-                  onTap: () {
-                    StorageService.setItem("letter", item["letter"]);
-                    Navigator.pushNamed(context, "/practiceletter");
-                  },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        item["letter"],
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        item["morse"],
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          letterSpacing: 1.4,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final double width = constraints.maxWidth;
+
+                final int crossAxisCount = width >= 720
+                    ? 5
+                    : width >= 520
+                    ? 4
+                    : width >= 320
+                    ? 3
+                    : 2;
+
+                final bool compact = width < 320;
+
+                return GridView.builder(
+                  padding: const EdgeInsets.only(bottom: 120),
+                  itemCount: letters.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    mainAxisSpacing: AppSpacing.md,
+                    crossAxisSpacing: AppSpacing.md,
+                    mainAxisExtent: compact ? 92 : 108,
                   ),
+                  itemBuilder: (context, index) {
+                    final item = letters[index];
+
+                    return AppSurfaceCard(
+                      padding: EdgeInsets.all(compact ? 12 : 16),
+                      onTap: () {
+                        StorageService.setItem("letter", item["letter"]);
+                        Navigator.pushNamed(context, "/practiceletter");
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            item["letter"],
+                            style: Theme.of(context).textTheme.headlineMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+
+                          const SizedBox(height: AppSpacing.xs),
+
+                          Text(
+                            item["morse"],
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              letterSpacing: 1.4,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 );
               },
             ),

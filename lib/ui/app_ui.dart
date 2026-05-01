@@ -110,27 +110,20 @@ class AppSurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final card = Card(
-      color: color,
-      child: Padding(
-        padding: padding,
-        child: child,
-      ),
+    final content = Padding(
+      padding: padding,
+      child: child,
     );
 
-    if (onTap == null) {
-      return card;
-    }
-
     return Card(
+      margin: EdgeInsets.zero,
       color: color,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      clipBehavior: onTap == null ? Clip.none : Clip.antiAlias,
+      child: onTap == null
+          ? content
+          : InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: padding,
-          child: child,
-        ),
+        child: content,
       ),
     );
   }
@@ -403,7 +396,7 @@ class AppStatTile extends StatelessWidget {
     final accentColor = color ?? theme.colorScheme.primary;
 
     return AppSurfaceCard(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -416,10 +409,24 @@ class AppStatTile extends StatelessWidget {
             ),
             child: Icon(icon, color: accentColor, size: 20),
           ),
-          const SizedBox(height: AppSpacing.md),
-          Text(label, style: theme.textTheme.bodyMedium),
+
+          const Spacer(),
+
+          Text(
+            label,
+            style: theme.textTheme.bodyMedium,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+
           const SizedBox(height: 4),
-          Text(value, style: theme.textTheme.titleMedium),
+
+          Text(
+            value,
+            style: theme.textTheme.titleMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );

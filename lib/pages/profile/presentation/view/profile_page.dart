@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:morzelingo/core/logger/logger.dart';
-import 'package:morzelingo/pages/education/presentation/controller/education_cubit.dart';
 import 'package:morzelingo/pages/loading_page.dart';
 import 'package:morzelingo/pages/profile/domain/entities/symbol_stats.dart';
 import 'package:morzelingo/pages/profile/domain/repositories/profile_repository_interface.dart';

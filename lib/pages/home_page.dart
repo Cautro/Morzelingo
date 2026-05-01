@@ -94,6 +94,8 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final width = MediaQuery.of(context).size.width;
+    final compact = width < 390;
 
     return Scaffold(
       body: IndexedStack(
@@ -103,7 +105,12 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
+          padding: EdgeInsets.fromLTRB(
+            compact ? 8 : 16,
+            6,
+            compact ? 8 : 16,
+            14,
+          ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: Container(
@@ -130,8 +137,10 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
                   ),
                   labelTextStyle: WidgetStateProperty.resolveWith((states) {
                     final isSelected = states.contains(WidgetState.selected);
+
                     return TextStyle(
-                      fontSize: 12,
+                      fontSize: compact ? 10 : 11,
+                      height: 1,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                       color: isSelected
                           ? theme.colorScheme.primary
@@ -140,11 +149,12 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
                   }),
                 ),
                 child: NavigationBar(
-                  height: 72,
+                  height: compact ? 64 : 72,
                   elevation: 0,
                   backgroundColor: Colors.transparent,
-                  labelBehavior:
-                  NavigationDestinationLabelBehavior.onlyShowSelected,
+                  labelBehavior: compact
+                      ? NavigationDestinationLabelBehavior.alwaysHide
+                      : NavigationDestinationLabelBehavior.onlyShowSelected,
                   selectedIndex: _currentIndex,
                   destinations: _destinations,
                   onDestinationSelected: (index) {
